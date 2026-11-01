@@ -107,6 +107,10 @@ const panels = photos.map((photo) => ({
   headline: headlines.find((line) => line.id === photo.id) ?? headlines[0],
 }));
 
+/* WAVE 838: the co-sourcer tile is drawn on /register only (`pickerOnly`), so
+   this strip stays the ten the grid was cut for. */
+const heroRoles = registerRoles.filter((role) => !role.pickerOnly);
+
 export function HomeHero() {
   /**
    * Whether the photograph lane is a scrolling strip at this width.
@@ -296,7 +300,7 @@ export function HomeHero() {
             otherwise moving it out of the anchor would strip that context
             from anyone navigating by link. */}
         <ul aria-labelledby="register-as" className="hero-role-grid mt-5 items-stretch gap-3">
-          {registerRoles.map((role) => {
+          {heroRoles.map((role) => {
             const detailId = `hero-role-${role.id}-detail`;
             const className =
               /*

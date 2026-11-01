@@ -40,6 +40,9 @@ export const roleIcons: Record<
   "support-provider": { base: "UsersRound" },
   "social-worker": { base: "UserRound", accent: "Heart" },
   broker: { base: "Handshake", baseOrange: true },
+  /* WAVE 838: the co-sourcer finds homes for the group; a search glyph with the
+     house as its one accent. */
+  "co-sourcer": { base: "Search", accent: "House" },
   resident: { base: "UserRound" },
 };
 

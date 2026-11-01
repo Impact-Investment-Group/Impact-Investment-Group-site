@@ -1299,7 +1299,8 @@ export function getRegisterRole(id: string): RegisterRoleContent | undefined {
  * import rather than shipping a tile that lands on a 404.
  */
 const rolesWithoutAPage: string[] = registerRoles
-  .filter((role: AudienceRole) => !registerRoleIds.includes(role.id))
+  /* WAVE 838: a tile with an `href` registers on the platform, not here. */
+  .filter((role: AudienceRole) => !role.href && !registerRoleIds.includes(role.id))
   .map((role: AudienceRole) => role.id);
 
 if (rolesWithoutAPage.length > 0) {

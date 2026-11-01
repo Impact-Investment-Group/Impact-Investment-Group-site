@@ -13,7 +13,22 @@ export interface AudienceRole {
   icon: string;
   /** "route-out" tiles are styled with a teal ring — a way out, not a pitch. */
   tone?: "default" | "route-out";
+  /**
+   * WAVE 838: a tile that leaves the site. The role's registration lives on the
+   * platform, so the tile is a plain anchor to it rather than a /register/<id>
+   * page, and content/register.ts does not require a page for it.
+   */
+  href?: string;
+  /** WAVE 838: drawn on /register only, not in the hero's strip of ten. */
+  pickerOnly?: boolean;
 }
+
+/**
+ * WAVE 838 (Callum, 1 Nov 2026): the platform's co-sourcer sign-up, switched on
+ * in production (`GET /api/auth/register/sourcer` answers enabled). The site had
+ * no way in for a co-sourcer; this is the one address, read by the tile below.
+ */
+export const coSourcerSignUpUrl = "https://app.impactinvestmentgroup.co.uk/sourcer/join";
 
 export const registerRoles: AudienceRole[] = [
   {
@@ -45,6 +60,14 @@ export const registerRoles: AudienceRole[] = [
     icon: "UserRoundCheck",
   },
   { id: "broker", label: "Broker", detail: "Partner and provide services", icon: "Handshake" },
+  {
+    id: "co-sourcer",
+    label: "Co-sourcer",
+    detail: "Source homes with us",
+    icon: "Search",
+    href: coSourcerSignUpUrl,
+    pickerOnly: true,
+  },
   {
     id: "resident",
     label: "Resident",

@@ -18,7 +18,10 @@ import { cn } from "@/lib/utils";
  * The platform itself is not open yet, so "Log in" lands on the same
  * registration route until a real sign-in destination exists.
  */
-const loginSearch = { enquiry: "waitlist", type: "waitlist" } as const;
+/* WAVE 838 (Callum, 1 Nov 2026): "Log in" goes to the platform's own sign-in,
+   where an investor, an agent or a co-sourcer signs in and a co-sourcer can
+   also join. Until this wave it opened the site's wait-list enquiry form. */
+const platformLoginUrl = "https://app.impactinvestmentgroup.co.uk/login";
 
 /**
  * ── WAVE 413: THE HEADER GETS OUT OF THE WAY ──────────────────────────────
@@ -450,13 +453,12 @@ export function SiteHeader() {
             <Button variant="primary" size="sm" asChild withArrow={false}>
               <Link to={registerRoute.to}>{registerRoute.label}</Link>
             </Button>
-            <Link
-              to="/contact"
-              search={loginSearch}
+            <a
+              href={platformLoginUrl}
               className="nav-underline inline-flex min-h-11 items-center whitespace-nowrap text-[15px] font-normal text-ink transition-colors duration-200 hover:text-orange-700"
             >
               Log in
-            </Link>
+            </a>
           </div>
 
           {/* WAVE 413b: `aria-controls` as well as `aria-expanded`. The pair
@@ -661,13 +663,12 @@ export function SiteHeader() {
               <Button variant="primary" asChild className="w-full" withArrow={false}>
                 <Link to={registerRoute.to}>{registerRoute.label}</Link>
               </Button>
-              <Link
-                to="/contact"
-                search={loginSearch}
+              <a
+                href={platformLoginUrl}
                 className="inline-flex min-h-11 items-center text-[15px] font-normal text-ink"
               >
                 Log in
-              </Link>
+              </a>
             </div>
           </div>
         </>
