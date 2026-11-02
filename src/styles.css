@@ -147,8 +147,11 @@
   --brand-ink: #14366A;
   --brand-slate: #647289;
   --bg-canvas: #FDFDFB;
-  --bg-tint: #FEF8F5;
-  --bg-cream: #F8F0EC;
+  /* Wave 882 (R-OP-1102-7): the band and the cream card are a bone white in
+     the page's family, no pink (red equal to green, blue a little below). The
+     card is one step deeper so it still separates from the band. */
+  --bg-tint: #F9F9F4;
+  --bg-cream: #F2F2EC;
   --dv-track: #F3EAE0;
 }
 

@@ -72,7 +72,7 @@ light ground without knowing which navy or slate sits behind it:
 
 ```
 --color-page       #FDFDFB   THE PAGE GROUND (--bg-canvas)
---color-page-alt   #FEF8F5   the alternating band (--bg-tint, same value as --color-mist-bg)
+--color-page-alt   #F9F9F4   the alternating band (--bg-tint, same value as --color-mist-bg)
 --color-header     the page at 92%   the sticky bar, blurred
 --color-ink        #14366A   the navy as type: headings and body on white (--brand-ink)
 --color-ink-muted  #4e5a6e   body copy on the band and the cream card (--color-slate-ink)
@@ -85,7 +85,7 @@ light ground without knowing which navy or slate sits behind it:
 
 Tailwind emits `bg-page`, `bg-page-alt`, `text-ink`, `text-ink-muted`, `text-ink-soft`,
 `border-rule`, `bg-tint-orange`, `bg-tint-teal` and `bg-secondary` from these. Teal text
-never sits on `bg-tint-teal`: there it is 4.39:1 over white and 3.94:1 over the cream card.
+never sits on `bg-tint-teal`: there it is 4.39:1 over white and 3.92:1 over the cream card.
 It sits on `bg-secondary`, where it is 4.66:1 over any ground because the bed is opaque.
 
 The navy scale is one value: every `navy-*` name is `--brand-ink`. It is the INK and the
@@ -112,7 +112,7 @@ The wave 295 ruling holds: where a pairing fails, THE SURFACE MOVES, never the o
                               figures, icon glyphs, the focus ring, the secondary button
 --color-teal-700/800: #267977 the same teal-ink, named so neither falls back to
                               Tailwind's default teal
---color-cream-card: #F8F0EC   (--bg-cream) a card that has to separate from the band
+--color-cream-card: #F2F2EC   (--bg-cream) a card that has to separate from the band
 ```
 
 ⚠️ **THERE IS STILL ONE ORANGE AND IT IS `#E15E31`.** 600 and 700 are the platform's
@@ -123,21 +123,21 @@ that is the exact thing wave 295 existed to end.
 
 Four light grounds: white, the page (`--bg-canvas`), the band (`--bg-tint`) and the cream
 card (`--bg-cream`), which is the binding one because it is the darkest. Every figure
-below is copied from `node scripts/wave443-contrast.mjs` at wave 777, not carried forward;
+below is copied from `node scripts/wave443-contrast.mjs` at wave 777, the band and cream card columns at wave 882, not carried forward;
 a figure in an `info` row of that output is measured but not asserted.
 
-| Colour | white `#FFFFFF` | page `#FDFDFB` | band `#FEF8F5` | cream card `#F8F0EC` | Verdict |
+| Colour | white `#FFFFFF` | page `#FDFDFB` | band `#F9F9F4` | cream card `#F2F2EC` | Verdict |
 |---|---|---|---|---|---|
-| `ink` `#14366A` | 11.89:1 | 11.68:1 | 11.31:1 | 10.57:1 | **PASS**: the default for headings and for body on white |
-| `ink-muted` `#4e5a6e` | 6.97:1 | 6.85:1 | 6.63:1 | 6.20:1 | **PASS**: the default for body on the band and the cream card |
-| `ink-soft` `#647289` | 4.87:1 | 4.78:1 | 4.63:1 (info) | 4.33:1 (info) | White cards, rules and small caps. **FAILS on the cream card for body copy** |
-| `teal-600` `#267977` | 5.14:1 | 5.05:1 | 4.89:1 | 4.57:1 | **PASS**: eyebrows, figures, icon glyphs, the focus ring |
-| `teal-500` `#258D8A` | 4.00:1 | 3.92:1 | 3.80:1 | 3.55:1 | Graphics only (3:1). **FAIL** for text everywhere |
+| `ink` `#14366A` | 11.89:1 | 11.68:1 | 11.26:1 | 10.58:1 | **PASS**: the default for headings and for body on white |
+| `ink-muted` `#4e5a6e` | 6.97:1 | 6.85:1 | 6.60:1 | 6.21:1 | **PASS**: the default for body on the band and the cream card |
+| `ink-soft` `#647289` | 4.87:1 | 4.78:1 | 4.61:1 (info) | 4.34:1 (info) | White cards, rules and small caps. **FAILS on the cream card for body copy** |
+| `teal-600` `#267977` | 5.14:1 | 5.05:1 | 4.87:1 | 4.58:1 | **PASS**: eyebrows, figures, icon glyphs, the focus ring |
+| `teal-500` `#258D8A` | 4.00:1 | 3.92:1 | 3.78:1 | 3.56:1 | Graphics only (3:1). **FAIL** for text everywhere |
 | `teal-400` `#70CECC` | 1.84:1 (info) | 1.81:1 (info) | 1.75:1 (info) | 1.64:1 (info) | **FAIL.** It is the on-navy teal and belongs inside an island |
-| `orange-700` `#BB441B` | 5.31:1 | 5.21:1 | 5.05:1 | 4.72:1 | **PASS**: the one orange that carries a word |
-| `orange-600` `#CC4A22` | 4.60:1 (info) | 4.51:1 (info) | 4.37:1 (info) | 4.08:1 (info) | Fills under a white label. Never orange text: that is `orange-700` |
-| `orange-500` `#E15E31` | 3.59:1 | 3.53:1 | 3.41:1 | 3.19:1 | **NEVER small text.** Rules, chips, glyphs, and a headline at 26px and above |
-| `destructive` `#c92a2a` | 5.46:1 | 5.36:1 | 5.19:1 | 4.85:1 | **PASS**: validation errors on every ground |
+| `orange-700` `#BB441B` | 5.31:1 | 5.21:1 | 5.03:1 | 4.72:1 | **PASS**: the one orange that carries a word |
+| `orange-600` `#CC4A22` | 4.60:1 (info) | 4.51:1 (info) | 4.35:1 (info) | 4.09:1 (info) | Fills under a white label. Never orange text: that is `orange-700` |
+| `orange-500` `#E15E31` | 3.59:1 | 3.53:1 | 3.40:1 | 3.20:1 | **NEVER small text.** Rules, chips, glyphs, and a headline at 26px and above |
+| `destructive` `#c92a2a` | 5.46:1 | 5.36:1 | 5.17:1 | 4.86:1 | **PASS**: validation errors on every ground |
 
 So on any light ground: headings are `ink`, body is `ink` on white and `ink-muted` on
 the band, eyebrows and figures are `teal-600`, an orange word is `orange-700`, and
@@ -191,20 +191,20 @@ actually has; the plates are composited over each ground from the stylesheet's o
 | Combination | Ratio | Rule |
 |---|---|---|
 | ink on white | 11.89:1 | Default heading and body text |
-| ink on the band | 11.31:1 | Default heading text on the band |
-| ink-muted on the band | 6.63:1 | Default body text on the band (6.20:1 on the cream card) |
-| ink-soft on white | 4.87:1 | Body on a white card. **Not on the cream card**, where it is 4.33:1 |
+| ink on the band | 11.26:1 | Default heading text on the band |
+| ink-muted on the band | 6.60:1 | Default body text on the band (6.21:1 on the cream card) |
+| ink-soft on white | 4.87:1 | Body on a white card. **Not on the cream card**, where it is 4.34:1 |
 | teal-600 on white | 5.14:1 | Eyebrows, figures, icon glyphs, the focus ring |
-| teal-600 on the band | 4.89:1 | The same, on the band (4.57:1 on the cream card) |
+| teal-600 on the band | 4.87:1 | The same, on the band (4.58:1 on the cream card) |
 | teal-600 on the teal bed (`--secondary`) | 4.66:1 | Teal text on a teal surface: the success panels, the active rail pill, the secondary button's hover |
-| orange-700 on the band | 5.05:1 | Every orange word, at any size (4.72:1 on the cream card) |
+| orange-700 on the band | 5.03:1 | Every orange word, at any size (4.72:1 on the cream card) |
 | orange-500 on white | 3.59:1 | **Large text and graphics only.** 3:1 floor, not 4.5:1 |
 | White on orange-600 | 4.60:1 | Button labels, at any size |
 | `text-page` on orange-600 | 4.51:1 | Type on a filled orange tile |
 | White on teal-600 | 5.14:1 | A label on a filled teal plate |
 | White on orange-500 | 3.59:1 | **NEVER small.** This is why buttons fill with 600 |
-| orange-600 glyph on the 12% orange tint | 3.99:1 white / 3.82:1 band / 3.57:1 cream card | Human icon plates (18% on hover: 3.71 / 3.54 / 3.35) |
-| teal-600 glyph on the 12% teal tint | 4.39:1 white / 4.19:1 band / 3.94:1 cream card | Data icon plates (18% on hover: 4.04 / 3.85 / 3.64) |
+| orange-600 glyph on the 12% orange tint | 3.99:1 white / 3.78:1 band / 3.58:1 cream card | Human icon plates (18% on hover: 3.71 / 3.53 / 3.34) |
+| teal-600 glyph on the 12% teal tint | 4.39:1 white / 4.18:1 band / 3.92:1 cream card | Data icon plates (18% on hover: 4.04 / 3.85 / 3.63) |
 | White on navy-950 (inside an island) | 11.89:1 | Body text on an island |
 | orange-500 on navy-950 (inside an island) | 3.31:1 | **Large text and graphics only** on an island |
 | teal-400 on navy-950 (inside an island) | 6.45:1 | The focus ring and data type on an island |

@@ -177,7 +177,9 @@ const failures = rows
   .filter((row) => !row.pass)
   .map((row) => `${row.fg} on ${row.bg}: ${row.contrast.toFixed(3)}`);
 /* The platform's values (web `src/index.css`), with wave 777's lift of the
-   navy and the teal. `--dv-track` is the site's own. */
+   navy and the teal. `--dv-track` is the site's own. Since wave 882
+   (R-OP-1102-7) `--bg-tint` and `--bg-cream` are the site's own too: a bone
+   white, no longer the platform's two beds. */
 const expected = {
   "--brand-primary": "#E15E31",
   "--brand-primary-ink": "#BB441B",
@@ -192,8 +194,8 @@ const expected = {
   "--brand-ink": "#14366A",
   "--brand-slate": "#647289",
   "--bg-canvas": "#FDFDFB",
-  "--bg-tint": "#FEF8F5",
-  "--bg-cream": "#F8F0EC",
+  "--bg-tint": "#F9F9F4",
+  "--bg-cream": "#F2F2EC",
   "--dv-track": "#F3EAE0",
 };
 if (!baseline)
@@ -227,9 +229,10 @@ if (!baseline)
       failures.push(`Job mapping failed: ${utility} is not ${job}`);
   }
 /* Wave 777 retired the v4 navy, the three v4 teals and the two R523-1-era warm
-   beds; the older names are wave 443's. */
+   beds; the older names are wave 443's. Wave 882 (R-OP-1102-7) retired the two
+   warm pink beds, fef8f5 and f8f0ec. */
 const retired =
-  /#(?:c15f3c|ae4e30|f0a886|9a4429|f27216|bf4b1b|ffefb2|00112b|041c3d|0a2a52|143c6b|2fbaaa|1e9e8f|17796f|ff6b00|25d1c2|ff7a29|0a2c60|208a87|1a706e|66c4c2|fbf6f0|f5ede4)\b|rgba?\(\s*(?:255[, ]+107[, ]+0|37[, ]+209[, ]+194|0[, ]+17[, ]+43|10[, ]+44[, ]+96|32[, ]+138[, ]+135|26[, ]+112[, ]+110|102[, ]+196[, ]+194|251[, ]+246[, ]+240|245[, ]+237[, ]+228)\s*[,/)]/gi;
+  /#(?:c15f3c|ae4e30|f0a886|9a4429|f27216|bf4b1b|ffefb2|00112b|041c3d|0a2a52|143c6b|2fbaaa|1e9e8f|17796f|ff6b00|25d1c2|ff7a29|0a2c60|208a87|1a706e|66c4c2|fbf6f0|f5ede4|fef8f5|f8f0ec)\b|rgba?\(\s*(?:255[, ]+107[, ]+0|37[, ]+209[, ]+194|0[, ]+17[, ]+43|10[, ]+44[, ]+96|32[, ]+138[, ]+135|26[, ]+112[, ]+110|102[, ]+196[, ]+194|251[, ]+246[, ]+240|245[, ]+237[, ]+228|254[, ]+248[, ]+245|248[, ]+240[, ]+236)\s*[,/)]/gi;
 function scan(dir, pattern = retired) {
   const hits = [];
   for (const entry of readdirSync(dir)) {
