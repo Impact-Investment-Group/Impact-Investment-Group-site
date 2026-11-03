@@ -203,14 +203,14 @@ export function PartnersHub() {
             <div className="inline-flex items-center gap-3">
               <span aria-hidden="true" className="h-0.5 w-9 bg-orange-700" />
               <p className="eyebrow tracking-[0.16em] text-teal-800">
-                10 roles. 4 stages. 1 outcome.
+                Connected roles. Shared purpose.
               </p>
             </div>
             <h1 className="heading-tight mt-5 max-w-[12ch] text-balance text-[clamp(2.75rem,6vw,5.35rem)] font-extrabold leading-[0.94] tracking-[-0.04em] text-navy-900">
-              Ten roles. <span className="text-orange-700">One connected journey.</span>
+              Every role. <span className="text-orange-700">One connected journey.</span>
             </h1>
             <p className="mt-6 max-w-[48ch] border-l-4 border-orange-700 pl-4 text-[17px] font-semibold leading-relaxed text-navy-800 sm:text-[19px]">
-              Ten roles working together to turn housing need into the right home, with people at
+              Working together to turn housing need into the right home, with people at
               the centre.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">

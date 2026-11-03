@@ -4,6 +4,8 @@ Israel requested a simple mind map with Impact Investment Group in the centre an
 
 The map includes the ten published partner profiles plus Co-sourcer, which is a public registration role with its own platform sign-up. Role labels, summaries, steps and destinations come from the existing content sources. Internal platform roles are not invented as marketing roles. Management Agents are mentioned in the landlord profile's relationships but are not a public registration option on this website.
 
+The hero now says "Every role" rather than counting only the original ten profiles, because the map also includes Co-sourcer. This copy consistency correction superseded the first CI run while it was still queued; no check result from that source is claimed.
+
 Every role is a native button opening a Radix dialog. The dialog presents the existing relationship description and three platform steps, with the current role page as its next action. Co-sourcer uses its existing "Source homes with us" wording and registration URL. Dialogs support Escape, trapped focus and return to the originating node. Connections highlight on focus or pointer interaction; no continuous animation or drag gesture is required. On small screens the captions yield to larger labels and the dialog carries the full explanation.
 
 The central company is text and a Lucide network icon, not a replacement logo. Brand tokens supply all colours. No photo, headshot, factual source text, registration endpoint or account behaviour changes.
