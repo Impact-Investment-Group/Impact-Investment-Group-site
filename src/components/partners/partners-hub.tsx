@@ -86,7 +86,7 @@ export function PartnersHub() {
             <img
               src="/images/ecosystem-band.jpg"
               srcSet={variantSrcSet("/images/ecosystem-band.jpg")}
-              sizes="(min-width: 1200px) 540px, (min-width: 900px) 46vw, 100vw"
+              sizes="(min-width: 1200px) 1215px, (min-width: 900px) 104vw, 188vw"
               width={intrinsic("/images/ecosystem-band.jpg")?.width}
               height={intrinsic("/images/ecosystem-band.jpg")?.height}
               loading="eager"

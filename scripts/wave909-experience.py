@@ -69,12 +69,18 @@ with sync_playwright() as pw:
                 check(len(page.locator("body").inner_text()) > 60, "Empty page")
                 check(page.locator("main").count() == 1, "Expected exactly one main landmark")
                 check(page.locator("h1").count() == 1, "Expected exactly one h1")
+                expect(page.locator("h1")).to_be_visible()
                 check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Horizontal overflow")
                 # Visit lazy images and sections before taking the complete reading view.
                 page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(img => img.loading='eager')")
                 page.wait_for_function("Array.from(document.images).every(img => img.complete)")
                 broken = page.locator("img").evaluate_all("nodes => nodes.filter(n => !n.naturalWidth).map(n => n.src)")
                 check(not broken, f"Broken images: {broken}")
+                for figure in page.locator(".partner-craft-guides").all():
+                    caption_top = figure.locator("figcaption").bounding_box()["y"]
+                    for guide in figure.locator("img").all():
+                        box = guide.bounding_box()
+                        check(box["y"] + box["height"] + 8 <= caption_top, "Guide artwork overlaps its caption")
                 for link in page.locator(".page-outline a").all():
                     check(page.locator(link.get_attribute("href")).count() == 1, "Missing or duplicate section target")
                 page.add_script_tag(path=str(ROOT / "node_modules/axe-core/axe.min.js"))
@@ -290,7 +296,7 @@ with sync_playwright() as pw:
             page.locator("#name").fill("Browser example")
             page.locator("#email").fill("example@example.com")
             page.locator("#message").fill("An unsent browser-only example message.")
-            control = page.get_by_label("What do you need?", exact=True)
+            control = page.get_by_role("combobox", name="What do you need?", exact=True)
             control.select_option("investor")
             expect(page.locator("#enquiry-form-title")).to_have_text("Investor enquiry")
             control.select_option("support")

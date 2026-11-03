@@ -579,10 +579,11 @@ FIRST_REVEAL = (
     "} : null; }"
 )
 
-# Routes where the first `Reveal` inside <main> is in the first viewport, so
-# its opacity has no legitimate reason to move at all. /about wraps its whole
-# opening block in one; the partner pages wrap their opening statement.
-REVEAL_PROBE_PAGES = ["/about", "/partner-with-investor"]
+# Routes where the first `Reveal` remains in the first viewport, so its
+# opacity has no legitimate reason to move. Wave 946 made About and partner
+# introductions static; Legal and the registration directory retain Reveal.
+# Keep the same throttled hydration and opacity assertions on those fixtures.
+REVEAL_PROBE_PAGES = ["/legal", "/register"]
 REVEAL_PROBE_WIDTH = 1280
 REVEAL_PROBE_MIN_MS = 1200
 REVEAL_SETTLE_MS = 600

@@ -398,20 +398,22 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
             {profile.whoTheyAre}
           </p>
           <figure className="partner-craft-guides">
-            {roleGuideImages.map((image, index) => (
-              <img
-                key={image}
-                src={image}
-                srcSet={variantSrcSet(image)}
-                sizes="120px"
-                width={intrinsic(image)?.width}
-                height={intrinsic(image)?.height}
-                loading="lazy"
-                alt={
-                  ["Orange property guide", "Blue investment guide", "Green impact guide"][index]
-                }
-              />
-            ))}
+            <div className="partner-craft-guides__art">
+              {roleGuideImages.map((image, index) => (
+                <img
+                  key={image}
+                  src={image}
+                  srcSet={variantSrcSet(image)}
+                  sizes="120px"
+                  width={intrinsic(image)?.width}
+                  height={intrinsic(image)?.height}
+                  loading="lazy"
+                  alt={
+                    ["Orange property guide", "Blue investment guide", "Green impact guide"][index]
+                  }
+                />
+              ))}
+            </div>
             <figcaption>{presentation.guideLabels.join(" · ")}</figcaption>
           </figure>
         </div>
@@ -596,7 +598,11 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
             <img
               src={visual.image}
               srcSet={variantSrcSet(visual.image)}
-              sizes="(min-width: 1200px) 540px, (min-width: 900px) 46vw, 100vw"
+              sizes={
+                profile.stage === "property"
+                  ? "(min-width: 1200px) 720px, (min-width: 900px) 62vw, 112vw"
+                  : "(min-width: 1200px) 610px, (min-width: 900px) 52vw, 100vw"
+              }
               width={intrinsic(visual.image)?.width}
               height={intrinsic(visual.image)?.height}
               loading="eager"
