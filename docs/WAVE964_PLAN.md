@@ -1,0 +1,14 @@
+# Wave 964: friendly public website correction
+- Call: characterful public website correction; High; disjoint page lanes under the standing subagent notice.
+- Supersedes wave 946's restrained editorial direction; base 5485b88. User wants warmth, animation, interaction and immediate understanding.
+- References visually reviewed: Wispr Flow, Granola, Dribbble OSIRIS 27145968, Vesta 27664241, Avura 26835645, Orrien 26745192, HAVN 27579156 and 27544903. Inspiration, not replicas or borrowed assets.
+- Preserve public-only scope, candid photos, real portraits, characters, logos, factual/legal content, actual destinations and Transforming Lives #267977.
+- Home: expressive split hero, layered candid photographs with usable controls, welcoming role cards, and an interactive need-to-home journey showing IIG connecting organisations.
+- Shared direction: generous rounded geometry, cream/teal/orange light surfaces, friendly character illustrations, selective tactile depth, flowing connectors, purposeful state transitions; keyboard and reduced motion equivalents.
+- Editorial lane owns platform.tsx, solutions.tsx, about.tsx, the-problem.tsx, director-card.tsx and new editorial-friendly.css; restore visual energy and larger characters around existing explorers.
+- Partner lane owns partner-page.tsx, partners-hub.tsx and partner-editorial.css; welcoming role cards and connected journey, preserve the IIG ecosystem and all roles/search/filters/dialogs.
+- Forms lane owns contact, register and legal components/routes/styles; inviting choice tiles and guided progress, preserve draft handling, crisis prominence, copy and actual endpoints.
+- Root owns home components, index.tsx, styles.css, footer, integration, CI coverage and reports. No agent commits or pushes; commit plan before agent writes.
+- Copy authority: existing content reused verbatim; new interface labels limited to See how it works, Explore the partners, From housing need to a place to call home, Housing need, Property, Partners, A supported home, How the connection works, Next step, Previous step, Replay the journey, Step, of, Explore this stage, and stage-specific accessible names derived from these labels. Stage explanations reuse existing content.
+- Acceptance: No user-facing string added or changed beyond those this brief specifies. No simulated live matches, fabricated outcomes or fake operational controls.
+- Run all builds, responsive/interaction/accessibility checks and pixel-contrast proof in GitHub Actions only; visually review desktop/mobile screenshots, fix forward, verify publication and update Context Library.
