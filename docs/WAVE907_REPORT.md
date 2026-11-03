@@ -21,7 +21,7 @@ Asset commit: `970e802874d07f65023da23bf83b4f3228d42f80`. Frozen tree: `1207c35b
 - `python scripts/wave412-screenshots.py`: passed all assertions across 28 screenshots at 1280px and 390px. No colour-contrast violations; all 274 incomplete contrast nodes measured; none unmeasured. Maximum raw dark-pixel share 19.97% on the homepage, below its existing ceiling; maximum page-ground dark share 8.58%.
 - Additional browser coverage: 17 pages at both widths, 34 page checks. All nine photo sources seen, no broken images and no horizontal overflow. Selected screenshots visually inspected; image framing and readable foreground text retained.
 
-Evidence: `docs/wave907/verification.json`, `docs/wave907/visual-gate.log`, `docs/wave907/prompts.json`, and `docs/screenshots/wave907/`. The local dated artifact package also holds original images, generated PNG masters, initial findings and a before/after review.
+Evidence: `docs/wave907/verification.json`, `docs/wave907/visual-gate.txt`, `docs/wave907/prompts.json`, and `docs/screenshots/wave907/`. The local dated artifact package also holds original images, generated PNG masters, initial findings and a before/after review.
 
 ## Findings and limits
 
