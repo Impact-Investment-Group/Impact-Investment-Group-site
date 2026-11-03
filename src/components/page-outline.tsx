@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { ArrowDownRight } from "lucide-react";
+import { ArrowDownRight, ChevronDown } from "lucide-react";
 
 type SectionLink = { id: string; label: string };
 const sections: Record<string, SectionLink[]> = {
@@ -53,6 +53,25 @@ export function PageOutline() {
 function Outline({ links }: { links: SectionLink[] }) {
   const [active, setActive] = useState(links[0].id);
   const list = useRef<HTMLUListElement>(null);
+  const menu = useRef<HTMLDetailsElement>(null);
+
+  useEffect(() => {
+    const closeOutside = (event: PointerEvent) => {
+      if (menu.current && !menu.current.contains(event.target as Node)) menu.current.open = false;
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && menu.current?.open) {
+        menu.current.open = false;
+        menu.current.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     let frame = 0;
@@ -94,6 +113,34 @@ function Outline({ links }: { links: SectionLink[] }) {
   return (
     <nav className="page-outline" aria-label="On this page">
       <div className="page-outline__inner">
+        <details ref={menu} className="page-outline__mobile">
+          <summary>
+            <span>On this page</span>
+            <strong>{links.find((link) => link.id === active)?.label}</strong>
+            <ChevronDown aria-hidden="true" size={16} />
+          </summary>
+          <ul>
+            {links.map((link, index) => (
+              <li key={link.id}>
+                <a
+                  href={`#${link.id}`}
+                  aria-current={active === link.id ? "location" : undefined}
+                  onClick={() => {
+                    if (menu.current) menu.current.open = false;
+                    const heading = document.getElementById(link.id);
+                    if (heading) {
+                      heading.tabIndex = -1;
+                      heading.focus({ preventScroll: true });
+                    }
+                  }}
+                >
+                  <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
         <span className="page-outline__label">
           <ArrowDownRight aria-hidden="true" size={15} /> On this page
         </span>

@@ -107,8 +107,13 @@ with sync_playwright() as pw:
         def outline():
             page.goto(base + "/about", wait_until="networkidle")
             nav = page.get_by_role("navigation", name="On this page")
+            if width == 390:
+                nav.locator("summary").click()
             nav.get_by_role("link", name="What we do").click()
-            expect(nav.get_by_role("link", name="What we do")).to_have_attribute("aria-current", "location")
+            if width == 390:
+                expect(nav.locator("summary")).to_contain_text("What we do")
+            else:
+                expect(nav.get_by_role("link", name="What we do")).to_have_attribute("aria-current", "location")
             check(page.locator("#what-heading").bounding_box()["y"] >= page.locator(".page-outline").bounding_box()["y"], "Section obscured")
             page.get_by_role("link", name="About Us", exact=True).first.click() if width == 1280 else None
 

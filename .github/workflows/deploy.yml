@@ -95,6 +95,7 @@ jobs:
 
       - name: Verify rendered colour contrast and light page surfaces
         run: |
+          set -o pipefail
           python scripts/wave412-screenshots.py | tee docs/screenshots/wave909/visual-gate.txt
 
       - name: Preserve browser evidence

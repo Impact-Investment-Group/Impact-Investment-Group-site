@@ -310,7 +310,7 @@ function DifferenceStory() {
                   >
                     <span
                       className={cn(
-                        "grid size-8 shrink-0 place-items-center rounded-full border font-mono text-[10px] max-lg:text-[12px] transition-all duration-300",
+                        "grid size-8 shrink-0 place-items-center rounded-full border font-mono text-sm font-semibold transition-all duration-300",
                         selected
                           ? cn(accent.disc, "border-transparent scale-105")
                           : "border-rule text-ink-muted group-hover:text-ink",
