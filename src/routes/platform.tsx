@@ -808,7 +808,7 @@ function ProductCapture() {
       height={1207}
       className="w-full"
       srcSet={variantSrcSet(servicesHero.image.src)}
-      sizes={SIZES_HALF_FROM_TABLET}
+      sizes="(min-width: 1200px) 1136px, calc(100vw - 40px)"
     />
   );
 

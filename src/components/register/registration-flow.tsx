@@ -501,7 +501,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
       </ol>
 
       {stage === "account" ? (
-        <div className="registration-panel registration-survey rounded-3xl border border-rule bg-page p-6 shadow-[var(--shadow-card)] sm:p-10">
+        <div className="registration-panel registration-survey registration-account rounded-3xl border border-rule bg-page p-6 shadow-[var(--shadow-card)] sm:p-10">
           {/* No `data-step` here on purpose. This is the first thing the route
               paints and the server painted it; an entrance on it would blink
               away content the visitor is already reading. */}

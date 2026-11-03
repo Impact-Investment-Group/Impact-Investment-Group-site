@@ -136,7 +136,7 @@ writeFileSync(
     `<meta name="robots" content="noindex"/>` +
     `<meta name="theme-color" content="#FFFFFF"/>` +
     `${stylesheet}${icon}</head><body>` +
-    `<div class="flex min-h-screen items-center justify-center bg-background px-4">` +
+    `<main id="main" class="page-intro flex min-h-screen items-center justify-center px-6">` +
     `<div class="max-w-md text-center">` +
     `<h1 class="text-7xl font-bold text-foreground">404</h1>` +
     `<h2 class="mt-4 text-xl font-semibold text-foreground">Page not found</h2>` +
@@ -145,7 +145,7 @@ writeFileSync(
     `<div class="mt-6"><a href="${base || ""}/" ` +
     `class="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2 ` +
     `text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">` +
-    `Go home</a></div></div></div></body></html>`,
+    `Go home</a></div></div></main></body></html>`,
 );
 writeFileSync(join(dir, ".nojekyll"), "");
 console.log(

@@ -181,6 +181,10 @@ with sync_playwright() as pw:
             expect(page.locator('#password-match')).to_have_text("Passwords match")
             page.locator('#confirmPassword').fill("Different-Example-42!")
             expect(page.locator('#password-match')).to_have_count(0)
+            for field in page.locator('.registration-account input').all():
+                field.focus()
+                field.scroll_into_view_if_needed()
+                check(field.evaluate("n => { const a=n.getBoundingClientRect(); const b=document.querySelector('.registration-account .registration-actions').getBoundingClientRect(); return a.bottom<=b.top || a.top>=b.bottom; }"), "Account action overlaps a field")
 
         def contact_deep_links():
             for query, label in [("investor", "Investor enquiry"), ("support", "Support"), ("demo", "Talk to the team")]:
@@ -205,6 +209,18 @@ with sync_playwright() as pw:
             interaction("home photo controls", photos)
             interaction("mobile menu focus return", mobile_menu)
         context.close()
+    # The page navigation and progress also work with desktop motion enabled.
+    motion_context = browser.new_context(viewport={"width": 1280, "height": 900}, reduced_motion="no-preference")
+    motion_page = motion_context.new_page()
+    try:
+        motion_page.goto(base + "/about/", wait_until="networkidle")
+        motion_page.get_by_role("navigation", name="On this page").get_by_role("link", name="What we do").click()
+        motion_page.wait_for_function("new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.reading-progress')).transform).a > 0")
+        expect(motion_page.locator('.page-outline a[aria-current="location"]')).to_contain_text("What we do")
+        report["interactions"].append({"name": "desktop motion and reading progress", "width": 1280, "status": "pass"})
+    except Exception as error:
+        report["failures"].append(f"Desktop motion: {error}")
+    motion_context.close()
     browser.close()
 server.shutdown()
 (OUT / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

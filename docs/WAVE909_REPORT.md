@@ -21,3 +21,7 @@ Project notice `NOTICE_2026-11-03_all-testing-on-github-actions.md` requires ver
 The first CI run (41653936127, source f3d9ac4) passed all accessibility checks and every interaction except section navigation. It caught a slash mismatch in the new navigation: prerender and a direct trailing-slash request chose different markup. Route lookup now normalizes the slash. The standalone 404 also lacked a main landmark, now added.
 
 The inherited contact hydration error came from query-specific crawls overwriting the same static contact file. Prerender now excludes query variants, and contact applies a deep-linked enquiry only after canonical HTML hydration. Direct-query checks cover this repair. The next CI run must prove all fixes before publication.
+
+Screenshot review found the mobile account button overlaid password guidance. It now follows the completed account fields in normal document flow; the one-question survey retains its useful sticky controls. The Services capture now requests an image source sized for its full-width display. Browser checks cover account-field overlap and normal desktop motion as well as reduced motion.
+
+The second run (41654981233, source d794abf) passed all 58 regular page checks and all 16 interaction checks, including contact deep links with no hydration errors. Only the standalone static 404 still failed its main-landmark check: updating React's 404 did not update the separate postbuild HTML. Both versions now match. The final run includes that correction and the screenshot-review improvements above.

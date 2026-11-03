@@ -152,8 +152,11 @@ html:has(.page-outline) main [id] {
 footer :is(p, a, dd) {
   text-wrap: pretty;
 }
-footer .footer-column a {
-  transition: color 160ms;
+.registration-account .registration-actions {
+  position: static;
+  margin-inline: 0;
+  padding-inline: 0;
+  padding-bottom: 0;
 }
 @media (max-width: 767px) {
   .page-outline__inner {
