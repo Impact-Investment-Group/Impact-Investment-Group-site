@@ -316,7 +316,8 @@ export function HomeHero() {
                      the nav label did, because this is the largest text on the
                      site (11.85cqw, never under 40px on a desktop viewport)
                      and large text answers to 3:1. 500 on white is 4.23:1.
-                     The other two lines are navy ink at 18.83:1.
+                     Providing Homes uses navy ink. Transforming Lives uses
+                     the existing teal text token, matching Israel's sample.
 
                      ⚠ WAVE 421 MOVED THE GROUND UNDER THIS WORD and those
                      two figures are no longer the ones that bind. The ground
@@ -326,7 +327,9 @@ export function HomeHero() {
                      3.57:1 at 390, against the 3:1 floor a 46px headline
                      answers to. Re-measure rather than assume if the opacity
                      or the tint moves again. */
-                  panel.headline.orange ? "text-orange-700" : "text-ink",
+                  panel.id === "lives"
+                    ? "text-teal-600"
+                    : panel.headline.orange ? "text-orange-700" : "text-ink",
                 )}
               >
                 {panel.headline.text}
