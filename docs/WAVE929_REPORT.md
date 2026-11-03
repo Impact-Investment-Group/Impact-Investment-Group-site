@@ -14,4 +14,6 @@ All eight generated masters were visually inspected before installation. A separ
 
 No local tests, site builds or browser screenshots ran under the Actions-only notice. The existing GitHub Actions workflow checks every public page, interactive journeys, all eleven ecosystem roles at four widths, accessibility, rendered colour contrast and light page surfaces before deployment. The final CI verdict and public deployment proof are recorded in Context Library Platform/Live-State.md and the local artifact folder after the run, rather than inferred from this source commit.
 
+The initial release spent over fifteen minutes in the full-history checkout before any build or test. Ordinary release checkout now fetches one commit and materialises the root configuration, workflow, source, public assets and scripts. Historical documentation and screenshots are not inputs to these checks; their output directories are recreated by the scripts. The explicit older-source escape hatch retains full commit history. All check commands, assertions and deployment requirements remain unchanged.
+
 No user-facing string added or changed beyond those this brief specifies.

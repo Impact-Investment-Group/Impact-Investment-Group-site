@@ -25,7 +25,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          # Ordinary releases need the current source, not historical screenshots.
+          # Keep history for the explicit older-source escape hatch below.
+          fetch-depth: ${{ inputs.source_ref != '' && '0' || '1' }}
+          sparse-checkout: |
+            .github
+            src
+            public
+            scripts
 
       # Escape hatch: build the site content from an older commit while keeping
       # this branch's build config. Used while main is mid-refactor.
