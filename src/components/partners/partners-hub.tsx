@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { partnerProfiles, type PartnerProfile } from "@/content/partners";
 import { cn } from "@/lib/utils";
+import { PartnerEcosystem } from "./partner-ecosystem";
 import { SIZES_FULL_BLEED, intrinsic, variantSrcSet } from "@/lib/responsive-image";
 
 const iconMap: Record<string, LucideIcon> = {
@@ -214,7 +215,7 @@ export function PartnersHub() {
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button variant="primary" asChild>
-                <a href="#ecosystem">Explore the ecosystem</a>
+                <a href="#ecosystem-map">Explore the ecosystem</a>
               </Button>
               <Button variant="secondary" asChild withArrow={false}>
                 <Link to="/contact" search={{ enquiry: "partner", type: "partner" }}>
@@ -225,6 +226,8 @@ export function PartnersHub() {
           </Reveal>
         </div>
       </section>
+
+      <PartnerEcosystem />
 
       <section id="ecosystem" aria-labelledby="ecosystem-heading" className="scroll-mt-20 bg-page">
         <div className="mx-auto w-full max-w-[1080px] px-5 py-14 sm:px-8 lg:py-20">
