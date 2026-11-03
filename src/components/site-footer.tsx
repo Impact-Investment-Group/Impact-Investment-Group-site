@@ -387,7 +387,10 @@ export function SiteFooter() {
         <div className="mx-auto w-full max-w-[1440px] px-5 pb-6 sm:px-8">
           <ul className="grid gap-2.5 md:grid-cols-3">
             {trustRegistrations.map((reg) => (
-              <li key={reg.id} className="panel flex flex-col gap-0.5 px-3 py-2.5 text-center">
+              <li
+                key={reg.id}
+                className="flex flex-col gap-1 border-t border-rule px-1 py-4 text-left"
+              >
                 <p className="font-heading text-[13px] font-semibold leading-tight text-ink">
                   {reg.label}
                 </p>
@@ -396,7 +399,7 @@ export function SiteFooter() {
                   the card; inline it is the same words in ~20px less height.
                   It stays a real anchor with a visible label — it is how a
                   visitor checks the registration is genuine. */}
-                <p className="text-[11px] max-lg:text-[15px] leading-snug max-lg:leading-[1.6] text-ink-soft">
+                <p className="text-[12px] max-lg:text-[15px] leading-relaxed text-ink-muted">
                   <span className="uppercase tracking-[0.1em]">{reg.category}</span>
                   <span aria-hidden="true"> · </span>
                   <span className="font-mono text-ink-muted">{reg.reference}</span>
@@ -430,7 +433,7 @@ export function SiteFooter() {
                 {/* Published terms verbatim, run inline instead of stacked —
                   same words, fewer lines. */}
                 {reg.details?.length ? (
-                  <p className="text-[11px] max-lg:text-[15px] leading-snug max-lg:leading-[1.6] text-ink-soft">
+                  <p className="text-[12px] max-lg:text-[15px] leading-relaxed text-ink-muted">
                     {reg.details.join(" · ")}
                   </p>
                 ) : null}

@@ -35,6 +35,7 @@ import {
 } from "@/lib/registration";
 import { cn } from "@/lib/utils";
 import { useDrawMark } from "@/hooks/use-draw-mark";
+import "./registration-experience.css";
 
 /** The step's exit, in ms. Must match `--duration-exit` in styles.css. */
 const STEP_EXIT_MS = 120;
@@ -178,6 +179,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
   const [details, setDetails] = React.useState<Details>(emptyDetails);
   const [errors, setErrors] = React.useState<Partial<Record<AccountField, string>>>({});
   const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmation, setShowConfirmation] = React.useState(false);
   const [consentEmail, setConsentEmail] = React.useState(false);
   const [consentSms, setConsentSms] = React.useState(false);
   const [consentHealth, setConsentHealth] = React.useState(false);
@@ -387,6 +389,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
       accountAttempt.current = null;
       setDetails(emptyDetails);
       setShowPassword(false);
+      setShowConfirmation(false);
       setStage("survey");
     } catch (error) {
       const kind = error instanceof RegistrationError ? error.kind : "network";
@@ -457,11 +460,8 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
     failure === "password" ? copy.errors.weakPassword : failure ? copy.errors[failure] : null;
 
   return (
-    <div className="registration-flow mx-auto w-full max-w-[820px]">
-      <ol
-        aria-label="Registration progress"
-        className="mb-6 grid grid-cols-3 gap-2 text-sm sm:gap-3"
-      >
+    <div className="registration-flow registration-edition mx-auto w-full max-w-[820px]">
+      <ol aria-label="Registration progress" className="registration-stages">
         {(
           [
             { id: "account", label: "Your account" },
@@ -475,17 +475,13 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
             <li
               key={step.id}
               aria-current={active ? "step" : undefined}
-              className={cn(
-                "flex min-w-0 flex-col items-center gap-2 rounded-2xl border px-2 py-4 text-center sm:flex-row sm:justify-center sm:gap-3 sm:px-4",
-                active
-                  ? "border-teal-600 bg-secondary text-ink"
-                  : "border-rule bg-page text-ink-muted",
-              )}
+              data-complete={completed}
+              className={cn("registration-stage", active ? "text-ink" : "text-ink-muted")}
             >
               <span
                 aria-hidden="true"
                 className={cn(
-                  "grid size-8 shrink-0 place-items-center rounded-full border font-mono text-xs",
+                  "registration-stage__number grid size-7 shrink-0 place-items-center rounded-full border font-mono text-xs",
                   active || completed ? "border-teal-600 text-teal-600" : "border-rule",
                 )}
               >
@@ -506,10 +502,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
               paints and the server painted it; an entrance on it would blink
               away content the visitor is already reading. */}
           <div className="registration-step">
-            <span
-              aria-hidden="true"
-              className="mb-5 inline-grid size-12 place-items-center rounded-2xl border border-teal-600/50 bg-tint-teal text-teal-600"
-            >
+            <span aria-hidden="true" className="mb-3 inline-flex text-teal-600">
               <LockKeyhole size={22} />
             </span>
             <h1
@@ -543,7 +536,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
                             ? "email"
                             : field === "phone"
                               ? "tel"
-                              : showPassword
+                              : (field === "password" ? showPassword : showConfirmation)
                                 ? "text"
                                 : "password"
                         }
@@ -595,12 +588,16 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
                       {(field === "password" || field === "confirmPassword") && (
                         <button
                           type="button"
-                          aria-label={`${showPassword ? "Hide" : "Show"} ${field === "password" ? "password" : "password confirmation"}`}
-                          aria-pressed={showPassword}
-                          onClick={() => setShowPassword((current) => !current)}
+                          aria-label={`${(field === "password" ? showPassword : showConfirmation) ? "Hide" : "Show"} ${field === "password" ? "password" : "password confirmation"}`}
+                          aria-pressed={field === "password" ? showPassword : showConfirmation}
+                          onClick={() =>
+                            field === "password"
+                              ? setShowPassword((current) => !current)
+                              : setShowConfirmation((current) => !current)
+                          }
                           className="absolute inset-y-1 right-1 grid w-12 place-items-center rounded-lg text-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-600"
                         >
-                          {showPassword ? (
+                          {(field === "password" ? showPassword : showConfirmation) ? (
                             <EyeOff aria-hidden="true" size={19} />
                           ) : (
                             <Eye aria-hidden="true" size={19} />
@@ -670,7 +667,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
                 ].map((consent) => (
                   <label
                     key={consent.id}
-                    className="mb-2 flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-rule bg-page p-3 text-sm leading-relaxed text-ink-muted has-checked:border-teal-600 has-checked:bg-secondary has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-teal-600"
+                    className="flex min-h-11 cursor-pointer items-start gap-3 border-b border-rule py-3 text-sm leading-relaxed text-ink-muted has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-teal-600"
                   >
                     <input
                       id={consent.id}

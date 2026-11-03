@@ -464,7 +464,7 @@ export const impactProof = {
  * down — the map end is already built.
  */
 export const demandMapCopy = {
-  eyebrow: "Live UK demand",
+  eyebrow: "Explore housing demand",
   title: "Visualising Housing Need Across the Nation",
   lead: "See where housing is needed most and where partners can respond.",
   /** Client-approved, final copy. Verbatim — do not paraphrase. */

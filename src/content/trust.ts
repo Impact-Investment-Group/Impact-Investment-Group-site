@@ -240,4 +240,4 @@ export const platformStats: PlatformStat[] = [
   },
 ];
 
-export const platformStatsSource = "live from our platform";
+export const platformStatsSource = "Platform snapshot recorded 3 August 2026";

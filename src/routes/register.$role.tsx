@@ -55,16 +55,16 @@ function RegisterRolePage() {
   return (
     <div className="registration-page">
       <section className="mx-auto w-full max-w-[1040px] px-5 py-8 sm:px-8 lg:py-12">
-        <div className="mx-auto mb-8 flex max-w-[820px] flex-wrap items-center justify-between gap-4">
+        <div className="registration-context mx-auto mb-4 flex max-w-[820px] flex-wrap items-center justify-between gap-4">
           <Link
             to="/register"
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-rule bg-page px-4 text-sm font-medium text-ink-muted transition-colors hover:border-teal-600 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-ink-muted underline underline-offset-4 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
           >
             <ArrowLeft aria-hidden="true" className="size-4" />
             All roles
           </Link>
 
-          <div className="flex items-center gap-3 rounded-2xl bg-page px-4 py-2">
+          <div className="flex items-center gap-3">
             <RoleIcon roleId={role.id} />
             <p className="font-heading text-lg font-semibold text-ink">{role.label}</p>
           </div>
@@ -93,9 +93,14 @@ function RegisterRolePage() {
                   <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
                     {crisisLines.map((line) => (
                       <li key={line.label} className="text-[15px] text-ink">
-                        <a href={`tel:${line.detail.replace(/[^+\d]/g, "")}`} className="inline-flex min-h-11 flex-wrap items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+                        <a
+                          href={`tel:${line.detail.replace(/[^+\d]/g, "")}`}
+                          className="inline-flex min-h-11 flex-wrap items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+                        >
                           <span className="font-semibold">{line.label}</span>
-                          <span className="font-mono text-teal-600 underline underline-offset-4">{line.detail}</span>
+                          <span className="font-mono text-teal-600 underline underline-offset-4">
+                            {line.detail}
+                          </span>
                         </a>
                       </li>
                     ))}

@@ -1,0 +1,99 @@
+.registration-edition .registration-stages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1.5rem;
+}
+.registration-edition .registration-stage {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem 1rem;
+  border-bottom: 2px solid var(--color-rule);
+  font-size: 0.8125rem;
+}
+.registration-edition .registration-stage[aria-current="step"] {
+  border-color: var(--color-teal-600);
+}
+.registration-edition .registration-stage[data-complete="true"] {
+  border-color: var(--color-teal-600);
+}
+.registration-edition .registration-stage[aria-current="step"] .registration-stage__number {
+  background: var(--secondary);
+}
+.registration-edition .registration-panel {
+  border-radius: 10px;
+  box-shadow: none;
+}
+.registration-edition .registration-input {
+  border-radius: 6px;
+}
+.registration-edition .registration-option {
+  border-radius: 8px;
+}
+.registration-picker.registration-directory {
+  background: var(--color-page);
+}
+.registration-directory .registration-directory__layout {
+  display: grid;
+  gap: 2rem;
+}
+.registration-directory .registration-role-list {
+  display: grid;
+  border-top: 1px solid var(--color-rule);
+}
+.registration-directory .registration-role-list > li {
+  border-bottom: 1px solid var(--color-rule);
+}
+.registration-directory .registration-role-link {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 0.5rem;
+  text-align: left;
+  color: var(--color-ink);
+  transition: background-color 160ms;
+}
+.registration-directory .registration-role-link:hover {
+  background: var(--color-page-alt);
+}
+.registration-directory .registration-role-link:focus-visible {
+  outline: 2px solid var(--color-teal-600);
+  outline-offset: 2px;
+}
+.registration-directory .registration-role-link[data-role="resident"] {
+  background: var(--secondary);
+}
+.registration-context {
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: 1rem;
+}
+@media (min-width: 640px) {
+  .registration-edition .registration-stage {
+    gap: 0.75rem;
+    padding: 1rem;
+    font-size: 0.9375rem;
+  }
+  .registration-directory .registration-role-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.75rem;
+  }
+}
+@media (min-width: 1024px) {
+  .registration-directory .registration-directory__layout {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+    gap: 4rem;
+    align-items: start;
+  }
+  .registration-directory .registration-directory__intro {
+    position: sticky;
+    top: calc(var(--header-height) + 2rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .registration-directory .registration-role-link {
+    transition: none;
+  }
+}

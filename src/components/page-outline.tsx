@@ -13,8 +13,6 @@ const sections: Record<string, SectionLink[]> = {
     { id: "services-heading", label: "Overview" },
     { id: "steps-heading", label: "How it works" },
     { id: "tools-heading", label: "Your tools" },
-    { id: "mission-control-heading", label: "The platform" },
-    { id: "living-comic-heading", label: "In practice" },
     { id: "compare-heading", label: "How we differ" },
   ],
   "/the-problem": [
@@ -25,7 +23,6 @@ const sections: Record<string, SectionLink[]> = {
   "/solutions": [
     { id: "solution-heading", label: "Overview" },
     { id: "layers-heading", label: "How it connects" },
-    { id: "owners-heading", label: "Property owners" },
     { id: "product-heading", label: "The platform" },
   ],
   "/legal": [

@@ -329,7 +329,9 @@ export function HomeHero() {
                      or the tint moves again. */
                   panel.id === "lives"
                     ? "text-teal-600"
-                    : panel.headline.orange ? "text-orange-700" : "text-ink",
+                    : panel.headline.orange
+                      ? "text-orange-700"
+                      : "text-ink",
                 )}
               >
                 {panel.headline.text}
@@ -395,58 +397,34 @@ export function HomeHero() {
           <span aria-hidden="true" className="h-0.5 w-8 shrink-0 bg-orange-500 sm:w-[90px]" />
         </div>
 
-        {/* Row 3 — ten role cards. The card itself is now just the icon and
-            the role: the detail line sits outside it, beneath, so the tile
-            stays compact. It is tied back to the link with aria-describedby,
-            otherwise moving it out of the anchor would strip that context
-            from anyone navigating by link. */}
-        <ul aria-labelledby="register-as" className="hero-role-grid mt-5 items-stretch gap-3">
-          {heroRoles.map((role) => {
-            const detailId = `hero-role-${role.id}-detail`;
-            const className =
-              /*
-               * WAVE 412: the ten role tiles are the page's call to action and
-               * they are now friendly tiles rather than wire outlines. White
-               * card, hairline rule, the card shadow, and a 2px lift into the
-               * deeper shadow on hover and on focus alike, so a keyboard gets
-               * the same answer a mouse does.
-               */
-              "flex w-full min-h-11 flex-col items-center gap-2.5 rounded-xl border border-rule bg-page px-2.5 py-3 text-center shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-500/70 hover:shadow-[var(--shadow-card-hover)] focus-visible:-translate-y-0.5 focus-visible:shadow-[var(--shadow-card-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600";
-            const body = (
-              <>
+        <ul aria-labelledby="register-as" className="hero-role-grid mt-5">
+          {heroRoles.map((role) => (
+            <li key={role.id}>
+              <Link
+                to="/register/$role"
+                params={{ role: role.id }}
+                aria-describedby={`hero-role-${role.id}-detail`}
+                className="hero-role-link group flex h-full items-start gap-3 border-b border-rule px-2 py-4 text-left transition-colors hover:bg-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+              >
                 <RoleIcon roleId={role.id} />
-                {/* Two lines reserved: "Housing Association" wraps where the
-                    shorter roles do not, and every card in the row has to end
-                    at the same height so the detail lines share a baseline. */}
-                <span className="flex min-h-[2.6em] items-center text-[14px] font-semibold leading-snug text-ink">
-                  {role.label}
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold leading-snug text-ink group-hover:text-teal-600">
+                    {role.label}
+                  </span>
+                  <span
+                    id={`hero-role-${role.id}-detail`}
+                    className="mt-1 block text-[13px] leading-relaxed text-ink-muted"
+                  >
+                    {role.detail}
+                  </span>
                 </span>
-              </>
-            );
-            return (
-              <li key={role.id} className="flex flex-col">
-                {/* Wave 295: the tiles used to scatter, nine into anchors on
-                    /solutions and the resident's into the contact form. They
-                    now all land on the same shape of page, the one that asks
-                    this role its own questions. The label above the tile is
-                    the promise; that page is the promise kept. */}
-                <Link
-                  to="/register/$role"
-                  params={{ role: role.id }}
-                  aria-describedby={detailId}
-                  className={className}
-                >
-                  {body}
-                </Link>
-                <span
-                  id={detailId}
-                  className="mt-2 px-1 text-center text-[13px] max-lg:text-[15px] font-normal leading-[1.4] max-lg:leading-[1.6] text-ink-muted"
-                >
-                  {role.detail}
-                </span>
-              </li>
-            );
-          })}
+                <ArrowRight
+                  aria-hidden="true"
+                  className="mt-1 size-3.5 shrink-0 text-teal-600 transition-transform group-hover:translate-x-0.5"
+                />
+              </Link>
+            </li>
+          ))}
         </ul>
 
         {/*

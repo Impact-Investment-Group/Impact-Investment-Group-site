@@ -39,35 +39,32 @@ export const Route = createFileRoute("/register/")({
 
 function RegisterPickerPage() {
   return (
-    <div className="registration-picker">
-      <section className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-24">
-        <Reveal className="mx-auto max-w-3xl text-center">
-          <PreReleaseBadge className="mx-auto mb-6 w-fit" />
+    <div className="registration-picker registration-directory">
+      <section className="registration-directory__layout mx-auto w-full max-w-[1200px] px-5 py-10 sm:px-8 lg:py-16">
+        <div className="registration-directory__intro">
+          <PreReleaseBadge className="mb-6 w-fit" />
           <p className="eyebrow text-teal-600">{pickerContent.eyebrow}</p>
           <h1 className="heading-tight mt-4 text-balance text-[clamp(2.125rem,4vw,3.5rem)] font-bold text-ink">
             {pickerContent.h1}
           </h1>
-          <p className="measure mx-auto mt-5 text-[17px] leading-relaxed text-ink-muted">
+          <p className="measure mt-5 text-base leading-relaxed text-ink-muted">
             {pickerContent.lede}
           </p>
-        </Reveal>
+          <p className="mt-6 border-t border-rule pt-5 text-sm leading-relaxed text-ink-muted">
+            {pickerContent.footnote}
+          </p>
+        </div>
 
-        <Reveal index={1} className="mt-10 border-t border-rule pt-8">
+        <Reveal index={1}>
           <h2
             id="register-picker-grid"
-            className="text-center font-heading text-sm font-semibold uppercase tracking-[0.14em] text-ink-muted"
+            className="font-heading text-sm font-semibold uppercase tracking-[0.14em] text-ink-muted"
           >
             {pickerContent.gridLabel}
           </h2>
           <div className="mt-5">
             <RolePicker labelledBy="register-picker-grid" />
           </div>
-        </Reveal>
-
-        <Reveal index={2} className="mt-10">
-          <p className="measure mx-auto text-center text-[14px] max-lg:text-[15px] leading-relaxed text-ink-muted">
-            {pickerContent.footnote}
-          </p>
         </Reveal>
       </section>
     </div>

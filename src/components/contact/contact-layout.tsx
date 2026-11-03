@@ -1,0 +1,168 @@
+import { Clock, LifeBuoy, Mail, Phone, Plus } from "lucide-react";
+import { EnquiryForm } from "@/components/contact/enquiry-form";
+import { contactHero, enquiryRoutes, type EnquiryRouteId } from "@/content/contact";
+import { faq, faqEyebrow, faqHeading } from "@/content/faq";
+import { contactDetails, crisisLines, crisisNote } from "@/content/site";
+import { SIZES_CARD_ILLUSTRATION, variantSrcSet } from "@/lib/responsive-image";
+import "./contact-experience.css";
+
+const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
+
+export function ContactLayout({
+  selected,
+  role,
+  onSelect,
+}: {
+  selected: EnquiryRouteId;
+  role?: string;
+  onSelect: (id: EnquiryRouteId) => void;
+}) {
+  const current = enquiryRoutes.find((route) => route.id === selected)!;
+
+  return (
+    <div className="contact-page contact-edition">
+      <section aria-labelledby="contact-heading" className="contact-intro">
+        <div className="contact-container contact-intro__inner">
+          <div>
+            <p className="eyebrow text-orange-700">{contactHero.eyebrow}</p>
+            <h1
+              id="contact-heading"
+              className="mt-3 max-w-[16ch] font-heading text-[clamp(2.5rem,5vw,4.25rem)] font-bold leading-[1.05] text-ink"
+            >
+              {contactHero.title}
+            </h1>
+          </div>
+          <img
+            src="/images/ai-team/trio-wave.webp"
+            loading="lazy"
+            alt=""
+            aria-hidden="true"
+            width={934}
+            height={558}
+            className="hidden w-56 lg:block"
+            srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
+            sizes={SIZES_CARD_ILLUSTRATION}
+          />
+        </div>
+      </section>
+
+      <div className="contact-container contact-workspace">
+        <aside className="contact-support" aria-label="Contact details">
+          <ul className="contact-direct">
+            <li>
+              <a href={`mailto:${contactDetails.email}`}>
+                <Mail aria-hidden="true" />
+                {contactDetails.email}
+              </a>
+            </li>
+            <li>
+              <a href={telHref(contactDetails.phone)}>
+                <Phone aria-hidden="true" />
+                {contactDetails.phone}
+              </a>
+            </li>
+            <li>
+              <span>
+                <Clock aria-hidden="true" />
+                {contactDetails.hours}
+              </span>
+            </li>
+          </ul>
+          <section
+            aria-labelledby="crisis-heading"
+            data-accent="teal"
+            className="section-dark contact-crisis"
+          >
+            <h2
+              id="crisis-heading"
+              className="flex items-center gap-2 text-sm font-semibold text-white"
+            >
+              <LifeBuoy aria-hidden="true" className="size-4 text-orange-500" />
+              In a crisis
+            </h2>
+            <ul className="mt-3">
+              {crisisLines.map((line) => (
+                <li key={line.label}>
+                  <a
+                    href={telHref(line.detail)}
+                    className="flex min-h-11 items-center justify-between gap-3 text-sm text-mist focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400"
+                  >
+                    {line.label}
+                    <span className="font-semibold text-white">{line.detail}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-sm font-semibold text-white">{crisisNote}</p>
+          </section>
+        </aside>
+
+        <section id="contact-enquiry" aria-labelledby="enquiry-heading" className="min-w-0">
+          <div className="contact-route-picker">
+            <h2 id="enquiry-heading" className="font-heading text-2xl font-bold text-ink">
+              <label htmlFor="enquiry-route">What do you need?</label>
+            </h2>
+            <select
+              id="enquiry-route"
+              value={selected}
+              onChange={(event) => onSelect(event.target.value as EnquiryRouteId)}
+              aria-controls="contact-enquiry-form"
+              aria-describedby="enquiry-route-detail"
+              className="mt-4 min-h-12 w-full cursor-pointer rounded-lg border border-rule bg-page px-4 py-3 text-base font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+            >
+              {enquiryRoutes.map((route) => (
+                <option key={route.id} value={route.id}>
+                  {route.label}
+                </option>
+              ))}
+            </select>
+            <p
+              id="enquiry-route-detail"
+              className="mt-3 text-sm leading-relaxed text-ink-muted"
+              aria-live="polite"
+            >
+              {current.subline}
+            </p>
+          </div>
+          <div id="contact-enquiry-form">
+            <EnquiryForm route={selected} prefilledRole={role} />
+          </div>
+        </section>
+      </div>
+
+      <section aria-labelledby="faq-heading" className="contact-faq">
+        <div className="contact-container contact-faq__inner">
+          <div>
+            <p className="eyebrow text-teal-600">{faqEyebrow}</p>
+            <h2
+              id="faq-heading"
+              className="mt-3 max-w-[20ch] font-heading text-3xl font-bold leading-tight text-ink"
+            >
+              {faqHeading}
+            </h2>
+          </div>
+          <div className="contact-faq__rows">
+            {faq.map((item) => (
+              <details key={item.id} className="group border-b border-rule">
+                <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-5 py-5 text-base font-semibold leading-relaxed text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <Plus
+                    aria-hidden="true"
+                    className="size-5 shrink-0 text-teal-600 transition-transform group-open:rotate-45 motion-reduce:transition-none"
+                  />
+                </summary>
+                <div className="space-y-3 pb-6 pr-8">
+                  {item.a.map((paragraph) => (
+                    <p key={paragraph} className="text-base leading-relaxed text-ink-muted">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

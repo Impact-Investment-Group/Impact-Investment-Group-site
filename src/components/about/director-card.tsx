@@ -100,62 +100,39 @@ export function DirectorCard({
 
   if (variant === "vertical") {
     return (
-      <article
-        className={cn(
-          /* ⚠ WAVE 490: `md:min-h-[356px]`. THE EQUALISATION IS A DESKTOP ROW'S
-             CONCERN AND IT DOES NOT SURVIVE A SINGLE COLUMN.
-
-             356px is the height of the tallest card in a row of four, so a
-             row of four comes out level. Below `md` there is no row: the
-             cards are one per line, each one 356px tall whatever it holds,
-             with 52 to 77px of empty cream under the last credential line on
-             the shorter ones. A minimum height that equalises nothing is
-             just a hole. The card's own `pb-5` is the gap now, which is the
-             20px the design already gives every other card on this page. */
-          "group relative flex h-full flex-col items-center overflow-hidden rounded-2xl bg-page px-4 pb-6 pt-6 text-center md:min-h-[356px]",
-          "border border-rule shadow-[var(--shadow-card)]",
-          "transition-[transform,box-shadow] duration-300 motion-reduce:transition-none",
-          "motion-safe:hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]",
-          className,
-        )}
-      >
-        <span
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-teal-400 to-orange-600 transition-transform duration-300 group-hover:scale-x-100 motion-reduce:transition-none"
-        />
+      <article className={cn("grid grid-cols-[88px_minmax(0,1fr)] gap-5 sm:block", className)}>
         {director.portrait ? (
           <img
             src={director.portrait}
-            alt={`${director.name}, ${director.role}`}
+            alt={director.name + ", " + director.role}
             loading="lazy"
             width={440}
             height={440}
-            className="size-28 shrink-0 rounded-full object-cover ring-4 ring-white shadow-[0_0_0_1px_color-mix(in_srgb,var(--brand-ink)_8%,transparent)]"
+            className="size-20 rounded-full object-cover sm:size-24"
             srcSet={variantSrcSet(director.portrait)}
             sizes={SIZES_PORTRAIT}
           />
         ) : (
           <span
             aria-hidden="true"
-            className="grid size-28 shrink-0 place-items-center rounded-full bg-white font-heading text-2xl font-bold text-navy-900 ring-4 ring-white"
+            className="grid size-20 place-items-center rounded-full bg-secondary font-heading text-2xl font-semibold text-teal-600 sm:size-24"
           >
             {director.initials}
           </span>
         )}
-        <h3 className="mt-4 font-heading text-[17px] font-bold leading-tight text-navy-900">
-          {director.name}
-        </h3>
-        <p className="mt-2 min-h-10 text-[14px] font-semibold leading-snug text-teal-600">
-          {director.role}
-        </p>
-        <span aria-hidden="true" className="my-3.5 h-[3px] w-9 rounded-full bg-orange-600" />
-        {director.credentials?.length ? (
-          <ul className="flex flex-col gap-2 text-sm leading-relaxed text-slate-ink">
-            {director.credentials.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        ) : null}
+        <div className="min-w-0 sm:mt-5">
+          <h3 className="font-heading text-xl font-semibold leading-tight text-ink">
+            {director.name}
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-teal-600">{director.role}</p>
+          {director.credentials?.length ? (
+            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink-muted">
+              {director.credentials.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       </article>
     );
   }

@@ -1,35 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import {
-  Building2,
-  CheckCircle2,
-  CircleDollarSign,
-  Handshake,
-  HardHat,
-  HeartHandshake,
-  Home,
-  Info,
-  Landmark,
-  LifeBuoy,
-  Network,
-  User,
-  UserRoundCheck,
-  Users,
-  ZoomIn,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Info, LifeBuoy, ZoomIn } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { PartnerProfile } from "@/content/partners";
 import { crisisLines, crisisNote } from "@/content/site";
-import {
-  SIZES_HALF_FROM_TABLET,
-  SIZES_PORTRAIT,
-  intrinsic,
-  variantSrcSet,
-} from "@/lib/responsive-image";
+import "./partner-editorial.css";
+import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 
 /**
  * Crisis signposting, drawn only for a profile that carries `crisisSignpost`
@@ -113,19 +92,6 @@ function CrisisSignpost({ signpost }: { signpost: NonNullable<PartnerProfile["cr
   );
 }
 
-const iconMap: Record<string, LucideIcon> = {
-  Building2,
-  CircleDollarSign,
-  Handshake,
-  HardHat,
-  HeartHandshake,
-  Home,
-  Landmark,
-  User,
-  UserRoundCheck,
-  Users,
-};
-
 const stageVisuals: Record<PartnerProfile["stage"], { image: string; label: string }> = {
   need: { image: "/images/human-insight.jpg", label: "Need, assessment and direction" },
   property: {
@@ -135,17 +101,6 @@ const stageVisuals: Record<PartnerProfile["stage"], { image: string; label: stri
   delivery: { image: "/images/human-partnership.jpg", label: "Housing, care and support" },
   outcome: { image: "/images/hero-lives.webp", label: "The person and the outcome" },
 };
-
-function RoleIcon({
-  profile,
-  className = "size-7",
-}: {
-  profile: PartnerProfile;
-  className?: string;
-}) {
-  const Icon = iconMap[profile.icon] ?? Network;
-  return <Icon aria-hidden="true" className={className} />;
-}
 
 interface PlatformPresentation {
   lead: string;
@@ -306,7 +261,7 @@ function ConnectedNetworkDiagram({ profile }: { profile: PartnerProfile }) {
     connectedNetworkPresentations[profile.id] ?? connectedNetworkPresentations["investor"]!;
 
   return (
-    <Reveal className="mt-10">
+    <Reveal className="partner-craft-network-reference">
       <Dialog>
         <figure className="overflow-hidden rounded-3xl border border-rule bg-white shadow-[var(--shadow-card)]">
           <img
@@ -315,7 +270,7 @@ function ConnectedNetworkDiagram({ profile }: { profile: PartnerProfile }) {
             loading="lazy"
             className="aspect-[16/9] w-full object-contain"
             srcSet={variantSrcSet(presentation.image)}
-            sizes="(min-width: 1200px) 1136px, 100vw"
+            sizes="(min-width: 1200px) 570px, (min-width: 900px) 48vw, 100vw"
             width={intrinsic(presentation.image)?.width}
             height={intrinsic(presentation.image)?.height}
           />
@@ -426,97 +381,48 @@ const roleGuideImages = [
   "/images/ai-team/petra.webp",
   "/images/ai-team/peter.webp",
   "/images/ai-team/pippa.webp",
-  "/images/ai-team/pippa.webp",
 ] as const;
 
 function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
   const presentation = rolePresentations[profile.id] ?? rolePresentations["investor"]!;
 
   return (
-    <section
-      id="role"
-      aria-labelledby="role-heading"
-      className="relative scroll-mt-20 overflow-hidden bg-page"
-    >
-      <div className="relative mx-auto w-full max-w-[1200px] px-5 py-16 sm:px-8 lg:py-20">
-        <Reveal className="mx-auto max-w-[850px] text-center">
-          <p className="eyebrow tracking-[0.14em] text-teal-600">01 · {presentation.eyebrow}</p>
-          <h2
-            id="role-heading"
-            className="heading-tight mt-3 text-balance text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-tight text-ink"
-          >
+    <section id="role" aria-labelledby="role-heading" className="bg-page">
+      <div className="partner-craft-container partner-craft-ledger">
+        <div>
+          <p className="eyebrow text-teal-600">01 · {presentation.eyebrow}</p>
+          <h2 id="role-heading" className="partner-craft-heading mt-3">
             {presentation.lead} <span className="text-orange-700">{presentation.accent}</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-[72ch] text-[16px] leading-relaxed text-ink-muted sm:text-[18px]">
+          <p className="mt-5 max-w-[58ch] text-base leading-relaxed text-ink-muted">
             {profile.whoTheyAre}
           </p>
-        </Reveal>
-
-        <div className="mt-11 grid items-end gap-8 lg:grid-cols-[1fr_310px] lg:gap-10">
-          <div className="grid gap-3">
-            {profile.rolePoints.map((point, index) => (
-              <Reveal
-                key={point}
-                index={index}
-                className="group grid min-h-[100px] grid-cols-[36px_1fr] items-center gap-4 rounded-2xl border border-rule bg-white px-4 py-5 text-ink shadow-[var(--shadow-card)] sm:grid-cols-[48px_1fr_104px] sm:px-5"
-              >
-                <span className="self-start pt-1 font-mono text-lg font-semibold text-teal-600">
-                  0{index + 1}
-                </span>
-                <p className="text-base font-medium leading-relaxed">{point}</p>
-                <span className="hidden items-center justify-end gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-teal-800 sm:flex">
-                  <span className="hidden sm:inline">
-                    {presentation.guideLabels[index] ?? "Guide"}
-                  </span>
-                  <span className="grid size-10 shrink-0 place-items-end overflow-hidden rounded-full border border-rule bg-page">
-                    <img
-                      src={roleGuideImages[index] ?? roleGuideImages[0]}
-                      loading="lazy"
-                      alt=""
-                      className="h-[115%] w-full object-contain object-bottom"
-                    />
-                  </span>
-                </span>
-              </Reveal>
+          <figure className="partner-craft-guides">
+            {roleGuideImages.map((image, index) => (
+              <img
+                key={image}
+                src={image}
+                srcSet={variantSrcSet(image)}
+                sizes="120px"
+                width={intrinsic(image)?.width}
+                height={intrinsic(image)?.height}
+                loading="lazy"
+                alt={
+                  ["Orange property guide", "Blue investment guide", "Green impact guide"][index]
+                }
+              />
             ))}
-          </div>
-
-          <Reveal className="relative mx-auto min-h-[330px] w-full max-w-[340px] lg:min-h-[390px]">
-            <img
-              src="/images/ai-team/petra.webp"
-              loading="lazy"
-              alt="Orange property guide"
-              className="absolute bottom-0 left-0 z-30 w-[58%] object-contain drop-shadow-[0_22px_24px_rgba(0,0,0,0.34)]"
-              srcSet={variantSrcSet("/images/ai-team/petra.webp")}
-              sizes={SIZES_PORTRAIT}
-              width={intrinsic("/images/ai-team/petra.webp")?.width}
-              height={intrinsic("/images/ai-team/petra.webp")?.height}
-            />
-            <img
-              src="/images/ai-team/peter.webp"
-              loading="lazy"
-              alt="Blue investment guide"
-              className="absolute bottom-0 left-[25%] z-20 w-[58%] object-contain drop-shadow-[0_22px_24px_rgba(0,0,0,0.34)]"
-              srcSet={variantSrcSet("/images/ai-team/peter.webp")}
-              sizes={SIZES_PORTRAIT}
-              width={intrinsic("/images/ai-team/peter.webp")?.width}
-              height={intrinsic("/images/ai-team/peter.webp")?.height}
-            />
-            <img
-              src="/images/ai-team/pippa.webp"
-              loading="lazy"
-              alt="Green impact guide"
-              className="absolute bottom-0 right-0 z-10 w-[58%] object-contain drop-shadow-[0_22px_24px_rgba(0,0,0,0.34)]"
-              srcSet={variantSrcSet("/images/ai-team/pippa.webp")}
-              sizes={SIZES_PORTRAIT}
-              width={intrinsic("/images/ai-team/pippa.webp")?.width}
-              height={intrinsic("/images/ai-team/pippa.webp")?.height}
-            />
-            <p className="absolute inset-x-0 -bottom-4 z-40 text-center font-mono text-[10px] max-lg:text-[12px] font-semibold uppercase tracking-[0.11em] text-teal-600">
-              {presentation.guideLabels.join(" · ")}
-            </p>
-          </Reveal>
+            <figcaption>{presentation.guideLabels.join(" · ")}</figcaption>
+          </figure>
         </div>
+        <ol className="partner-craft-ledger__points">
+          {profile.rolePoints.map((point, index) => (
+            <li key={point}>
+              <span aria-hidden="true">0{index + 1}</span>
+              <p>{point}</p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
@@ -531,246 +437,151 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
     <section
       id="platform-journey"
       aria-labelledby="platform-heading"
-      className="relative isolate overflow-hidden border-y border-rule bg-page-alt"
+      className="border-y border-rule bg-page-alt"
     >
-      <div
-        aria-hidden="true"
-        className="absolute left-1/2 top-[48%] -z-10 size-[660px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-600/5 blur-[110px]"
-      />
-
-      <div className="relative mx-auto w-full max-w-[1200px] px-5 py-16 sm:px-8 lg:py-20">
-        <Reveal className="mx-auto max-w-[880px] text-center">
-          <p className="eyebrow tracking-[0.16em] text-teal-600">02 · Through the platform</p>
-          <h2
-            id="platform-heading"
-            className="heading-tight mx-auto mt-4 max-w-[24ch] text-balance text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-tight text-ink"
-          >
+      <div className="partner-craft-container partner-craft-journey">
+        <div>
+          <p className="eyebrow text-teal-600">02 · Through the platform</p>
+          <h2 id="platform-heading" className="partner-craft-heading mt-3">
             {presentation.lead} <span className="text-orange-700">{presentation.accent}</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-[62ch] text-[16px] font-semibold leading-relaxed text-ink-muted sm:text-[18px]">
-            {profile.platformIntro}
-          </p>
-        </Reveal>
-
-        <div
-          className="relative mx-auto mt-14 max-w-[1020px] sm:mt-16"
-          role="tablist"
-          aria-label={`${profile.label} platform journey`}
-        >
-          <div
-            aria-hidden="true"
-            className="absolute left-7 top-7 h-[calc(100%-3.5rem)] w-0.5 bg-rule sm:hidden"
-          >
-            <div
-              className="w-full bg-teal-600 motion-safe:transition-[height] motion-safe:duration-300"
-              style={{ height: `${activeStep * 50}%` }}
-            />
-          </div>
-          <div
-            aria-hidden="true"
-            className="absolute left-[16.666%] right-[16.666%] top-7 hidden h-0.5 bg-rule sm:block"
-          >
-            <div
-              className="h-full bg-teal-600 motion-safe:transition-[width] motion-safe:duration-300"
-              style={{ width: `${activeStep * 50}%` }}
-            />
-          </div>
-
-          <div className="relative grid gap-6 sm:grid-cols-3 sm:gap-8">
-            {profile.platformSteps.map((step, index) => {
-              const selected = activeStep === index;
-
-              return (
-                <button
-                  key={step}
-                  ref={(node) => {
-                    tabRefs.current[index] = node;
-                  }}
-                  role="tab"
-                  id={`journey-tab-${index}`}
-                  aria-controls="journey-panel"
-                  type="button"
-                  tabIndex={selected ? 0 : -1}
-                  aria-selected={selected}
-                  onClick={() => setActiveStep(index)}
-                  onKeyDown={(event) => {
-                    const keys = ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"];
-                    if (!keys.includes(event.key)) return;
-                    event.preventDefault();
-                    const count = profile.platformSteps.length;
-                    const next =
-                      event.key === "Home"
-                        ? 0
-                        : event.key === "End"
-                          ? count - 1
-                          : (index +
-                              (event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1) +
-                              count) %
-                            count;
-                    setActiveStep(next);
-                    tabRefs.current[next]?.focus();
-                  }}
-                  className="group grid grid-cols-[56px_1fr] items-center gap-4 rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 sm:block sm:text-center"
-                >
-                  <span
-                    className={`relative z-10 grid size-14 place-items-center rounded-2xl border font-mono text-sm font-bold transition-colors duration-200 sm:mx-auto sm:mb-5 ${
-                      selected
-                        ? "border-teal-600 bg-teal-600 text-white shadow-[var(--shadow-card)]"
-                        : "border-rule bg-white text-ink group-hover:border-teal-600"
-                    }`}
-                  >
-                    0{index + 1}
-                  </span>
-                  <span>
-                    <span className="block font-heading text-[20px] font-extrabold text-ink">
-                      {presentation.labels[index]}
-                    </span>
-                    <span className="mt-1 block text-sm leading-relaxed text-ink-muted">
-                      {presentation.readoutTitles[index]}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <p className="mt-5 text-base leading-relaxed text-ink-muted">{profile.platformIntro}</p>
         </div>
-
-        <Reveal className="mx-auto mt-12 max-w-[720px] sm:mt-14">
+        <div>
+          <div
+            className="partner-craft-journey__tabs"
+            role="tablist"
+            aria-label={`${profile.label} platform journey`}
+          >
+            {profile.platformSteps.map((step, index) => (
+              <button
+                key={step}
+                ref={(node) => {
+                  tabRefs.current[index] = node;
+                }}
+                role="tab"
+                id={`journey-tab-${index}`}
+                aria-controls="journey-panel"
+                type="button"
+                tabIndex={activeStep === index ? 0 : -1}
+                aria-selected={activeStep === index}
+                onClick={() => setActiveStep(index)}
+                onKeyDown={(event) => {
+                  const keys = ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"];
+                  if (!keys.includes(event.key)) return;
+                  event.preventDefault();
+                  const count = profile.platformSteps.length;
+                  const next =
+                    event.key === "Home"
+                      ? 0
+                      : event.key === "End"
+                        ? count - 1
+                        : (index +
+                            (event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1) +
+                            count) %
+                          count;
+                  setActiveStep(next);
+                  tabRefs.current[next]?.focus();
+                }}
+                className="partner-craft-journey__tab"
+              >
+                <span>0{index + 1}</span>
+                <span>{presentation.labels[index]}</span>
+              </button>
+            ))}
+          </div>
           <div
             id="journey-panel"
             role="tabpanel"
             aria-labelledby={`journey-tab-${activeStep}`}
             tabIndex={0}
-            className="rounded-2xl border border-rule border-l-4 border-l-teal-600 bg-white px-6 py-6 shadow-[var(--shadow-card)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 sm:px-8"
+            className="partner-craft-journey__panel"
           >
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-xs font-bold uppercase tracking-[0.1em] text-teal-600">
-                Active checkpoint
-              </span>
-              <span aria-hidden="true" className="h-px flex-1 bg-teal-600/30" />
-              {/* text-ink-muted, not text-orange-500. Wave 295's retint took
-                  orange-500 to #c15f3c, which measures 4.01:1 on navy-800
-                  here (release check, 11 Sep 2026), under the 4.5:1 floor
-                  this 10px bold text needs (too small to count as WCAG large
-                  text). text-ink-muted is the token the body copy two lines below
-                  already uses on this same panel: 11.09:1 here, comfortably
-                  clear. Orange stays reserved for what still passes: fills,
-                  buttons, large headings, light-surface text. If a lighter
-                  orange tint is approved for small text on navy, this is the
-                  one place to bring it back. */}
-              <span className="font-mono text-xs font-bold text-ink-muted">
-                0{activeStep + 1} / 03
-              </span>
+            <div className="flex items-center justify-between gap-3 font-mono text-xs text-teal-600">
+              <span>Active checkpoint</span>
+              <span>0{activeStep + 1} / 03</span>
             </div>
-            <p className="mt-4 font-heading text-[clamp(1.45rem,2.5vw,2rem)] font-extrabold leading-tight text-ink">
+            <p className="mt-5 font-heading text-2xl font-bold leading-tight text-ink">
               {presentation.readoutTitles[activeStep]}
             </p>
-            <p className="mt-2 text-[15px] font-medium leading-relaxed text-ink-muted sm:text-[16px]">
+            <p className="mt-3 text-base leading-relaxed text-ink-muted">
               {profile.platformSteps[activeStep]}
             </p>
           </div>
-        </Reveal>
-
-        <p className="mx-auto mt-8 max-w-[760px] text-center text-[13px] max-lg:text-[15px] font-medium text-teal-600">
-          {profile.whyJoin}
-        </p>
+          <p className="border-t border-rule pt-5 text-sm leading-relaxed text-teal-600">
+            {profile.whyJoin}
+          </p>
+        </div>
       </div>
     </section>
   );
 }
 
+function PartnerRelationships({ profile }: { profile: PartnerProfile }) {
+  const [selected, setSelected] = useState(0);
+  const relationship = profile.relationships[selected] ?? profile.relationships[0];
+
+  return (
+    <div>
+      <h3 className="mb-4 font-heading text-xl font-bold text-ink">Who you work with</h3>
+      <div role="group" aria-label="Partner connections" className="border-t border-rule">
+        {profile.relationships.map((item, index) => (
+          <button
+            key={item.partner}
+            type="button"
+            className="partner-craft-connection"
+            aria-pressed={selected === index}
+            aria-controls="partner-relationship-detail"
+            onClick={() => setSelected(index)}
+          >
+            <span>{item.partner}</span>
+            <ArrowRight aria-hidden="true" />
+          </button>
+        ))}
+      </div>
+      <div
+        id="partner-relationship-detail"
+        role="region"
+        aria-label="Selected partner relationship"
+        aria-live="polite"
+        aria-atomic="true"
+        tabIndex={0}
+        className="partner-craft-relationship"
+      >
+        {relationship ? (
+          <>
+            <h4>{relationship.partner}</h4>
+            <p>{relationship.detail}</p>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function PartnerPage({ profile }: { profile: PartnerProfile }) {
   const headingId = `partner-${profile.id}-heading`;
-  const isResident = profile.id === "resident";
-  const isInvestor = profile.id === "investor";
   const visual = stageVisuals[profile.stage];
   const networkPresentation =
     connectedNetworkPresentations[profile.id] ?? connectedNetworkPresentations["investor"]!;
 
   return (
-    <div className="partner-page">
+    <div className="partner-page partner-craft">
       {profile.crisisSignpost ? <CrisisSignpost signpost={profile.crisisSignpost} /> : null}
-
-      <section
-        aria-labelledby={headingId}
-        className={`page-intro section-light relative isolate overflow-hidden border-b border-rule ${
-          isInvestor ? "min-h-[540px]" : "min-h-[610px]"
-        }`}
-      >
-        {/* WAVE 413b: eager. This is the hero band's own visual, in the
-          first viewport on every screen, and `lazy` on an in-viewport image
-          is the documented anti-pattern: the browser defers the fetch until
-          layout, so the ground arrives after the text sitting on it. */}
-        <img
-          src={visual.image}
-          loading="eager"
-          alt=""
-          /* ⚠ WAVE 414: 10% BELOW 640px, NOT 20%, AND THE SURFACE MOVED
-            BECAUSE THE PAIR FAILED.
-
-            From 640px this photograph is 68% of the band, on the
-            RIGHT, with its mask fading it out before it reaches the
-            words. Below 640px it is the full width at 20% and the
-            heading, the lede and both buttons sit ON it. Wave 414's
-            re-run of the wave 412 gate measured the secondary
-            button's teal-600 label at 4.07:1 off the shot's own
-            pixels, against a 4.5:1 floor, on a ground of
-            rgb(232, 226, 215): the cream with a photograph through
-            it. The flat cream is 4.67:1 and the photograph was
-            spending more than the 0.17 of a point that leaves.
-
-            Wave 295's ruling is that where a pairing fails the
-            SURFACE moves, never the ink, so the photograph gives way
-            on the one width where it is behind the text. The 32% the
-            wave 413 image-fade probe asserts is the `sm` value and is
-            untouched; that probe runs at 1280. */
-          className="absolute inset-y-0 right-0 -z-10 hidden h-full w-full object-cover object-center [mask-image:linear-gradient(to_left,black_20%,transparent_95%)] sm:block sm:w-[68%] sm:opacity-32 lg:w-[58%]"
-          srcSet={variantSrcSet(visual.image)}
-          sizes={SIZES_HALF_FROM_TABLET}
-          width={intrinsic(visual.image)?.width}
-          height={intrinsic(visual.image)?.height}
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-20 bg-[linear-gradient(90deg,var(--color-mist-bg)_0%,var(--color-mist-bg)_40%,color-mix(in_srgb,var(--bg-tint)_68%,transparent)_72%,color-mix(in_srgb,var(--bg-tint)_26%,transparent)_100%)]"
-        />
-
-        <div
-          className={`mx-auto flex w-full max-w-[1200px] items-center px-5 sm:px-8 ${
-            isInvestor ? "min-h-[540px] py-12" : "min-h-[610px] py-16"
-          }`}
-        >
-          <Reveal className="max-w-[730px]">
+      <section aria-labelledby={headingId} className="partner-craft-hero section-light">
+        <div className="partner-craft-hero__layout">
+          <div className="partner-craft-hero__title">
             <Link
               to="/partners"
-              className="eyebrow inline-flex min-h-11 items-center gap-2 rounded-lg tracking-[0.1em] text-teal-700 transition-colors hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-teal-600 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600"
             >
               <span aria-hidden="true">←</span> The partner ecosystem
             </Link>
-            {isInvestor ? (
-              <div className="mt-7 inline-flex items-center gap-3">
-                <span aria-hidden="true" className="h-0.5 w-9 bg-orange-700" />
-                <p className="eyebrow tracking-[0.16em] text-teal-800">Investor pathway</p>
-              </div>
-            ) : (
-              <div className="mt-7 flex items-center gap-3">
-                <span className="grid size-11 place-items-center bg-page text-teal-600">
-                  <RoleIcon profile={profile} className="size-5" />
-                </span>
-                <p className="font-mono text-[10px] max-lg:text-[12px] font-semibold uppercase tracking-[0.13em] text-orange-700">
-                  {visual.label}
-                </p>
-              </div>
-            )}
-            <h1
-              id={headingId}
-              className={`heading-tight mt-5 max-w-[14ch] text-balance font-extrabold leading-[0.94] tracking-[-0.04em] text-navy-900 ${
-                isInvestor
-                  ? "text-[clamp(2.8rem,5.8vw,5.2rem)]"
-                  : "text-[clamp(2.8rem,6.4vw,5.7rem)]"
-              }`}
-            >
-              {isResident ? (
+            <p className="eyebrow mt-5 text-teal-600">
+              {profile.id === "investor" ? "Investor pathway" : visual.label}
+            </p>
+            <h1 id={headingId} className="partner-craft-hero__heading">
+              {profile.id === "resident" ? (
                 <>
                   The person at the <span className="text-orange-700">centre.</span>
                 </>
@@ -780,52 +591,21 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
                 </>
               )}
             </h1>
-            {/* ⚠ WAVE 414: ON A PHONE THE PHOTOGRAPH IS ABOVE THE WORDS,
-                NEVER BEHIND THEM.
-
-                From 640px the picture is a 32% wash on the right of the band,
-                masked away before it reaches the text, and that is the
-                approved composition. Below 640px there is no right-hand side:
-                the wash covered the whole band and the heading, the lede and
-                both buttons sat on top of it. Wave 414's re-run of the wave
-                412 gate measured the secondary button's teal-600 label at
-                4.07:1 off the shot's own pixels against a 4.5:1 floor, and
-                taking the wash from 20% to 10% only reached 4.34:1. The flat
-                cream is 4.67:1, so there was never enough room under that
-                pair for a photograph of any strength.
-
-                So the wash is gone below 640px and the picture is a real
-                photograph instead, at full strength, in the brand's own
-                treatment: 12px radius, a 1px rule, no scrim, which is what
-                `CLAUDE.md` says a photograph on a light ground gets. It sits
-                between the heading and the copy, which is the order phone
-                rule 4 asks for: the heading, then the picture, then the
-                words, then the action.
-
-                `alt=""` and aria-hidden, unchanged from the wash it replaces:
-                it is the same decorative image carrying nothing the copy does
-                not, and `visual.label` beside the eyebrow already names it. */}
+          </div>
+          <figure className="partner-craft-hero__media">
             <img
               src={visual.image}
               srcSet={variantSrcSet(visual.image)}
-              sizes="100vw"
+              sizes="(min-width: 1200px) 540px, (min-width: 900px) 46vw, 100vw"
               width={intrinsic(visual.image)?.width}
               height={intrinsic(visual.image)?.height}
               loading="eager"
               alt=""
-              aria-hidden="true"
-              className="mt-6 aspect-[16/10] w-full rounded-xl border border-rule object-cover sm:hidden"
             />
-            <p
-              className={`mt-6 max-w-[58ch] text-[18px] leading-relaxed sm:text-[20px] ${
-                isInvestor
-                  ? "border-l-4 border-orange-700 pl-4 font-semibold text-navy-800"
-                  : "text-ink-muted"
-              }`}
-            >
-              {profile.summary}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+          </figure>
+          <div className="partner-craft-hero__support">
+            <p className="partner-craft-hero__summary">{profile.summary}</p>
+            <div className="mt-7 flex flex-wrap gap-3">
               <Button variant="primary" asChild>
                 <a href="#role">Understand the role</a>
               </Button>
@@ -833,56 +613,40 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
                 <Link to="/partners">See all ten partners</Link>
               </Button>
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
       <PartnerRoleLedger profile={profile} />
-
       <PartnerPlatformStack key={profile.id} profile={profile} />
 
-      <section
-        id="connected-network"
-        aria-labelledby="network-heading"
-        className="relative overflow-hidden bg-page"
-      >
-        <div className="relative mx-auto w-full max-w-[1200px] px-5 py-16 sm:px-8 lg:py-20">
-          <Reveal className="mx-auto max-w-[820px] text-center">
-            <p className="eyebrow tracking-[0.14em] text-teal-600">03 · The connected network</p>
-            <h2
-              id="network-heading"
-              className="heading-tight mt-3 text-balance text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-tight text-ink"
-            >
+      <section id="connected-network" aria-labelledby="network-heading" className="bg-page">
+        <div className="partner-craft-container py-14 lg:py-16">
+          <div className="max-w-[760px]">
+            <p className="eyebrow text-teal-600">03 · The connected network</p>
+            <h2 id="network-heading" className="partner-craft-heading mt-3">
               {networkPresentation.lead}{" "}
               <span className="text-orange-700">{networkPresentation.accent}</span>
             </h2>
-            <p className="mx-auto mt-5 max-w-[68ch] text-[16px] leading-relaxed text-ink-muted">
-              {profile.impactIntro}
-            </p>
-          </Reveal>
-
-          <ConnectedNetworkDiagram profile={profile} />
-
-          <div className="mt-10 grid gap-3 sm:grid-cols-3">
-            {profile.impactPoints.map((point, index) => (
-              <Reveal
-                key={point}
-                index={index}
-                className="flex gap-3 rounded-2xl border border-rule bg-white p-5 text-ink shadow-[var(--shadow-card)]"
-              >
-                <CheckCircle2 aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-teal-700" />
-                <p className="text-base font-medium leading-relaxed text-ink">{point}</p>
-              </Reveal>
-            ))}
+            <p className="mt-5 text-base leading-relaxed text-ink-muted">{profile.impactIntro}</p>
           </div>
-
+          <div className="partner-craft-connections">
+            <PartnerRelationships key={profile.id} profile={profile} />
+            <ConnectedNetworkDiagram profile={profile} />
+          </div>
+          <ul className="partner-craft-impact">
+            {profile.impactPoints.map((point) => (
+              <li key={point}>
+                <CheckCircle2 aria-hidden="true" />
+                <p>{point}</p>
+              </li>
+            ))}
+          </ul>
           {profile.importantNote ? (
-            <Reveal className="mt-8 flex gap-4 rounded-2xl border border-orange-500/30 bg-orange-500/7 p-4">
-              <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-orange-500" />
-              <p className="text-[12px] max-lg:text-[15px] leading-relaxed text-ink-muted">
-                {profile.importantNote}
-              </p>
-            </Reveal>
+            <div className="mt-8 flex gap-3 border-l-2 border-orange-500 bg-page-alt p-4">
+              <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-orange-700" />
+              <p className="text-sm leading-relaxed text-ink-muted">{profile.importantNote}</p>
+            </div>
           ) : null}
         </div>
       </section>

@@ -343,7 +343,7 @@
   /* Kept as a name because half the stylesheet and several components say
      `--slate-20`; it is now one alias of `--color-rule`, not a second value. */
   --slate-20: var(--color-rule);
-  --shadow-card: 0 1px 2px color-mix(in srgb, var(--brand-ink) 4%, transparent), 0 8px 24px color-mix(in srgb, var(--brand-ink) 6%, transparent);
+  --shadow-card: 0 1px 2px color-mix(in srgb, var(--brand-ink) 4%, transparent), 0 4px 12px color-mix(in srgb, var(--brand-ink) 3%, transparent);
   --shadow-card-hover: 0 2px 4px color-mix(in srgb, var(--brand-ink) 6%, transparent), 0 16px 40px color-mix(in srgb, var(--brand-ink) 12%, transparent);
 
   /* The one teal glow on the site: the MissionControl disc on /platform.
@@ -538,14 +538,7 @@
   transition:
     transform var(--duration-hover) var(--ease-out-soft),
     box-shadow var(--duration-hover) var(--ease-out-soft);
-  /* The lift is part of the card, not part of the page it sits on. It used to
-     be declared by the light-section remap, which wave 412 deleted; a card
-     that rises 2px under the pointer is friendlier than one that does not, so
-     it moved here rather than going with it. */
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-card-hover);
-  }
+
 }
 
 /* The quieter card: cream instead of white, for a card that sits ON white and
@@ -2406,7 +2399,7 @@ canvas[data-map="in"] {
   }
 }
 
-/* Hero role row: 2 across on mobile, 3 on tablet, 5 from 1024px, 10 from 1400px.
+/* Hero role directory: two columns on phones, three on tablets, five on desktop.
    Written as one rule so breakpoint order is explicit and cannot be re-sorted. */
 .hero-role-grid {
   display: grid;
@@ -2422,10 +2415,16 @@ canvas[data-map="in"] {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
-@media (min-width: 1400px) {
-  .hero-role-grid {
-    grid-template-columns: repeat(10, minmax(0, 1fr));
-  }
+/* Five columns keep each role and its explanation together on wide screens. */
+.hero-role-grid { column-gap: 1.25rem; }
+.hero-role-link .role-plate { width: 1.75rem; height: 1.75rem; background: transparent; }
+.hero-role-link:hover .role-plate,
+.hero-role-link:focus-visible .role-plate { background: transparent; }
+.mission-panel[hidden] { display: none; }
+@media (max-width: 639px) {
+  .hero-role-grid { column-gap: .75rem; }
+  .hero-role-link { gap: .5rem; padding-inline: 0; }
+  .hero-role-link > svg { display: none; }
 }
 
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

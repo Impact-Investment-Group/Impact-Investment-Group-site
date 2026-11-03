@@ -1,0 +1,100 @@
+.contact-edition {
+  background: var(--color-page);
+}
+.contact-edition .contact-container {
+  width: min(100%, 1200px);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+.contact-edition .contact-intro {
+  border-bottom: 1px solid var(--color-rule);
+}
+.contact-edition .contact-intro__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-block: 3rem;
+}
+.contact-edition .contact-workspace {
+  display: grid;
+  gap: 2.5rem;
+  padding-block: 2rem 4rem;
+}
+.contact-edition .contact-direct {
+  padding-bottom: 1.25rem;
+}
+.contact-edition .contact-direct :is(a, span) {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+}
+.contact-edition .contact-direct a {
+  font-weight: 600;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+.contact-edition .contact-direct a:hover {
+  text-decoration-line: underline;
+}
+.contact-edition .contact-direct svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--color-teal-600);
+}
+.contact-edition .contact-support .contact-crisis {
+  padding: 1.25rem;
+  border-radius: 10px;
+  box-shadow: none;
+}
+.contact-edition .contact-route-picker {
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid var(--color-rule);
+}
+.contact-edition #contact-enquiry-form > form {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.contact-edition .contact-faq {
+  padding-block: 3rem 4rem;
+  border-top: 1px solid var(--color-rule);
+  background: var(--color-page-alt);
+}
+.contact-edition .contact-faq__inner {
+  display: grid;
+  gap: 2rem;
+}
+.contact-edition .contact-faq__rows {
+  min-width: 0;
+  border-top: 1px solid var(--color-rule);
+}
+@media (min-width: 640px) {
+  .contact-edition .contact-container {
+    padding-inline: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .contact-edition .contact-intro__inner {
+    padding-block: 3rem;
+  }
+  .contact-edition .contact-workspace {
+    grid-template-columns: minmax(270px, 0.8fr) minmax(0, 1.6fr);
+    gap: 5rem;
+    padding-block: 3rem 5rem;
+  }
+  .contact-edition .contact-support {
+    align-self: start;
+  }
+  .contact-edition .contact-faq__inner {
+    grid-template-columns: minmax(270px, 0.8fr) minmax(0, 1.6fr);
+    gap: 5rem;
+  }
+}

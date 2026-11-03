@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Landmark, Mail, ScrollText, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, Copy, Landmark, Mail, ScrollText, ShieldCheck } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
 import {
@@ -14,6 +15,7 @@ import {
   policiesNote,
 } from "@/content/legal";
 import { trustRegistrations } from "@/content/site";
+import "@/components/contact/legal-experience.css";
 
 /**
  * /legal, the company block the footer's `Legal` link opens.
@@ -94,18 +96,36 @@ export const Route = createFileRoute("/legal")({
 });
 
 function SectionIcon({ children }: { children: React.ReactNode }) {
-  /* 24px glyph in a 60px ring, per the icon system. Ring is the cream-ground
-     value; the stroke is navy and the accent is teal, because everything on
-     this page is verification, not action. */
-  return (
-    <span className="grid size-[60px] shrink-0 place-items-center rounded-full border border-rule text-teal-600">
-      {children}
-    </span>
-  );
+  return <span className="shrink-0 text-teal-600">{children}</span>;
 }
 
 function LegalPage() {
   const documents = legalLinks.filter((item) => item.external);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState("");
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+    },
+    [],
+  );
+
+  async function copyDetail(label: string, value: string) {
+    if (copyTimer.current) clearTimeout(copyTimer.current);
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(label);
+      setCopyStatus(`${label} copied.`);
+    } catch {
+      setCopied(null);
+      setCopyStatus("Could not copy. Select the detail to copy it.");
+    }
+    copyTimer.current = setTimeout(() => {
+      setCopied(null);
+      setCopyStatus("");
+    }, 4000);
+  }
 
   /*
    * A FRAGMENT, NOT <main>. `__root.tsx` already renders
@@ -118,7 +138,7 @@ function LegalPage() {
    * does not have to inherit it.
    */
   return (
-    <div className="legal-page">
+    <div className="legal-page legal-edition">
       <section aria-labelledby="legal-heading" className="page-intro legal-intro">
         <div className="mx-auto w-full max-w-[1200px] px-5 pb-8 pt-14 sm:px-8 lg:pt-20">
           <Reveal>
@@ -144,7 +164,7 @@ function LegalPage() {
       {/* ── The company ──────────────────────────────────────────────────── */}
       <section aria-labelledby="company-heading" className="section-light">
         <div className="mx-auto w-full max-w-[1200px] px-5 pb-14 sm:px-8">
-          <Reveal className="panel p-6 sm:p-8">
+          <Reveal className="legal-record">
             <div className="flex items-center gap-4">
               <SectionIcon>
                 <Landmark aria-hidden="true" className="size-6" strokeWidth={1.6} />
@@ -154,16 +174,31 @@ function LegalPage() {
               </h2>
             </div>
 
-            <dl className="mt-7 grid gap-x-10 gap-y-5 sm:grid-cols-2">
+            <dl className="legal-record__fields mt-7">
               {companyRecordFields.map((field) => (
-                <div key={field.label} className="flex flex-col gap-1">
-                  <dt className="eyebrow text-ink-muted">{field.label}</dt>
-                  <dd className="font-heading text-[17px] font-semibold leading-snug text-ink">
-                    {field.value}
+                <div key={field.label}>
+                  <dt className="text-sm font-medium text-ink-muted">{field.label}</dt>
+                  <dd className="flex min-w-0 items-start justify-between gap-4 text-base font-semibold text-ink">
+                    <span className="select-text">{field.value}</span>
+                    {field.value === companyRecord.number ||
+                    field.value === companyRecord.registeredOffice ? (
+                      <button
+                        type="button"
+                        onClick={() => void copyDetail(field.label, field.value)}
+                        aria-label={`${copied === field.label ? "Copied" : "Copy"} ${field.label.toLowerCase()}`}
+                        className="legal-copy-button"
+                      >
+                        <Copy aria-hidden="true" className="size-4" />
+                        <span>{copied === field.label ? "Copied" : "Copy"}</span>
+                      </button>
+                    ) : null}
                   </dd>
                 </div>
               ))}
             </dl>
+            <p role="status" className="mt-2 min-h-6 text-sm text-teal-600">
+              {copyStatus}
+            </p>
 
             {/* The verify link is the point of the block. It is a real anchor
                 with a visible label, not an icon: it is how a reader proves the
@@ -214,25 +249,26 @@ function LegalPage() {
             </p>
           </Reveal>
 
-          <ul className="mt-7 grid gap-4 md:grid-cols-3">
+          <ul className="legal-registrations mt-7">
             {trustRegistrations.map((reg, index) => (
-              <Reveal key={reg.id} index={index} as="li" className="panel flex flex-col gap-2 p-5">
-                <p className="eyebrow text-ink-muted">{reg.category}</p>
-                <p className="font-heading text-[17px] font-semibold text-ink">{reg.label}</p>
-                <p className="font-mono text-[13px] text-ink-muted">{reg.reference}</p>
-                {reg.details?.map((detail) => (
-                  <p
-                    key={detail}
-                    className="text-[12px] max-lg:text-[15px] leading-snug max-lg:leading-[1.6] text-ink-muted"
-                  >
-                    {detail}
-                  </p>
-                ))}
+              <Reveal key={reg.id} index={index} as="li" className="legal-registration">
+                <div>
+                  <p className="eyebrow text-ink-muted">{reg.category}</p>
+                  <p className="mt-2 font-heading text-xl font-semibold text-ink">{reg.label}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-mono text-sm text-ink">{reg.reference}</p>
+                  {reg.details?.map((detail) => (
+                    <p key={detail} className="text-sm leading-relaxed text-ink-muted">
+                      {detail}
+                    </p>
+                  ))}
+                </div>
                 <a
                   href={reg.verifyHref}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="mt-auto inline-flex min-h-11 items-center gap-1 pt-2 text-[13px] font-semibold text-teal-600 underline underline-offset-4 transition-colors duration-200 hover:text-ink"
+                  className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-semibold text-teal-600 underline underline-offset-4 transition-colors duration-200 hover:text-ink"
                 >
                   {reg.verifyLabel}
                   <ArrowUpRight aria-hidden="true" className="size-3.5 shrink-0" />
@@ -261,21 +297,16 @@ function LegalPage() {
             </p>
           </Reveal>
 
-          <ul className="mt-7 grid gap-4 md:grid-cols-3">
+          <ul className="legal-documents mt-7">
             {documents.map((doc, index) => (
-              <Reveal
-                key={doc.label}
-                index={index}
-                as="li"
-                className="panel legal-document flex flex-col gap-3 p-6"
-              >
-                <p className="font-heading text-[17px] font-semibold text-ink">{doc.label}</p>
-                <p className="text-[15px] leading-relaxed text-ink-muted">{doc.description}</p>
+              <Reveal key={doc.label} index={index} as="li" className="legal-document-row">
+                <p className="font-heading text-xl font-semibold text-ink">{doc.label}</p>
+                <p className="text-base leading-relaxed text-ink-muted">{doc.description}</p>
                 <a
                   href={doc.href}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="mt-auto inline-flex min-h-11 items-center gap-1 pt-2 text-[13px] font-semibold text-teal-600 underline underline-offset-4 transition-colors duration-200 hover:text-ink"
+                  className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-teal-600 underline underline-offset-4 transition-colors duration-200 hover:text-ink"
                 >
                   Read the {doc.label}
                   <ArrowUpRight aria-hidden="true" className="size-3.5 shrink-0" />
@@ -290,7 +321,7 @@ function LegalPage() {
       {/* ── Contacts ─────────────────────────────────────────────────────── */}
       <section aria-labelledby="contacts-heading" className="section-light">
         <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 sm:px-8">
-          <Reveal className="panel p-6 sm:p-8">
+          <Reveal className="legal-contacts">
             <div className="flex items-center gap-4">
               <SectionIcon>
                 <Mail aria-hidden="true" className="size-6" strokeWidth={1.6} />
@@ -300,7 +331,7 @@ function LegalPage() {
               </h2>
             </div>
 
-            <dl className="mt-7 grid gap-x-10 gap-y-5 sm:grid-cols-3">
+            <dl className="legal-contact-list mt-7">
               {legalMailboxes.map((box) => (
                 <div key={box.address} className="flex flex-col gap-1">
                   <dt className="eyebrow text-ink-muted">{box.purpose}</dt>
