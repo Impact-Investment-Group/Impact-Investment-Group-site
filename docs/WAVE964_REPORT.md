@@ -21,3 +21,9 @@ New navigation/exploration strings are listed in WAVE964_PLAN.md. Stage explanat
 Source review caught unchecked indexed content references and an asynchronous image-loading assertion; both were corrected before CI. The journey announces stage changes without moving focus. Desktop contact tests now target its visible radio choices; mobile keeps its select. The hero-only offscreen contrast bucket follows the gallery at all widths, with all three visible states separately checked at desktop and mobile. Existing colour floors and other pixel assertions remain.
 
 No local tests, builds, audits or browser screenshots were run. The complete build, every-page responsive/accessibility checks, interactive journeys, ecosystem dialogs and rendered-colour gate run in GitHub Actions. Final run, screenshot review and public verification are recorded in the Context Library Live-State and the dated local evidence package after completion.
+
+## First CI review and correction
+
+Run 41741397201 on a34d2c6 passed every page/viewport and interactive journey, plus the ecosystem checks. The strict pixel gate held publication because the property-stage number on the Partners page measured just below the small-text contrast floor at both widths. Its background is now opaque page white; the orange ink and gate threshold are unchanged.
+
+Saved CI screenshots were reviewed across home, all four informational routes, partner hub/profiles, contact, registration and legal. Review found the Solutions illustration clipped by its rounded image mask; the frame now sits behind the full illustration. The homepage's repeated mission paragraph now appears once in the opening, and the new journey uses the existing candid portrait so the aerial photograph is not repeated in adjacent sections. All protected asset files remain unchanged.

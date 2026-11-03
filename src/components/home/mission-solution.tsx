@@ -55,9 +55,12 @@ export function MissionSolution() {
               {purposeCopy.title.split(purposeCopy.emphasis)[1]}
             </h2>
           </div>
-          <div className="max-w-[60ch] text-base leading-relaxed text-ink-muted lg:pt-8">
-            <p>{purposeCopy.statement}</p>
-            <p className="mt-3 font-medium text-ink">{purposeCopy.closing.join(" ")}</p>
+          <div className="max-w-[45ch] text-xl leading-relaxed text-ink lg:pt-8">
+            {purposeCopy.closing.map((line) => (
+              <p key={line} className="mt-3 font-medium">
+                {line}
+              </p>
+            ))}
           </div>
         </div>
         <div role="tablist" aria-label="Our mission" className="mission-friendly-tabs mt-9">

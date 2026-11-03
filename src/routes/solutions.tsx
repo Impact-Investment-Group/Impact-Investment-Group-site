@@ -267,17 +267,19 @@ function SolutionsPage() {
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
           </div>
-          <img
-            src="/images/solution/trio.webp"
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            width={829}
-            height={620}
-            className="friendly-product-guides w-full object-contain"
-            srcSet={variantSrcSet("/images/solution/trio.webp")}
-            sizes={SIZES_THIRD_FROM_TABLET}
-          />
+          <div className="friendly-product-portrait">
+            <img
+              src="/images/solution/trio.webp"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              width={829}
+              height={620}
+              className="friendly-product-guides w-full object-contain"
+              srcSet={variantSrcSet("/images/solution/trio.webp")}
+              sizes={SIZES_THIRD_FROM_TABLET}
+            />
+          </div>
         </div>
       </section>
       <section aria-label="Looking for a home" className="border-t border-rule">

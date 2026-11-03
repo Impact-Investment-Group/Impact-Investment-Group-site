@@ -465,12 +465,26 @@
   background: var(--color-page);
 }
 
-.friendly-editorial .friendly-product-guides {
+.friendly-editorial .friendly-product-portrait {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
   max-width: 360px;
   margin: auto;
-  padding: 24px 0;
+}
+
+.friendly-editorial .friendly-product-portrait::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   border-radius: 50% 50% 30px 30px;
   background: var(--color-page);
+  content: "";
+}
+
+.friendly-editorial .friendly-product-guides {
+  width: 100%;
+  padding: 24px 0;
 }
 
 /* About: larger, unchanged photographs, with space for each person. */

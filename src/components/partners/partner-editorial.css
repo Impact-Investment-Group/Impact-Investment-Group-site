@@ -240,10 +240,16 @@
   color: var(--color-ink-muted);
 }
 .partner-craft-directory__stage[data-stage="property"] .partner-craft-directory__icon,
-.partner-craft-directory__stage[data-stage="property"] .partner-craft-directory__stage-title > span,
 .partner-craft-directory__stage[data-stage="outcome"] .partner-craft-directory__icon {
   background: var(--color-tint-orange);
   color: var(--color-orange-700);
+}
+.partner-craft-directory__stage[data-stage="property"]
+  .partner-craft-directory__stage-title
+  > span {
+  background: var(--color-page);
+  color: var(--color-orange-700);
+  box-shadow: inset 0 0 0 1px var(--color-rule);
 }
 .partner-craft-directory__stage[data-stage="outcome"] .partner-craft-directory__roles {
   grid-template-columns: minmax(0, 1fr);
