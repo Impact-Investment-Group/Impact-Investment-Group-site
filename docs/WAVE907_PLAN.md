@@ -13,4 +13,3 @@ Base: site origin/main 308490b. Claimed as feat/wave907-daylight-imagery after i
 8. Push and verify the deployed image bytes; update the Context Library and retain prompts, before images and masters locally.
 
 Acceptance: No user-facing string added or changed beyond those this brief specifies. No new strings are specified.
-

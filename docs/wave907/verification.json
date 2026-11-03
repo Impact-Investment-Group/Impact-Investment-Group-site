@@ -1,0 +1,238 @@
+{
+  "page_checks": 34,
+  "photos_seen": [
+    "/images/ecosystem-band.jpg",
+    "/images/hero-ground-street.webp",
+    "/images/hero-homes.webp",
+    "/images/hero-lives.webp",
+    "/images/hero-support.webp",
+    "/images/human-insight.jpg",
+    "/images/human-partnership.jpg",
+    "/images/solution-street-blueprint.webp",
+    "/images/why-estate-aerial.webp"
+  ],
+  "protected_files_unchanged": 144,
+  "files": [
+    {
+      "path": "public/images/hero-homes.webp",
+      "sha256": "7db5970779743a442ddacbb69904153a884743137c83b2f589445a9b3fc212aa",
+      "bytes": 240428
+    },
+    {
+      "path": "public/images/hero-homes-400.webp",
+      "sha256": "4cdd64573fca2ca0044e1d6bb0281668a7f1cfb7e3439bcac8bf469c39810568",
+      "bytes": 33604
+    },
+    {
+      "path": "public/images/hero-homes-640.webp",
+      "sha256": "41647f4da6675468908dc631b4e10e93859062e7059fdb9431f6cb8a2a301fba",
+      "bytes": 69470
+    },
+    {
+      "path": "public/images/hero-homes-960.webp",
+      "sha256": "9ad72a81614491ef121834ea1976b21d39563c6c3bf2dcb47fc7514b060d89e7",
+      "bytes": 123722
+    },
+    {
+      "path": "public/images/hero-support.webp",
+      "sha256": "8ee11550503ba61e1ae8441bfdc4140488e04fb6254772d7195bcbb2c37d73fc",
+      "bytes": 241582
+    },
+    {
+      "path": "public/images/hero-support-400.webp",
+      "sha256": "03159ddaf8e3b9bfec865c54f55af91635643cb0a011f19436ce6c5a8b02ef23",
+      "bytes": 23392
+    },
+    {
+      "path": "public/images/hero-support-640.webp",
+      "sha256": "b8c1043280daf73665e049391c3252b989bcb93e7dbcf225d36bd11e049144c4",
+      "bytes": 51998
+    },
+    {
+      "path": "public/images/hero-support-960.webp",
+      "sha256": "a7ed05f4802430fcf899f42c9b79615dcaa5067781ce3fd0622cb032c876a120",
+      "bytes": 112658
+    },
+    {
+      "path": "public/images/hero-lives.webp",
+      "sha256": "59c5105152cc26eebaa8e287a5cc4a3b1d7deb0406e46484c766ad7e503946fb",
+      "bytes": 366940
+    },
+    {
+      "path": "public/images/hero-lives-400.webp",
+      "sha256": "28f5b1016c66bb168a17fa9d939d3ce2d03e91bdd33029aff6792f7dd46f8e92",
+      "bytes": 39814
+    },
+    {
+      "path": "public/images/hero-lives-640.webp",
+      "sha256": "f77ebd680cbe6aa6439053ff9df1d531a2859c96c11001786cfc5315a32b7f13",
+      "bytes": 95010
+    },
+    {
+      "path": "public/images/hero-lives-960.webp",
+      "sha256": "bbe0f05966452403c1c426d248f65e12a77b882204082410c6eeb973cb66d4d7",
+      "bytes": 187442
+    },
+    {
+      "path": "public/images/hero-ground-street.webp",
+      "sha256": "5d5705a2252fcde740b43d5b7cbd49078b08e4ebcd495e8bda9ce3b3c249ee75",
+      "bytes": 509694
+    },
+    {
+      "path": "public/images/hero-ground-street-1440.webp",
+      "sha256": "4f9cb035fc461809f820351bf53e07013252fa37de1d5a7c5e7d23350ac5aff1",
+      "bytes": 319412
+    },
+    {
+      "path": "public/images/hero-ground-street-400.webp",
+      "sha256": "48ddeb7f172945bf621a734c8d20de3fb5f3ba99ac71d73fe509a9dc3dbc3d36",
+      "bytes": 33704
+    },
+    {
+      "path": "public/images/hero-ground-street-640.webp",
+      "sha256": "2097c285c8fa438d1ef75e632acf99f5f11cbc01f450a0307b203b1e8291e615",
+      "bytes": 81026
+    },
+    {
+      "path": "public/images/hero-ground-street-960.webp",
+      "sha256": "12f49dcab568f793c0c2398edadc8b2b698b4e98e365e3ba3bc71a8533f713cd",
+      "bytes": 170206
+    },
+    {
+      "path": "public/images/solution-street-blueprint.webp",
+      "sha256": "3c47459c5ecb4047ed96c99f87f034cd0a25fb91caedfd7ad20db8100518da2b",
+      "bytes": 476416
+    },
+    {
+      "path": "public/images/solution-street-blueprint-1440.webp",
+      "sha256": "9473eed399d3d36c3107f8507f194a066cc818d014dacc268edca825485e341d",
+      "bytes": 317402
+    },
+    {
+      "path": "public/images/solution-street-blueprint-400.webp",
+      "sha256": "a9396993d20545fac60bd112c34af7973fee3dd719d450bb75b97be7f02823e0",
+      "bytes": 33614
+    },
+    {
+      "path": "public/images/solution-street-blueprint-640.webp",
+      "sha256": "474df605b5b2633e139aa7ef965ce4237e345755c119c655084c56316c3992bd",
+      "bytes": 81002
+    },
+    {
+      "path": "public/images/solution-street-blueprint-960.webp",
+      "sha256": "ee6bb08bc0ccbe578d25b89b9e561224cd98fefdc28ee4c1393243def6c28a8c",
+      "bytes": 170478
+    },
+    {
+      "path": "public/images/ecosystem-band.jpg",
+      "sha256": "a7650c201c69e2d85c7c9bc09764a0dbc5449b3db55781f52f23c85a340c082c",
+      "bytes": 393092
+    },
+    {
+      "path": "public/images/ecosystem-band-1440.webp",
+      "sha256": "12d99d26382b1e8b260d2afb80e592cfc880c8a210274ab8d8c84dbbd9c74508",
+      "bytes": 134732
+    },
+    {
+      "path": "public/images/ecosystem-band-400.webp",
+      "sha256": "2ff609dc4c2d080fc5d13cddc957dd8b418958a30c92d72ff33b531296ebe48b",
+      "bytes": 10386
+    },
+    {
+      "path": "public/images/ecosystem-band-640.webp",
+      "sha256": "234571d235eda67ba1f483e8ed18f8f431bfdc1961710c6e84ef657fef7a46cf",
+      "bytes": 26746
+    },
+    {
+      "path": "public/images/ecosystem-band-960.webp",
+      "sha256": "d533f6f3d22686d37d0568ee265fa599ccfafbbfe5c7eed797c9f63ee4015f92",
+      "bytes": 59628
+    },
+    {
+      "path": "public/images/why-estate-aerial.webp",
+      "sha256": "c0d0916a3d3eee0e91ccbf9e6c96aa1f0465112910bf785e452611ccb0357a6b",
+      "bytes": 404264
+    },
+    {
+      "path": "public/images/why-estate-aerial-1440.webp",
+      "sha256": "bdd1d6a3f603ca5a7ec4b902d7c700563b492928ea3eba05a4f3002d2e822fba",
+      "bytes": 263344
+    },
+    {
+      "path": "public/images/why-estate-aerial-400.webp",
+      "sha256": "49e9abfe8d9e2da8461f4e847cebe1c31785cffc8bd44da62702185d95d7f0bd",
+      "bytes": 24718
+    },
+    {
+      "path": "public/images/why-estate-aerial-640.webp",
+      "sha256": "99c6f023bea95dff2a89d082ce7232c63873426dc41db4f868272d87027a8058",
+      "bytes": 60698
+    },
+    {
+      "path": "public/images/why-estate-aerial-960.webp",
+      "sha256": "7f88e72705b4ccdf0cb69c142d595c099c9614c6c0251ef6b8ceca55e4632570",
+      "bytes": 132640
+    },
+    {
+      "path": "public/images/human-insight.jpg",
+      "sha256": "fa532b4d4083c9098707c6997ee6d739779e7e56bf4da8e96aef596816118efa",
+      "bytes": 230027
+    },
+    {
+      "path": "public/images/human-insight-1440.webp",
+      "sha256": "b16db49be38ffef7493f86f8b3552b65614a4c3063b69b8128d3a87ccb9c7ffa",
+      "bytes": 80268
+    },
+    {
+      "path": "public/images/human-insight-400.webp",
+      "sha256": "02223299b383385902faf9e315436df66585365ebaaf24e6bcbf7fccb95adf15",
+      "bytes": 8150
+    },
+    {
+      "path": "public/images/human-insight-640.webp",
+      "sha256": "a6ebb3a2732c83c45c720de6442a82116d157e527064803860db9a9f304fd795",
+      "bytes": 17430
+    },
+    {
+      "path": "public/images/human-insight-960.webp",
+      "sha256": "edef829b220362d10038e2458b6a69b8262d9e9ededa479508f31c715a785d93",
+      "bytes": 37598
+    },
+    {
+      "path": "public/images/human-partnership.jpg",
+      "sha256": "7b707250ce62826b3ce28e58e8d87f3ffa7f0629e55c82efd6a9a51d42046309",
+      "bytes": 224327
+    },
+    {
+      "path": "public/images/human-partnership-400.webp",
+      "sha256": "008c52846c1bf79fd38f46005ce810b3ae46365e63b07e3e207aa9a765a258e9",
+      "bytes": 18358
+    },
+    {
+      "path": "public/images/human-partnership-640.webp",
+      "sha256": "5fe6787de5f65a8c767dcdffd15edb862a4b33deb7246c1a2ad058ac486aba71",
+      "bytes": 37298
+    },
+    {
+      "path": "public/images/human-partnership-960.webp",
+      "sha256": "7fe9a9b313f52d6ce72e00472a2a71399a9f35a488c096ab96a5c341ecebf05e",
+      "bytes": 72208
+    }
+  ],
+  "failures": [],
+  "protected_check": "Git-normalized blobs, with binary raster bytes unchanged; SVG checkout line endings accounted for.",
+  "inherited_errors": [
+    {
+      "route": "/contact",
+      "width": 1280,
+      "error": "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+      "evidence": "contact-baseline.json"
+    },
+    {
+      "route": "/contact",
+      "width": 390,
+      "error": "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+      "evidence": "contact-baseline.json"
+    }
+  ]
+}
