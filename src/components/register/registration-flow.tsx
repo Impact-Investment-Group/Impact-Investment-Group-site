@@ -502,7 +502,10 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
               paints and the server painted it; an entrance on it would blink
               away content the visitor is already reading. */}
           <div className="registration-step">
-            <span aria-hidden="true" className="mb-3 inline-flex text-teal-600">
+            <span
+              aria-hidden="true"
+              className="registration-welcome-icon mb-3 inline-flex text-teal-600"
+            >
               <LockKeyhole size={22} />
             </span>
             <h1
@@ -595,7 +598,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
                               ? setShowPassword((current) => !current)
                               : setShowConfirmation((current) => !current)
                           }
-                          className="absolute inset-y-1 right-1 grid w-12 place-items-center rounded-lg text-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-600"
+                          className="registration-password-toggle absolute inset-y-1 right-1 grid w-12 place-items-center rounded-lg text-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-600"
                         >
                           {(field === "password" ? showPassword : showConfirmation) ? (
                             <EyeOff aria-hidden="true" size={19} />

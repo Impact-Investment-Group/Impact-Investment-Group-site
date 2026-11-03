@@ -17,6 +17,7 @@ import {
   type Seg,
 } from "@/content/about";
 import { variantSrcSet } from "@/lib/responsive-image";
+import "./editorial-friendly.css";
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,
@@ -83,8 +84,8 @@ function Summary({ lines }: { lines: Seg[][] }) {
 
 function AboutPage() {
   return (
-    <div>
-      <section aria-labelledby="about-heading" className="page-intro">
+    <div className="friendly-editorial friendly-about">
+      <section aria-labelledby="about-heading" className="page-intro friendly-hero">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
             <h1
@@ -96,10 +97,7 @@ function AboutPage() {
             <Summary lines={summaries.whoWeAre!} />
           </div>
           <h2 className="mt-12 font-heading text-2xl font-semibold text-ink">{teamTitle}</h2>
-          <ul
-            aria-label="Leadership team"
-            className="mt-6 grid gap-x-7 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
-          >
+          <ul aria-label="Leadership team" className="friendly-team mt-6">
             {team.map((member) => (
               <li key={member.name}>
                 <DirectorCard director={member} variant="vertical" />
@@ -108,7 +106,7 @@ function AboutPage() {
           </ul>
           <aside
             aria-labelledby="leadership-capability-heading"
-            className="mt-12 grid gap-8 border-t border-rule pt-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-16"
+            className="friendly-capability mt-12 grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-12"
           >
             <div>
               <h2
@@ -130,9 +128,9 @@ function AboutPage() {
                 width={935}
                 height={559}
                 loading="lazy"
-                className="mt-5 hidden w-40 object-contain lg:block"
+                className="friendly-capability-guides mt-5 w-full object-contain"
                 srcSet={variantSrcSet("/images/ai-team/collective-capability-team.png")}
-                sizes="160px"
+                sizes="280px"
               />
             </div>
             <dl className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
@@ -146,8 +144,8 @@ function AboutPage() {
           </aside>
         </div>
       </section>
-      <section aria-labelledby="why-heading" className="border-t border-rule bg-page-alt">
-        <div className="mx-auto grid w-full max-w-[1200px] gap-9 px-5 py-14 sm:px-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-14 lg:py-20">
+      <section aria-labelledby="why-heading" className="friendly-section friendly-section-tinted">
+        <div className="mx-auto grid w-full max-w-[1200px] gap-9 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12 lg:py-20">
           <div>
             <h2
               id="why-heading"
@@ -165,9 +163,9 @@ function AboutPage() {
               loading="lazy"
               width={1600}
               height={900}
-              className="mt-7 aspect-[16/10] w-full rounded-md object-cover"
+              className="friendly-about-photo mt-7 aspect-[4/3] w-full object-cover"
               srcSet={variantSrcSet("/images/why-estate-aerial.webp")}
-              sizes="(min-width: 1024px) 320px, calc(100vw - 40px)"
+              sizes="(min-width: 1024px) 480px, calc(100vw - 40px)"
             />
             <Link
               to="/the-problem"
@@ -181,12 +179,12 @@ function AboutPage() {
             <h3 className="max-w-[40ch] font-heading text-xl font-semibold leading-relaxed text-ink">
               {problemHeading}
             </h3>
-            <dl className="mt-5 border-t border-rule">
+            <dl className="friendly-about-evidence mt-5">
               {problemFigures.map((figure) => (
-                <div key={figure.id} className="border-b border-rule py-5">
+                <div key={figure.id}>
                   <dt className="text-base leading-relaxed text-ink">{figure.label}</dt>
                   <dd className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                    <strong className="font-heading text-2xl font-semibold tabular-nums text-teal-600">
+                    <strong className="font-heading text-4xl font-semibold tabular-nums text-teal-600">
                       {figure.value}
                     </strong>
                     <span className="text-xs text-ink-muted">{figure.kind}</span>
@@ -208,7 +206,7 @@ function AboutPage() {
           </div>
         </div>
       </section>
-      <section aria-labelledby="what-heading" className="border-t border-rule">
+      <section aria-labelledby="what-heading" className="friendly-section">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <h2
             id="what-heading"
@@ -216,12 +214,9 @@ function AboutPage() {
           >
             {whatWeDo.title}
           </h2>
-          <ol className="mt-8 border-t border-rule">
+          <ol className="friendly-company-chain mt-8">
             {accountableChain.map((step, index) => (
-              <li
-                key={step.id}
-                className="grid items-center gap-4 border-b border-rule py-7 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_64px] sm:gap-8"
-              >
+              <li key={step.id} className="friendly-company-stage">
                 <h3 className="max-w-[22ch] font-heading text-xl font-semibold text-ink">
                   {step.name}
                 </h3>
@@ -238,7 +233,7 @@ function AboutPage() {
                   loading="lazy"
                   width={281}
                   height={560}
-                  className="hidden h-28 w-full object-contain sm:block"
+                  className="friendly-company-guide"
                 />
               </li>
             ))}

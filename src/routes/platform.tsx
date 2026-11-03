@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ArrowRight, ChevronDown, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,6 +29,7 @@ import {
 } from "@/content/services";
 import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 import { cn } from "@/lib/utils";
+import "./editorial-friendly.css";
 
 export const Route = createFileRoute("/platform")({
   component: ServicesPage,
@@ -76,7 +77,7 @@ function ProductCapture() {
   );
 
   return (
-    <figure className="panel overflow-hidden">
+    <figure className="friendly-capture panel overflow-hidden">
       <Dialog>
         <DialogTrigger asChild>
           <button
@@ -173,7 +174,10 @@ function Section({
   muted?: boolean;
 }) {
   return (
-    <section aria-labelledby={id} className={cn("border-t border-rule", muted && "bg-page-alt")}>
+    <section
+      aria-labelledby={id}
+      className={cn("friendly-section", muted && "friendly-section-tinted")}
+    >
       <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
         <h2
           id={id}
@@ -184,6 +188,62 @@ function Section({
         {children}
       </div>
     </section>
+  );
+}
+
+function ServiceJourney() {
+  const [active, setActive] = React.useState(0);
+  const step = steps[active]!;
+  return (
+    <div className="friendly-journey">
+      <ol className="friendly-journey-choices">
+        {steps.map((item, index) => (
+          <li key={item.id}>
+            <button
+              type="button"
+              aria-pressed={active === index}
+              aria-controls="service-journey-detail"
+              onClick={() => setActive(index)}
+              className="friendly-journey-choice"
+            >
+              <span className="friendly-step-number" aria-hidden="true">
+                0{index + 1}
+              </span>
+              <img src={item.image} alt="" width={360} height={360} loading="lazy" />
+              <span>{item.name}</span>
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </button>
+          </li>
+        ))}
+      </ol>
+      <div id="service-journey-detail" className="friendly-journey-detail">
+        <div aria-live="polite" aria-atomic="true">
+          <div key={step.id} className="friendly-stage-enter">
+            <p className="text-sm font-semibold text-teal-600">
+              Step {active + 1} of {steps.length}
+            </p>
+            <h3 className="mt-2 font-heading text-3xl font-semibold text-ink">{step.name}</h3>
+            <p className="mt-3 max-w-[65ch] text-lg leading-relaxed text-ink-muted">{step.body}</p>
+          </div>
+        </div>
+        <div className="friendly-stage-controls">
+          <button
+            type="button"
+            aria-label="Previous step"
+            onClick={() => setActive((active + steps.length - 1) % steps.length)}
+          >
+            <ArrowLeft aria-hidden="true" className="size-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next step"
+            onClick={() => setActive((active + 1) % steps.length)}
+          >
+            <ArrowRight aria-hidden="true" className="size-5" />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -199,7 +259,7 @@ function ToolExplorer() {
       <div
         role="tablist"
         aria-label="Explore the platform tools"
-        className="mt-8 grid grid-cols-3 border-b border-rule"
+        className="friendly-tool-tabs mt-8 grid grid-cols-3"
       >
         {workflow.map((step, index) => (
           <button
@@ -231,15 +291,19 @@ function ToolExplorer() {
               }
             }}
             className={cn(
-              "min-h-16 border-b-2 px-2 py-4 text-left text-sm font-semibold transition-colors sm:px-5 sm:text-base",
-              active === index
-                ? "border-teal-600 text-teal-600"
-                : "border-transparent text-ink-muted hover:border-rule hover:text-ink",
+              "friendly-tool-tab min-h-16 px-2 py-4 text-left text-sm font-semibold sm:px-5 sm:text-base",
+              active === index ? "text-teal-600" : "text-ink-muted hover:text-ink",
             )}
           >
-            <span className="mb-1 block font-mono text-xs" aria-hidden="true">
-              0{index + 1}
-            </span>
+            <img
+              src={step.portrait}
+              alt=""
+              aria-hidden="true"
+              width={120}
+              height={120}
+              loading="lazy"
+              className="friendly-tool-avatar"
+            />
             {step.chip}
           </button>
         ))}
@@ -252,11 +316,13 @@ function ToolExplorer() {
           aria-labelledby={"tool-tab-" + step.id}
           hidden={active !== index}
           tabIndex={0}
-          className="pt-8"
+          className="friendly-tool-panel"
         >
-          <div className="grid items-center gap-8 sm:min-h-64 sm:grid-cols-[minmax(0,1fr)_180px]">
-            <div className="max-w-[64ch]">
-              <h3 className="font-heading text-3xl font-semibold text-ink">{step.claim}</h3>
+          <div className="friendly-tool-scene">
+            <div className="friendly-tool-speech max-w-[64ch]">
+              <h3 className="font-heading text-[clamp(2rem,4vw,3rem)] font-semibold leading-tight text-ink">
+                {step.claim}
+              </h3>
               <p className="mt-4 text-lg leading-relaxed text-ink-muted">{step.body}</p>
               <a
                 href="#services-preview"
@@ -272,12 +338,12 @@ function ToolExplorer() {
               loading="lazy"
               width={347}
               height={560}
-              className="hidden h-56 w-full object-contain sm:block"
+              className="friendly-tool-guide"
             />
           </div>
         </div>
       ))}
-      <div className="mt-8 grid gap-4 border-t border-rule pt-6 text-sm leading-relaxed text-ink-muted sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="friendly-tool-note mt-6 grid gap-4 text-sm leading-relaxed text-ink-muted sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <p>{workflowFooter}</p>
         <p>{aiTeamNote}</p>
       </div>
@@ -289,14 +355,14 @@ function DifferenceStory() {
   return (
     <>
       <p className="mt-5 max-w-[72ch] text-base leading-relaxed text-ink-muted">{differenceLead}</p>
-      <div className="mt-8 border-y border-rule">
+      <div className="friendly-difference mt-8">
         {differenceStory.map((chapter, index) => (
           <details
             key={chapter.id}
             open={index === differenceStory.length - 1}
-            className="group border-b border-rule last:border-b-0"
+            className="group friendly-chapter"
           >
-            <summary className="flex min-h-16 cursor-pointer list-none items-start gap-4 py-5 marker:content-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-16 cursor-pointer list-none items-start gap-4 marker:content-none [&::-webkit-details-marker]:hidden">
               <span className="pt-1 font-mono text-sm text-teal-600" aria-hidden="true">
                 {chapter.number}
               </span>
@@ -308,7 +374,7 @@ function DifferenceStory() {
                 className="mt-1 size-5 shrink-0 text-teal-600 group-open:rotate-180"
               />
             </summary>
-            <div className="grid gap-5 pb-7 pl-9 text-base leading-relaxed text-ink-muted lg:grid-cols-2 lg:gap-12">
+            <div className="friendly-chapter-body grid gap-5 text-base leading-relaxed text-ink-muted lg:grid-cols-2 lg:gap-12">
               <p>{chapter.body}</p>
               <ul className="list-disc space-y-2 pl-5 marker:text-teal-600">
                 {chapter.points.map((point) => (
@@ -319,9 +385,9 @@ function DifferenceStory() {
           </details>
         ))}
       </div>
-      <dl className="mt-8 grid gap-6 sm:grid-cols-2">
+      <dl className="friendly-lease-comparison mt-8 grid gap-4 sm:grid-cols-2">
         {leaseComparison.map((model) => (
-          <div key={model.id} className="border-l-2 border-teal-600 pl-5">
+          <div key={model.id}>
             <dt className="text-sm font-semibold text-ink">{model.label}</dt>
             <dd className="mt-2 text-base leading-relaxed text-ink-muted">{model.strip}</dd>
           </div>
@@ -335,7 +401,7 @@ function DifferenceStory() {
           </li>
         ))}
       </ul>
-      <div className="mt-10 border-t border-rule pt-6">
+      <div className="friendly-demand-strip mt-10">
         <dl className="grid gap-6 sm:grid-cols-3">
           {demandFigures.map((figure) => (
             <div key={figure.id}>
@@ -353,8 +419,8 @@ function DifferenceStory() {
 
 function ServicesPage() {
   return (
-    <div>
-      <section aria-labelledby="services-heading" className="page-intro">
+    <div className="friendly-editorial friendly-services">
+      <section aria-labelledby="services-heading" className="page-intro friendly-hero">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
             <div>
@@ -365,6 +431,17 @@ function ServicesPage() {
               >
                 {servicesHero.title}
               </h1>
+              <div className="friendly-hero-guides" aria-hidden="true">
+                {workflow.map((guide) => (
+                  <img
+                    key={guide.id}
+                    src={GUIDE_ART[guide.id as keyof typeof GUIDE_ART]}
+                    alt=""
+                    width={180}
+                    height={290}
+                  />
+                ))}
+              </div>
             </div>
             <div className="lg:pt-8">
               <p className="text-xl font-medium leading-relaxed text-ink">{servicesHero.lead}</p>
@@ -390,29 +467,7 @@ function ServicesPage() {
         </div>
       </section>
       <Section id="steps-heading" title="From search to supported home">
-        <ol className="mt-8 border-t border-rule">
-          {steps.map((step, index) => (
-            <li
-              key={step.id}
-              className="grid items-start gap-x-5 gap-y-3 border-b border-rule py-6 sm:grid-cols-[40px_140px_minmax(0,1fr)_72px] sm:gap-x-6"
-            >
-              <span className="hidden font-mono text-sm text-teal-600 sm:block" aria-hidden="true">
-                0{index + 1}
-              </span>
-              <h3 className="font-heading text-xl font-semibold text-ink">{step.name}</h3>
-              <p className="max-w-[65ch] text-base leading-relaxed text-ink-muted">{step.body}</p>
-              <img
-                src={step.image}
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                width={360}
-                height={360}
-                className="hidden size-16 object-contain sm:block"
-              />
-            </li>
-          ))}
-        </ol>
+        <ServiceJourney />
       </Section>
       <Section id="tools-heading" title="Explore the platform tools" muted>
         <ToolExplorer />

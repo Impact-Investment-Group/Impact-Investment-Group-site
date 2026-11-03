@@ -1,4 +1,16 @@
-import { Clock, LifeBuoy, Mail, Phone, Plus } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  Clock,
+  HandCoins,
+  Handshake,
+  LifeBuoy,
+  Mail,
+  Megaphone,
+  Phone,
+  Plus,
+  UsersRound,
+} from "lucide-react";
 import { EnquiryForm } from "@/components/contact/enquiry-form";
 import { contactHero, enquiryRoutes, type EnquiryRouteId } from "@/content/contact";
 import { faq, faqEyebrow, faqHeading } from "@/content/faq";
@@ -7,6 +19,14 @@ import { SIZES_CARD_ILLUSTRATION, variantSrcSet } from "@/lib/responsive-image";
 import "./contact-experience.css";
 
 const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
+const enquiryIcons = {
+  demo: CalendarDays,
+  waitlist: UsersRound,
+  partner: Handshake,
+  investor: HandCoins,
+  media: Megaphone,
+  support: LifeBuoy,
+};
 
 export function ContactLayout({
   selected,
@@ -39,7 +59,7 @@ export function ContactLayout({
             aria-hidden="true"
             width={934}
             height={558}
-            className="hidden w-56 lg:block"
+            className="contact-intro__characters"
             srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
             sizes={SIZES_CARD_ILLUSTRATION}
           />
@@ -102,13 +122,39 @@ export function ContactLayout({
             <h2 id="enquiry-heading" className="font-heading text-2xl font-bold text-ink">
               <label htmlFor="enquiry-route">What do you need?</label>
             </h2>
+            <fieldset className="contact-route-cards" aria-labelledby="enquiry-heading">
+              {enquiryRoutes.map((route) => {
+                const Icon = enquiryIcons[route.id];
+                return (
+                  <label
+                    key={route.id}
+                    className="contact-route-card"
+                    data-selected={selected === route.id}
+                  >
+                    <input
+                      type="radio"
+                      name="enquiry-choice"
+                      value={route.id}
+                      checked={selected === route.id}
+                      onChange={() => onSelect(route.id)}
+                      aria-controls="contact-enquiry-form"
+                    />
+                    <span className="contact-route-card__icon" aria-hidden="true">
+                      <Icon size={23} strokeWidth={1.7} />
+                    </span>
+                    <span>{route.label}</span>
+                    <Check className="contact-route-card__check" aria-hidden="true" size={16} />
+                  </label>
+                );
+              })}
+            </fieldset>
             <select
               id="enquiry-route"
               value={selected}
               onChange={(event) => onSelect(event.target.value as EnquiryRouteId)}
               aria-controls="contact-enquiry-form"
               aria-describedby="enquiry-route-detail"
-              className="mt-4 min-h-12 w-full cursor-pointer rounded-lg border border-rule bg-page px-4 py-3 text-base font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+              className="contact-route-select mt-4 min-h-12 w-full cursor-pointer rounded-lg border border-rule bg-page px-4 py-3 text-base font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
             >
               {enquiryRoutes.map((route) => (
                 <option key={route.id} value={route.id}>

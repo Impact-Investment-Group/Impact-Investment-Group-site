@@ -5,6 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { CouncilPanel } from "@/components/home/council-panel";
 import { DemandMap } from "@/components/home/demand-map";
 import { HomeHero } from "@/components/home/hero";
+import { ConnectionJourney } from "@/components/home/connection-journey";
 import { MissionSolution } from "@/components/home/mission-solution";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -65,9 +66,13 @@ function HomePage() {
   return (
     <>
       <HomeHero />
+      <ConnectionJourney />
       <MissionSolution />
       <CouncilPanel />
-      <section aria-labelledby="demand-heading" className="section-light border-t border-rule">
+      <section
+        aria-labelledby="demand-heading"
+        className="home-demand-friendly section-light border-t border-rule"
+      >
         <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8 lg:py-16">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,600px)] lg:gap-14">
             <div className="min-w-0">
@@ -85,7 +90,7 @@ function HomePage() {
                 <Info aria-hidden="true" className="mt-1 size-4 shrink-0 text-teal-600" />
                 {demandMapCopy.illustrativeNote}
               </p>
-              <dl className="mt-7 border-y border-rule">
+              <dl className="home-demand-stats mt-7">
                 {platformStats.map((stat) => (
                   <div
                     key={stat.label}

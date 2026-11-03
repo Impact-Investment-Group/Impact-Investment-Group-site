@@ -1,5 +1,5 @@
 .contact-edition {
-  background: var(--color-page);
+  background: var(--color-page-alt);
 }
 .contact-edition .contact-container {
   width: min(100%, 1200px);
@@ -7,22 +7,33 @@
   padding-inline: 1.25rem;
 }
 .contact-edition .contact-intro {
-  border-bottom: 1px solid var(--color-rule);
+  background: var(--secondary);
+  border-radius: 0 0 2.5rem 2.5rem;
 }
 .contact-edition .contact-intro__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
-  padding-block: 3rem;
+  gap: 1rem;
+  padding-block: 2rem;
+}
+.contact-edition .contact-intro__characters {
+  display: none;
+  width: 18rem;
+  flex-shrink: 0;
+  align-self: end;
 }
 .contact-edition .contact-workspace {
   display: grid;
-  gap: 2.5rem;
-  padding-block: 2rem 4rem;
+  gap: 1.75rem;
+  padding-block: 1.75rem 4rem;
 }
 .contact-edition .contact-direct {
-  padding-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 1.5rem;
+  background: var(--color-page);
 }
 .contact-edition .contact-direct :is(a, span) {
   display: flex;
@@ -36,8 +47,9 @@
   font-weight: 600;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.25em;
+  border-radius: 0.5rem;
 }
-.contact-edition .contact-direct a:hover {
+.contact-edition .contact-direct a:is(:hover, :focus-visible) {
   text-decoration-line: underline;
 }
 .contact-edition .contact-direct svg {
@@ -48,13 +60,28 @@
 }
 .contact-edition .contact-support .contact-crisis {
   padding: 1.25rem;
-  border-radius: 10px;
-  box-shadow: none;
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-card);
+}
+.contact-edition #contact-enquiry {
+  padding: 1.25rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 1.75rem;
+  background: var(--color-page);
+  box-shadow: var(--shadow-card);
 }
 .contact-edition .contact-route-picker {
   padding-bottom: 1.5rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--color-rule);
+}
+.contact-edition .contact-route-select {
+  border-radius: 1rem;
+  background: var(--secondary);
+  border-color: var(--color-teal-600);
+}
+.contact-edition .contact-route-cards {
+  display: none;
 }
 .contact-edition #contact-enquiry-form > form {
   padding: 0;
@@ -63,38 +90,160 @@
   background: transparent;
   box-shadow: none;
 }
+.contact-edition #contact-enquiry-form :is(input:not([type="checkbox"]), select, textarea) {
+  border-radius: 1rem;
+  background: var(--color-page-alt);
+  transition:
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.contact-edition #contact-enquiry-form :is(input, select, textarea):focus-visible {
+  background: var(--color-page);
+  box-shadow: 0 0 0 4px var(--secondary);
+}
 .contact-edition .contact-faq {
   padding-block: 3rem 4rem;
-  border-top: 1px solid var(--color-rule);
-  background: var(--color-page-alt);
+  background: var(--secondary);
+  border-radius: 2.5rem 2.5rem 0 0;
 }
 .contact-edition .contact-faq__inner {
   display: grid;
   gap: 2rem;
 }
 .contact-edition .contact-faq__rows {
+  display: grid;
+  gap: 0.75rem;
   min-width: 0;
-  border-top: 1px solid var(--color-rule);
+}
+.contact-edition .contact-faq__rows details {
+  border: 1px solid var(--color-rule);
+  border-radius: 1.25rem;
+  padding-inline: 1.25rem;
+  background: var(--color-page);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.contact-edition .contact-faq__rows details:is([open], :focus-within) {
+  border-color: var(--color-teal-600);
+  box-shadow: var(--shadow-card);
+}
+.contact-edition .contact-faq__rows summary > svg {
+  box-sizing: content-box;
+  padding: 0.5rem;
+  border-radius: 50%;
+  background: var(--secondary);
 }
 @media (min-width: 640px) {
   .contact-edition .contact-container {
     padding-inline: 2rem;
   }
+  .contact-edition .contact-intro__characters {
+    display: block;
+  }
+  .contact-edition #contact-enquiry {
+    padding: 2rem;
+  }
 }
 @media (min-width: 1024px) {
   .contact-edition .contact-intro__inner {
-    padding-block: 3rem;
+    padding-block: 2.5rem;
+  }
+  .contact-edition .contact-intro__characters {
+    width: 23rem;
   }
   .contact-edition .contact-workspace {
     grid-template-columns: minmax(270px, 0.8fr) minmax(0, 1.6fr);
-    gap: 5rem;
+    gap: 2.5rem;
     padding-block: 3rem 5rem;
+    align-items: start;
   }
   .contact-edition .contact-support {
-    align-self: start;
+    position: sticky;
+    top: calc(var(--header-height) + 1.5rem);
+  }
+  .contact-edition .contact-route-select {
+    display: none;
+  }
+  .contact-edition .contact-route-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    min-width: 0;
+  }
+  .contact-edition .contact-route-card {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 1.25rem;
+    background: var(--color-page-alt);
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    transition:
+      transform 180ms ease,
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+  .contact-edition .contact-route-card input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .contact-edition .contact-route-card[data-selected="true"] {
+    background: var(--secondary);
+    border-color: var(--color-teal-600);
+    box-shadow: inset 0 0 0 1px var(--color-teal-600);
+  }
+  .contact-edition .contact-route-card:is(:hover, :focus-within) {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card);
+  }
+  .contact-edition .contact-route-card:focus-within {
+    outline: 2px solid var(--color-teal-600);
+    outline-offset: 3px;
+  }
+  .contact-edition .contact-route-card__icon {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 1rem;
+    background: var(--color-tint-orange);
+    color: var(--color-ink);
+  }
+  .contact-edition .contact-route-card__check {
+    position: absolute;
+    top: 1rem;
+    right: 0.75rem;
+    opacity: 0;
+    color: var(--color-teal-600);
+  }
+  .contact-edition .contact-route-card[data-selected="true"] .contact-route-card__check {
+    opacity: 1;
   }
   .contact-edition .contact-faq__inner {
     grid-template-columns: minmax(270px, 0.8fr) minmax(0, 1.6fr);
-    gap: 5rem;
+    gap: 2.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact-edition :is(.contact-route-card, .contact-faq__rows details, input, select, textarea) {
+    transition: none;
+  }
+  .contact-edition .contact-route-card:is(:hover, :focus-within) {
+    transform: none;
   }
 }

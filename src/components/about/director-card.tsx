@@ -100,7 +100,7 @@ export function DirectorCard({
 
   if (variant === "vertical") {
     return (
-      <article className={cn("grid grid-cols-[88px_minmax(0,1fr)] gap-5 sm:block", className)}>
+      <article className={cn("friendly-director", className)}>
         {director.portrait ? (
           <img
             src={director.portrait}
@@ -108,19 +108,19 @@ export function DirectorCard({
             loading="lazy"
             width={440}
             height={440}
-            className="size-20 rounded-full object-cover sm:size-24"
+            className="friendly-director-portrait"
             srcSet={variantSrcSet(director.portrait)}
-            sizes={SIZES_PORTRAIT}
+            sizes="(min-width: 1100px) 192px, (min-width: 640px) 240px, 112px"
           />
         ) : (
           <span
             aria-hidden="true"
-            className="grid size-20 place-items-center rounded-full bg-secondary font-heading text-2xl font-semibold text-teal-600 sm:size-24"
+            className="friendly-director-portrait grid place-items-center bg-secondary font-heading text-2xl font-semibold text-teal-600"
           >
             {director.initials}
           </span>
         )}
-        <div className="min-w-0 sm:mt-5">
+        <div className="min-w-0">
           <h3 className="font-heading text-xl font-semibold leading-tight text-ink">
             {director.name}
           </h3>

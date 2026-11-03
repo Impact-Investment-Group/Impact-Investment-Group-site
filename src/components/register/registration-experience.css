@@ -1,106 +1,268 @@
 .registration-edition .registration-stages {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
 .registration-edition .registration-stage {
+  position: relative;
   display: flex;
   min-width: 0;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 0.5rem 1rem;
-  border-bottom: 2px solid var(--color-rule);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 0.75rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 1.25rem;
+  background: var(--color-page);
   font-size: 0.8125rem;
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
 }
 .registration-edition .registration-stage[aria-current="step"] {
+  background: var(--secondary);
   border-color: var(--color-teal-600);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--color-teal-600) 16%, transparent);
 }
 .registration-edition .registration-stage[data-complete="true"] {
   border-color: var(--color-teal-600);
 }
-.registration-edition .registration-stage[aria-current="step"] .registration-stage__number {
-  background: var(--secondary);
+.registration-edition .registration-stage__number {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 0.875rem;
+  background: var(--color-page-alt);
+}
+.registration-edition .registration-stage[aria-current="step"] .registration-stage__number,
+.registration-edition .registration-stage[data-complete="true"] .registration-stage__number {
+  background: var(--color-teal-600);
+  color: var(--color-page);
 }
 .registration-edition .registration-panel {
-  border-radius: 10px;
-  box-shadow: none;
+  border-radius: 1.75rem;
+  box-shadow: var(--shadow-card);
 }
 .registration-edition .registration-input {
-  border-radius: 6px;
+  border-radius: 1rem;
+  background: var(--color-page-alt);
+  transition:
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.registration-edition .registration-input:focus-visible {
+  background: var(--color-page);
+  box-shadow: 0 0 0 4px var(--secondary);
 }
 .registration-edition .registration-option {
-  border-radius: 8px;
+  border-radius: 1.25rem;
+}
+.registration-edition .registration-welcome-icon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border-radius: 1.25rem;
+  background: var(--secondary);
+}
+.registration-edition .registration-password-toggle {
+  top: 0.375rem;
+  bottom: 0.375rem;
+  right: 0.375rem;
+  width: 2.75rem;
+  border-radius: 0.75rem;
+  background: var(--color-page);
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+.registration-edition
+  .registration-password-toggle:is(:hover, :focus-visible, [aria-pressed="true"]) {
+  background: var(--secondary);
+  color: var(--color-teal-600);
+}
+.registration-edition .registration-password-toggle:active {
+  transform: scale(0.94);
 }
 .registration-picker.registration-directory {
-  background: var(--color-page);
+  background: var(--color-page-alt);
 }
 .registration-directory .registration-directory__layout {
   display: grid;
   gap: 2rem;
 }
+.registration-directory .registration-directory__intro {
+  min-width: 0;
+}
+.registration-directory .registration-directory__characters {
+  display: none;
+}
+.registration-directory .registration-directory__note {
+  max-width: 48rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1.25rem;
+  background: var(--secondary);
+}
 .registration-directory .registration-role-list {
   display: grid;
-  border-top: 1px solid var(--color-rule);
+  gap: 1rem;
 }
 .registration-directory .registration-role-list > li {
-  border-bottom: 1px solid var(--color-rule);
+  min-width: 0;
 }
 .registration-directory .registration-role-link {
+  position: relative;
   display: flex;
-  min-height: 92px;
+  min-height: 112px;
+  height: 100%;
   align-items: center;
   gap: 1rem;
   width: 100%;
-  padding: 1rem 0.5rem;
-  text-align: left;
+  padding: 1.25rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 1.5rem;
+  background: var(--color-page);
   color: var(--color-ink);
-  transition: background-color 160ms;
+  text-align: left;
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--color-ink) 5%, transparent);
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
 }
-.registration-directory .registration-role-link:hover {
-  background: var(--color-page-alt);
+.registration-directory .registration-role-link:is(:hover, :focus-visible) {
+  transform: translateY(-4px);
+  border-color: var(--color-teal-600);
+  box-shadow: var(--shadow-card-hover);
 }
 .registration-directory .registration-role-link:focus-visible {
   outline: 2px solid var(--color-teal-600);
-  outline-offset: 2px;
+  outline-offset: 3px;
+}
+.registration-directory .registration-role-link:active {
+  transform: translateY(-1px);
+}
+.registration-directory .registration-role-link .role-plate {
+  transition: transform 200ms ease;
+}
+.registration-directory .registration-role-link:is(:hover, :focus-visible) .role-plate {
+  transform: rotate(-5deg) scale(1.05);
+}
+.registration-directory .registration-role-arrow {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--secondary);
+  color: var(--color-teal-600);
+  transition: transform 200ms ease;
+}
+.registration-directory
+  .registration-role-link:is(:hover, :focus-visible)
+  .registration-role-arrow {
+  transform: translateX(3px);
 }
 .registration-directory .registration-role-link[data-role="resident"] {
   background: var(--secondary);
+  border-color: var(--color-teal-600);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--color-teal-600) 15%, transparent);
+}
+.registration-directory .registration-role-link[data-role="resident"] .registration-role-arrow {
+  background: var(--color-page);
 }
 .registration-context {
-  border-bottom: 1px solid var(--color-rule);
-  padding-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 1.5rem;
+  background: var(--color-page);
 }
 @media (min-width: 640px) {
+  .registration-edition .registration-stages {
+    gap: 1rem;
+  }
   .registration-edition .registration-stage {
+    flex-direction: row;
+    align-items: center;
     gap: 0.75rem;
-    padding: 1rem;
+    padding: 1.25rem;
     font-size: 0.9375rem;
+  }
+  .registration-directory .registration-directory__intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    column-gap: 2rem;
+    align-items: start;
+  }
+  .registration-directory
+    .registration-directory__intro
+    > :not(.registration-directory__characters) {
+    grid-column: 1;
+  }
+  .registration-directory .registration-directory__characters {
+    display: block;
+    grid-column: 2;
+    grid-row: 1 / span 5;
+    width: 100%;
+    max-width: 24rem;
+    align-self: center;
+    justify-self: end;
   }
   .registration-directory .registration-role-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 1.75rem;
-  }
-}
-@media (max-width: 639px) {
-  .registration-edition .registration-stage {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
   }
 }
 @media (min-width: 1024px) {
   .registration-directory .registration-directory__layout {
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
-    gap: 4rem;
-    align-items: start;
+    gap: 3rem;
   }
-  .registration-directory .registration-directory__intro {
-    position: sticky;
-    top: calc(var(--header-height) + 2rem);
+  .registration-directory .registration-role-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .registration-directory .registration-role-link {
+    min-height: 196px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    border-radius: 1.75rem;
+  }
+  .registration-directory .registration-role-arrow {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.25rem;
+  }
+  .registration-directory .registration-role-link[data-role="resident"] {
+    flex-direction: row;
+    align-items: center;
+    padding-right: 4.5rem;
+  }
+  .registration-directory .registration-role-link[data-role="resident"] .role-plate {
+    width: 5rem;
+    height: 5rem;
+  }
+  .registration-directory .registration-role-link[data-role="resident"] .registration-role-arrow {
+    top: 50%;
+    margin-top: -1.125rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .registration-directory .registration-role-link {
+  .registration-directory .registration-role-link,
+  .registration-directory .registration-role-link .role-plate,
+  .registration-directory .registration-role-arrow,
+  .registration-edition
+    :is(.registration-stage, .registration-input, .registration-password-toggle) {
     transition: none;
+  }
+  .registration-directory .registration-role-link:is(:hover, :focus-visible, :active),
+  .registration-directory
+    .registration-role-link:is(:hover, :focus-visible)
+    :is(.role-plate, .registration-role-arrow),
+  .registration-edition .registration-password-toggle:active {
+    transform: none;
   }
 }

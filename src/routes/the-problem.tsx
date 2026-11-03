@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { problemHero, problemSections } from "@/content/problem";
 import { variantSrcSet } from "@/lib/responsive-image";
+import "./editorial-friendly.css";
 
 export const Route = createFileRoute("/the-problem")({
   component: TheProblemPage,
@@ -27,33 +28,54 @@ const PORTRAIT: Record<string, { src: string; w: number; h: number }> = {
 
 function TheProblemPage() {
   return (
-    <div>
-      <section className="page-intro" aria-labelledby="problem-heading">
-        <div className="mx-auto grid w-full max-w-[1200px] gap-7 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:py-20">
-          <h1
-            id="problem-heading"
-            className="font-heading text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight text-ink"
-          >
-            {problemHero.title}
-          </h1>
-          <p className="max-w-[65ch] text-lg leading-relaxed text-ink-muted lg:pt-2">
-            {problemHero.description}
-          </p>
+    <div className="friendly-editorial friendly-problem">
+      <section className="page-intro friendly-hero" aria-labelledby="problem-heading">
+        <div className="mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-2 lg:gap-14 lg:py-20">
+          <div>
+            <h1
+              id="problem-heading"
+              className="font-heading text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight text-ink"
+            >
+              {problemHero.title}
+            </h1>
+            <p className="mt-6 max-w-[65ch] text-lg leading-relaxed text-ink-muted">
+              {problemHero.description}
+            </p>
+            <a href="#scale-heading" className="friendly-explore-link">
+              See how it works <ArrowRight aria-hidden="true" className="size-5" />
+            </a>
+          </div>
+          <div className="friendly-problem-photo">
+            <img
+              src="/images/hero-ground-street.webp"
+              srcSet={variantSrcSet("/images/hero-ground-street.webp")}
+              sizes="(min-width: 1024px) 540px, calc(100vw - 40px)"
+              alt=""
+              aria-hidden="true"
+              width={1600}
+              height={900}
+              loading="eager"
+            />
+          </div>
         </div>
       </section>
-      <div className="mx-auto w-full max-w-[1200px] px-5 sm:px-8">
-        {problemSections.map((section) => {
+      <div className="friendly-evidence-sections mx-auto w-full max-w-[1200px] px-5 sm:px-8">
+        {problemSections.map((section, index) => {
           const portrait = section.character ? PORTRAIT[section.character] : undefined;
           return (
             <section
               key={section.id}
               aria-labelledby={section.id + "-heading"}
-              className="grid gap-7 border-t border-rule py-12 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-16 lg:py-16"
+              className="friendly-evidence-stage"
+              data-stage={section.id}
             >
-              <div>
+              <div className="friendly-evidence-intro">
+                <span className="friendly-evidence-number" aria-hidden="true">
+                  0{index + 1}
+                </span>
                 <h2
                   id={section.id + "-heading"}
-                  className="font-heading text-2xl font-semibold text-ink"
+                  className="font-heading text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-tight text-ink"
                 >
                   {section.eyebrow}
                 </h2>
@@ -62,7 +84,7 @@ function TheProblemPage() {
                     ? "English local-authority housing registers are at their highest level since 2014."
                     : section.lead}
                 </p>
-                {portrait ? (
+                {portrait && section.id !== "cost" ? (
                   <img
                     src={portrait.src}
                     alt=""
@@ -70,17 +92,17 @@ function TheProblemPage() {
                     loading="lazy"
                     width={portrait.w}
                     height={portrait.h}
-                    className="mt-6 hidden h-28 w-auto object-contain lg:block"
+                    className="friendly-evidence-guide"
                     srcSet={variantSrcSet(portrait.src)}
-                    sizes="80px"
+                    sizes="(min-width: 1024px) 160px, 88px"
                   />
                 ) : null}
               </div>
               <div className="min-w-0">
-                <table className="w-full border-collapse text-left">
+                <table className="friendly-evidence-table w-full text-left">
                   <caption className="sr-only">{section.eyebrow}</caption>
                   <thead>
-                    <tr className="border-b border-rule">
+                    <tr>
                       <th scope="col" className="pb-3 pr-6 text-xs font-semibold text-ink-muted">
                         Published measure
                       </th>
@@ -94,14 +116,14 @@ function TheProblemPage() {
                   </thead>
                   <tbody>
                     {section.rows.map((row) => (
-                      <tr key={row.label} className="border-b border-rule">
+                      <tr key={row.label}>
                         <th
                           scope="row"
-                          className="py-5 pr-5 text-[15px] font-normal leading-relaxed text-ink-muted"
+                          className="text-[15px] font-normal leading-relaxed text-ink-muted"
                         >
                           {row.label}
                         </th>
-                        <td className="py-5 text-right align-top font-heading text-xl font-semibold tabular-nums text-teal-600">
+                        <td className="text-right align-middle font-heading font-semibold tabular-nums text-teal-600">
                           {row.value}
                         </td>
                       </tr>
@@ -117,7 +139,7 @@ function TheProblemPage() {
             </section>
           );
         })}
-        <div className="border-t border-rule py-8">
+        <div className="py-8">
           <Link
             to="/solutions"
             className="inline-flex min-h-11 items-center gap-2 font-semibold text-teal-600 underline decoration-rule underline-offset-4 hover:decoration-teal-600"

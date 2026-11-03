@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Copy, Landmark, Mail, ScrollText, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Check, Copy, Landmark, Mail, ScrollText, ShieldCheck } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
 import {
@@ -96,7 +96,7 @@ export const Route = createFileRoute("/legal")({
 });
 
 function SectionIcon({ children }: { children: React.ReactNode }) {
-  return <span className="shrink-0 text-teal-600">{children}</span>;
+  return <span className="legal-section-icon shrink-0 text-teal-600">{children}</span>;
 }
 
 function LegalPage() {
@@ -186,9 +186,14 @@ function LegalPage() {
                         type="button"
                         onClick={() => void copyDetail(field.label, field.value)}
                         aria-label={`${copied === field.label ? "Copied" : "Copy"} ${field.label.toLowerCase()}`}
+                        data-copied={copied === field.label}
                         className="legal-copy-button"
                       >
-                        <Copy aria-hidden="true" className="size-4" />
+                        {copied === field.label ? (
+                          <Check aria-hidden="true" className="size-4" />
+                        ) : (
+                          <Copy aria-hidden="true" className="size-4" />
+                        )}
                         <span>{copied === field.label ? "Copied" : "Copy"}</span>
                       </button>
                     ) : null}

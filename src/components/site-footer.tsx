@@ -389,7 +389,7 @@ export function SiteFooter() {
             {trustRegistrations.map((reg) => (
               <li
                 key={reg.id}
-                className="flex flex-col gap-1 border-t border-rule px-1 py-4 text-left"
+                className="flex flex-col gap-1 rounded-2xl border border-rule bg-page-alt px-5 py-4 text-left"
               >
                 <p className="font-heading text-[13px] font-semibold leading-tight text-ink">
                   {reg.label}

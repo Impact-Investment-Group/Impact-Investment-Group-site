@@ -41,10 +41,7 @@ export function MissionSolution() {
     tabs.current[next]?.focus();
   }
   return (
-    <section
-      aria-labelledby="mission-heading"
-      className="mission-editorial border-y border-rule bg-page"
-    >
+    <section aria-labelledby="mission-heading" className="mission-editorial mission-friendly">
       <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8 lg:py-16">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div>
@@ -53,7 +50,9 @@ export function MissionSolution() {
               id="mission-heading"
               className="mt-3 max-w-[25ch] font-heading text-[clamp(1.9rem,3.5vw,3rem)] font-bold leading-[1.08] tracking-[-0.025em] text-ink"
             >
-              {purposeCopy.title}
+              {purposeCopy.title.split(purposeCopy.emphasis)[0]}
+              <span className="text-orange-700">{purposeCopy.emphasis}</span>
+              {purposeCopy.title.split(purposeCopy.emphasis)[1]}
             </h2>
           </div>
           <div className="max-w-[60ch] text-base leading-relaxed text-ink-muted lg:pt-8">
@@ -61,11 +60,7 @@ export function MissionSolution() {
             <p className="mt-3 font-medium text-ink">{purposeCopy.closing.join(" ")}</p>
           </div>
         </div>
-        <div
-          role="tablist"
-          aria-label="Our mission"
-          className="mt-9 flex gap-6 border-b border-rule sm:gap-8"
-        >
+        <div role="tablist" aria-label="Our mission" className="mission-friendly-tabs mt-9">
           {views.map((view, index) => (
             <button
               key={view.id}
@@ -99,7 +94,7 @@ export function MissionSolution() {
           tabIndex={0}
           className="mission-panel pt-8 focus-visible:outline-2 focus-visible:outline-teal-600"
         >
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+          <div className="mission-friendly-columns grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
             <div>
               <h3 className="font-heading text-2xl font-bold leading-tight text-ink">
                 {challengeCopy.title}
@@ -132,11 +127,11 @@ export function MissionSolution() {
                 height={640}
                 alt="An aerial view of homes and gardens in a UK neighbourhood"
                 loading="lazy"
-                className="mt-5 aspect-[5/2] w-full rounded-lg object-cover"
+                className="mt-6 aspect-[5/2] w-full rounded-3xl object-cover"
               />
             </div>
             <div>
-              <dl>
+              <dl className="mission-friendly-evidence">
                 <div className="border-b border-rule pb-6">
                   <dt className="text-sm font-medium text-ink">{hero.label}</dt>
                   <dd className="mt-2 font-heading text-[clamp(3.4rem,6vw,5rem)] font-bold leading-none tracking-[-0.04em] text-orange-700">
@@ -175,7 +170,7 @@ export function MissionSolution() {
           tabIndex={0}
           className="mission-panel pt-8 focus-visible:outline-2 focus-visible:outline-teal-600"
         >
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+          <div className="mission-friendly-columns grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
             <div>
               <h3 className="font-heading text-2xl font-bold leading-tight text-ink">
                 {solutionCopy.title}
@@ -208,7 +203,7 @@ export function MissionSolution() {
                 </p>
               </div>
             </div>
-            <ol className="border-t border-rule">
+            <ol className="mission-friendly-stages">
               {solutionCopy.stages.map((stage) => (
                 <li
                   key={stage.id}
@@ -235,12 +230,12 @@ export function MissionSolution() {
                 <img
                   src="/images/ai-team/trio-wave.webp"
                   srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
-                  sizes="150px"
+                  sizes="240px"
                   width={934}
                   height={558}
                   alt=""
                   loading="lazy"
-                  className="w-32 shrink-0 sm:w-36"
+                  className="w-44 shrink-0 sm:w-56"
                 />
               </li>
             </ol>

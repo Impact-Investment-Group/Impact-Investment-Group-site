@@ -10,15 +10,19 @@ export function RolePicker({ labelledBy }: { labelledBy: string }) {
       {registerRoles.map((role) => {
         const body = (
           <>
-            <RoleIcon roleId={role.id} />
+            <RoleIcon roleId={role.id} size="lg" />
             <span className="flex min-w-0 flex-col gap-1">
               <span className="font-heading text-lg font-semibold leading-snug">{role.label}</span>
               <span className="text-sm leading-relaxed text-ink-muted">{role.detail}</span>
             </span>
             {role.href ? (
-              <ArrowUpRight aria-hidden="true" className="ml-auto size-4 shrink-0 text-teal-600" />
+              <span className="registration-role-arrow">
+                <ArrowUpRight aria-hidden="true" size={18} />
+              </span>
             ) : (
-              <ArrowRight aria-hidden="true" className="ml-auto size-4 shrink-0 text-teal-600" />
+              <span className="registration-role-arrow">
+                <ArrowRight aria-hidden="true" size={18} />
+              </span>
             )}
           </>
         );

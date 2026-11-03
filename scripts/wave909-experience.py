@@ -141,6 +141,13 @@ with sync_playwright() as pw:
             page.keyboard.press("ArrowRight")
             expect(tabs.nth(1)).to_be_focused()
             expect(tabs.nth(1)).to_have_attribute("aria-selected", "true")
+            page.locator("#journey-panel").get_by_role("button", name="Next step", exact=True).click()
+            expect(tabs.last).to_have_attribute("aria-selected", "true")
+            expect(page.locator("#journey-panel").get_by_role("button", name="Next step", exact=True)).to_be_disabled()
+            page.locator("#journey-panel").get_by_role("button", name="Previous step", exact=True).click()
+            page.locator("#journey-panel").get_by_role("button", name="Previous step", exact=True).click()
+            expect(tabs.first).to_have_attribute("aria-selected", "true")
+            expect(page.locator("#journey-panel").get_by_role("button", name="Previous step", exact=True)).to_be_disabled()
             trigger = page.get_by_role("button", name="View full diagram")
             trigger.click()
             expect(page.get_by_role("dialog")).to_be_visible()
@@ -150,6 +157,13 @@ with sync_playwright() as pw:
 
         def services():
             page.goto(base + "/platform", wait_until="networkidle")
+            choices = page.locator(".friendly-journey-choice")
+            before = page.locator("#service-journey-detail").inner_text()
+            choices.last.click()
+            expect(choices.last).to_have_attribute("aria-pressed", "true")
+            check(page.locator("#service-journey-detail").inner_text() != before, "Service journey detail did not change")
+            page.locator("#service-journey-detail").get_by_role("button", name="Next step", exact=True).click()
+            expect(choices.first).to_have_attribute("aria-pressed", "true")
             tabs = page.get_by_role("tablist").get_by_role("tab")
             tabs.first.focus()
             page.keyboard.press("End")
@@ -229,7 +243,7 @@ with sync_playwright() as pw:
         def home_mission():
             page.goto(base + "/", wait_until="networkidle")
             expect(page.locator(".hero-role-grid a")).to_have_count(10)
-            check(page.get_by_text("Transforming Lives", exact=True).evaluate("n => getComputedStyle(n).color") == "rgb(38, 121, 119)", "Hero sample teal changed")
+            check(page.locator("#hero-heading .text-teal-600").evaluate("n => getComputedStyle(n).color") == "rgb(38, 121, 119)", "Hero sample teal changed")
             tabs = page.get_by_role("tablist", name="Our mission").get_by_role("tab")
             tabs.first.focus()
             page.keyboard.press("End")
@@ -245,6 +259,48 @@ with sync_playwright() as pw:
             expect(page.locator("#mission-panel-need")).to_contain_text("176,130")
             expect(page.locator("#mission-panel-need")).to_contain_text("not cumulative")
             expect(page.get_by_text("Platform snapshot recorded 3 August 2026", exact=True)).to_be_visible()
+
+        def connection_journey():
+            page.goto(base + "/", wait_until="networkidle")
+            tabs = page.get_by_role("tablist", name="How the connection works").get_by_role("tab")
+            expect(tabs).to_have_count(4)
+            panel = page.locator("#connection-detail")
+            initial = panel.inner_text()
+            for index in range(4):
+                tabs.nth(index).click()
+                expect(tabs.nth(index)).to_have_attribute("aria-selected", "true")
+                expect(panel).to_have_attribute("aria-labelledby", tabs.nth(index).get_attribute("id"))
+                expect(panel).to_contain_text(f"Step {index + 1} of 4")
+                link = panel.get_by_role("link", name="Explore this stage")
+                check(link.get_attribute("href").startswith("/partner-with-"), "Stage has no real partner destination")
+                page.wait_for_function("() => {const n=document.querySelector('#connection-detail .connection-picture > img');return n && n.complete && n.naturalWidth > 0;}")
+                check(panel.locator(".connection-picture > img").evaluate("n => n.complete && n.naturalWidth > 0"), "Journey photograph missing")
+            check(panel.inner_text() != initial, "Journey changes no explanatory content")
+            check_crafted_state("connection-home")
+            page.get_by_role("button", name="Replay the journey", exact=True).click()
+            expect(tabs.first).to_have_attribute("aria-selected", "true")
+            page.locator(".connection-navigation").get_by_role("button", name="Next step", exact=True).click()
+            expect(tabs.nth(1)).to_have_attribute("aria-selected", "true")
+            page.locator(".connection-navigation").get_by_role("button", name="Previous step", exact=True).click()
+            expect(tabs.first).to_have_attribute("aria-selected", "true")
+            tabs.first.focus()
+            page.keyboard.press("End")
+            expect(tabs.last).to_be_focused()
+            expect(tabs.last).to_have_attribute("aria-selected", "true")
+            page.keyboard.press("ArrowRight")
+            expect(tabs.first).to_be_focused()
+            expect(tabs.first).to_have_attribute("aria-selected", "true")
+
+        def photo_variants():
+            page.goto(base + "/", wait_until="networkidle")
+            names = ["providing homes", "delivering support", "transforming lives"]
+            for index, name in enumerate(names):
+                control = page.get_by_role("button", name="Show " + name, exact=True)
+                control.click()
+                expect(control).to_have_attribute("aria-pressed", "true")
+                visible = page.locator(".welcome-photo").nth(index)
+                check(visible.evaluate("n => {const p=n.getBoundingClientRect(),b=n.parentElement.getBoundingClientRect();return p.left >= b.left-2 && p.right <= b.right+2}"), "Selected photograph is clipped")
+                check_crafted_state("photo-" + str(index))
 
         def solution_layers():
             page.goto(base + "/solutions", wait_until="networkidle")
@@ -296,10 +352,16 @@ with sync_playwright() as pw:
             page.locator("#name").fill("Browser example")
             page.locator("#email").fill("example@example.com")
             page.locator("#message").fill("An unsent browser-only example message.")
-            control = page.get_by_role("combobox", name="What do you need?", exact=True)
-            control.select_option("investor")
+            if width < 1024:
+                control = page.get_by_role("combobox", name="What do you need?", exact=True)
+                control.select_option("investor")
+            else:
+                page.get_by_role("radio", name="Investor enquiry", exact=True).check()
             expect(page.locator("#enquiry-form-title")).to_have_text("Investor enquiry")
-            control.select_option("support")
+            if width < 1024:
+                control.select_option("support")
+            else:
+                page.get_by_role("radio", name="Support", exact=True).check()
             expect(page.locator("#enquiry-form-title")).to_have_text("Support")
             expect(page.locator("#name")).to_have_value("Browser example")
             expect(page.locator("#email")).to_have_value("example@example.com")
@@ -335,6 +397,8 @@ with sync_playwright() as pw:
                 expect(page.locator("main")).to_contain_text(value)
             check_crafted_state("legal-records")
 
+        interaction("need to home explanatory journey", connection_journey)
+        interaction("all three hero photograph states", photo_variants)
         interaction("company record copy controls", legal_copy)
         interaction("home evidence and response tabs", home_mission)
         interaction("solution layer responsibilities", solution_layers)

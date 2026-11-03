@@ -84,11 +84,25 @@ export function PartnersHub() {
           </div>
           <figure className="partner-craft-hero__media">
             <img
+              className="partner-craft-hero__photo"
               src="/images/ecosystem-band.jpg"
               srcSet={variantSrcSet("/images/ecosystem-band.jpg")}
               sizes="(min-width: 1200px) 1215px, (min-width: 900px) 104vw, 188vw"
               width={intrinsic("/images/ecosystem-band.jpg")?.width}
               height={intrinsic("/images/ecosystem-band.jpg")?.height}
+              loading="eager"
+              alt=""
+            />
+            <span className="partner-craft-hero__seal" aria-hidden="true">
+              <Network />
+            </span>
+            <img
+              className="partner-craft-hero__companion"
+              src="/images/ai-team/trio-wave.webp"
+              srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
+              sizes="180px"
+              width={intrinsic("/images/ai-team/trio-wave.webp")?.width}
+              height={intrinsic("/images/ai-team/trio-wave.webp")?.height}
               loading="eager"
               alt=""
             />
@@ -222,7 +236,9 @@ export function PartnersHub() {
                     return (
                       <li key={profile.id}>
                         <Link to={profile.path} className="partner-craft-directory__role">
-                          <Icon aria-hidden="true" />
+                          <span className="partner-craft-directory__icon">
+                            <Icon aria-hidden="true" />
+                          </span>
                           <span>
                             <span className="partner-craft-directory__role-name">
                               {profile.label}

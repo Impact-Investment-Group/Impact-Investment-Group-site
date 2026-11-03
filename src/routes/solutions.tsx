@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   dealLayers,
@@ -12,6 +12,7 @@ import {
   solutionHero,
 } from "@/content/solutions";
 import { SIZES_FULL_BLEED, SIZES_THIRD_FROM_TABLET, variantSrcSet } from "@/lib/responsive-image";
+import "./editorial-friendly.css";
 
 export const Route = createFileRoute("/solutions")({
   component: SolutionsPage,
@@ -45,12 +46,12 @@ function LayerExplorer() {
   const layer = dealLayers[active]!;
   const owners = layerOwners.find((item) => item.number === layer.number)!;
   return (
-    <div className="mt-8 grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
+    <div className="friendly-layer-explorer mt-8">
       <div
         role="tablist"
         aria-label="Deal layers"
         aria-orientation="vertical"
-        className="border-t border-rule"
+        className="friendly-layer-tabs"
       >
         {dealLayers.map((item, index) => (
           <button
@@ -83,13 +84,11 @@ function LayerExplorer() {
               }
             }}
             className={cn(
-              "flex min-h-14 w-full items-center gap-4 border-b border-rule py-4 pl-3 pr-2 text-left text-base transition-colors",
-              active === index
-                ? "bg-secondary font-semibold text-teal-600"
-                : "text-ink-muted hover:bg-page-alt hover:text-ink",
+              "friendly-layer-tab flex min-h-14 w-full items-center gap-4 text-left text-base",
+              active === index ? "font-semibold text-teal-600" : "text-ink-muted hover:text-ink",
             )}
           >
-            <span className="font-mono text-xs" aria-hidden="true">
+            <span className="friendly-layer-number font-mono text-xs" aria-hidden="true">
               {item.number}
             </span>
             <span className="flex-1">{item.title}</span>
@@ -102,19 +101,20 @@ function LayerExplorer() {
         role="tabpanel"
         aria-labelledby={"layer-tab-" + layer.number}
         tabIndex={0}
+        className="friendly-layer-panel"
       >
-        <div className="grid gap-8 sm:grid-cols-[minmax(0,1fr)_120px]">
-          <div>
+        <div className="friendly-layer-scene">
+          <div key={layer.number} className="friendly-stage-enter min-w-0">
             <h3 className="font-heading text-3xl font-semibold text-ink">{layer.title}</h3>
             <p className="mt-3 text-lg leading-relaxed text-ink-muted">{layer.detail}</p>
             <h4 id="owners-heading" className="mt-7 text-sm font-semibold text-ink">
               Who is responsible
             </h4>
-            <dl className="mt-2 border-t border-rule">
+            <dl className="friendly-layer-owners mt-3">
               {owners.people.map((person) => (
                 <div
                   key={person.role}
-                  className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1 border-b border-rule py-3"
+                  className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1"
                 >
                   <dt className="font-medium text-ink">
                     {partnerLinks[person.role] ? (
@@ -134,19 +134,22 @@ function LayerExplorer() {
               ))}
             </dl>
           </div>
-          <img
-            src="/images/solution/house.webp"
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            width={453}
-            height={1100}
-            className="hidden w-full object-contain sm:block"
-            srcSet={variantSrcSet("/images/solution/house.webp")}
-            sizes="120px"
-          />
+          <div className="friendly-house-stage" aria-hidden="true">
+            <span className="friendly-house-stage-number">{layer.number}</span>
+            <img
+              src="/images/solution/house.webp"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              width={453}
+              height={1100}
+              className="friendly-layer-house"
+              srcSet={variantSrcSet("/images/solution/house.webp")}
+              sizes="(min-width: 1024px) 180px, 110px"
+            />
+          </div>
         </div>
-        <div className="mt-7 flex items-center gap-5 border-t border-rule pt-5">
+        <div className="friendly-layer-footer mt-7 flex items-center gap-5">
           <img
             src="/images/solution/hub.webp"
             alt=""
@@ -154,11 +157,32 @@ function LayerExplorer() {
             loading="lazy"
             width={846}
             height={620}
-            className="hidden h-16 w-20 object-contain sm:block"
+            className="h-20 w-24 shrink-0 object-contain"
             srcSet={variantSrcSet("/images/solution/hub.webp")}
             sizes="80px"
           />
           <p className="max-w-[62ch] text-sm leading-relaxed text-ink-muted">{layerOwnersKicker}</p>
+        </div>
+        <div className="friendly-layer-controls">
+          <p className="text-sm font-semibold text-teal-600" aria-live="polite">
+            Step {active + 1} of {dealLayers.length}
+          </p>
+          <div className="friendly-stage-controls">
+            <button
+              type="button"
+              aria-label="Previous step"
+              onClick={() => setActive((active + dealLayers.length - 1) % dealLayers.length)}
+            >
+              <ArrowLeft aria-hidden="true" className="size-5" />
+            </button>
+            <button
+              type="button"
+              aria-label="Next step"
+              onClick={() => setActive((active + 1) % dealLayers.length)}
+            >
+              <ArrowRight aria-hidden="true" className="size-5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -167,27 +191,9 @@ function LayerExplorer() {
 
 function SolutionsPage() {
   return (
-    <div>
-      <section
-        aria-labelledby="solution-heading"
-        className="page-intro relative isolate overflow-hidden"
-      >
-        <img
-          src="/images/solution-street-blueprint.webp"
-          loading="eager"
-          alt=""
-          aria-hidden="true"
-          width={1600}
-          height={900}
-          className="pointer-events-none absolute inset-0 -z-20 size-full object-cover opacity-[0.12]"
-          srcSet={variantSrcSet("/images/solution-street-blueprint.webp")}
-          sizes={SIZES_FULL_BLEED}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-page/80 via-page/25 to-page"
-        />
-        <div className="mx-auto grid w-full max-w-[1200px] gap-8 px-5 py-14 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:py-20">
+    <div className="friendly-editorial friendly-solutions">
+      <section aria-labelledby="solution-heading" className="page-intro friendly-hero">
+        <div className="mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-2 lg:gap-12 lg:py-20">
           <div>
             <p className="text-sm font-semibold text-teal-600">{solutionHero.eyebrow}</p>
             <h1
@@ -196,13 +202,31 @@ function SolutionsPage() {
             >
               {solutionHero.headA} {solutionHero.headB}
             </h1>
+            <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-ink-muted">
+              {solutionHero.lead}
+            </p>
+            <a href="#layers-heading" className="friendly-explore-link">
+              See how it works <ArrowRight aria-hidden="true" className="size-5" />
+            </a>
           </div>
-          <p className="max-w-[52ch] text-lg leading-relaxed text-ink-muted lg:self-end lg:pb-2">
-            {solutionHero.lead}
-          </p>
+          <div className="friendly-solution-photo">
+            <img
+              src="/images/solution-street-blueprint.webp"
+              loading="eager"
+              alt=""
+              aria-hidden="true"
+              width={1600}
+              height={900}
+              srcSet={variantSrcSet("/images/solution-street-blueprint.webp")}
+              sizes={SIZES_FULL_BLEED}
+            />
+            <div className="friendly-solution-photo-guide" aria-hidden="true">
+              <img src="/images/solution/trio.webp" alt="" width={829} height={620} />
+            </div>
+          </div>
         </div>
       </section>
-      <section aria-labelledby="layers-heading" className="border-t border-rule">
+      <section aria-labelledby="layers-heading" className="friendly-section">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <h2
             id="layers-heading"
@@ -217,8 +241,8 @@ function SolutionsPage() {
           <LayerExplorer />
         </div>
       </section>
-      <section aria-labelledby="product-heading" className="border-t border-rule bg-page-alt">
-        <div className="mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_250px] lg:py-20">
+      <section aria-labelledby="product-heading" className="friendly-section friendly-product">
+        <div className="mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_350px] lg:py-20">
           <div>
             <h2
               id="product-heading"
@@ -227,12 +251,9 @@ function SolutionsPage() {
               {productPitch.headA} {productPitch.headB}.
             </h2>
             <p className="mt-5 text-base leading-relaxed text-ink-muted">{productPitch.lead}</p>
-            <dl className="mt-7 border-t border-rule">
+            <dl className="friendly-product-tools mt-7">
               {productPitch.items.map((item) => (
-                <div
-                  key={item.title}
-                  className="grid gap-2 border-b border-rule py-4 sm:grid-cols-[160px_minmax(0,1fr)]"
-                >
+                <div key={item.title} className="grid gap-2 sm:grid-cols-[160px_minmax(0,1fr)]">
                   <dt className="font-semibold text-ink">{item.title}</dt>
                   <dd className="text-base leading-relaxed text-ink-muted">{item.detail}</dd>
                 </div>
@@ -253,7 +274,7 @@ function SolutionsPage() {
             loading="lazy"
             width={829}
             height={620}
-            className="hidden w-full object-contain lg:block"
+            className="friendly-product-guides w-full object-contain"
             srcSet={variantSrcSet("/images/solution/trio.webp")}
             sizes={SIZES_THIRD_FROM_TABLET}
           />

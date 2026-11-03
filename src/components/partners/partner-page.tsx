@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { ArrowRight, CheckCircle2, Info, LifeBuoy, ZoomIn } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Info, LifeBuoy, ZoomIn } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -404,7 +404,7 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
                   key={image}
                   src={image}
                   srcSet={variantSrcSet(image)}
-                  sizes="120px"
+                  sizes="200px"
                   width={intrinsic(image)?.width}
                   height={intrinsic(image)?.height}
                   loading="lazy"
@@ -421,7 +421,12 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
           {profile.rolePoints.map((point, index) => (
             <li key={point}>
               <span aria-hidden="true">0{index + 1}</span>
-              <p>{point}</p>
+              <div>
+                <p>{point}</p>
+                <span className="partner-craft-ledger__guide-label">
+                  {presentation.guideLabels[index]}
+                </span>
+              </div>
             </li>
           ))}
         </ol>
@@ -439,17 +444,17 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
     <section
       id="platform-journey"
       aria-labelledby="platform-heading"
-      className="border-y border-rule bg-page-alt"
+      className="partner-craft-journey-section"
     >
       <div className="partner-craft-container partner-craft-journey">
-        <div>
+        <div className="partner-craft-journey__intro">
           <p className="eyebrow text-teal-600">02 · Through the platform</p>
           <h2 id="platform-heading" className="partner-craft-heading mt-3">
             {presentation.lead} <span className="text-orange-700">{presentation.accent}</span>
           </h2>
           <p className="mt-5 text-base leading-relaxed text-ink-muted">{profile.platformIntro}</p>
         </div>
-        <div>
+        <div className="partner-craft-journey__experience" data-active-step={activeStep}>
           <div
             className="partner-craft-journey__tabs"
             role="tablist"
@@ -501,16 +506,55 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
           >
             <div className="flex items-center justify-between gap-3 font-mono text-xs text-teal-600">
               <span>Active checkpoint</span>
-              <span>0{activeStep + 1} / 03</span>
+              <span role="status" aria-live="polite" aria-atomic="true">
+                0{activeStep + 1} / 03
+              </span>
             </div>
-            <p className="mt-5 font-heading text-2xl font-bold leading-tight text-ink">
-              {presentation.readoutTitles[activeStep]}
-            </p>
-            <p className="mt-3 text-base leading-relaxed text-ink-muted">
-              {profile.platformSteps[activeStep]}
-            </p>
+            <div className="partner-craft-journey__story" key={activeStep}>
+              <div>
+                <p className="font-heading text-2xl font-bold leading-tight text-ink">
+                  {presentation.readoutTitles[activeStep]}
+                </p>
+                <p className="mt-3 text-base leading-relaxed text-ink-muted">
+                  {profile.platformSteps[activeStep]}
+                </p>
+              </div>
+              <div className="partner-craft-journey__guide" aria-hidden="true">
+                <img
+                  src={roleGuideImages[activeStep]}
+                  srcSet={variantSrcSet(roleGuideImages[activeStep]!)}
+                  sizes="170px"
+                  width={170}
+                  height={230}
+                  alt=""
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            <div className="partner-craft-journey__controls">
+              <button
+                type="button"
+                disabled={activeStep === 0}
+                onClick={() => setActiveStep((step) => Math.max(0, step - 1))}
+                aria-controls="journey-panel"
+              >
+                <ArrowLeft aria-hidden="true" />
+                Previous step
+              </button>
+              <button
+                type="button"
+                disabled={activeStep === profile.platformSteps.length - 1}
+                onClick={() =>
+                  setActiveStep((step) => Math.min(profile.platformSteps.length - 1, step + 1))
+                }
+                aria-controls="journey-panel"
+              >
+                Next step
+                <ArrowRight aria-hidden="true" />
+              </button>
+            </div>
           </div>
-          <p className="border-t border-rule pt-5 text-sm leading-relaxed text-teal-600">
+          <p className="partner-craft-journey__outcome text-sm leading-relaxed text-teal-600">
             {profile.whyJoin}
           </p>
         </div>
@@ -524,9 +568,13 @@ function PartnerRelationships({ profile }: { profile: PartnerProfile }) {
   const relationship = profile.relationships[selected] ?? profile.relationships[0];
 
   return (
-    <div>
+    <div className="partner-craft-relationships">
       <h3 className="mb-4 font-heading text-xl font-bold text-ink">Who you work with</h3>
-      <div role="group" aria-label="Partner connections" className="border-t border-rule">
+      <div
+        role="group"
+        aria-label="Partner connections"
+        className="partner-craft-relationships__choices"
+      >
         {profile.relationships.map((item, index) => (
           <button
             key={item.partner}
@@ -536,6 +584,9 @@ function PartnerRelationships({ profile }: { profile: PartnerProfile }) {
             aria-controls="partner-relationship-detail"
             onClick={() => setSelected(index)}
           >
+            <span className="partner-craft-connection__number" aria-hidden="true">
+              0{index + 1}
+            </span>
             <span>{item.partner}</span>
             <ArrowRight aria-hidden="true" />
           </button>
@@ -551,10 +602,10 @@ function PartnerRelationships({ profile }: { profile: PartnerProfile }) {
         className="partner-craft-relationship"
       >
         {relationship ? (
-          <>
+          <div key={selected} className="partner-craft-relationship__story">
             <h4>{relationship.partner}</h4>
             <p>{relationship.detail}</p>
-          </>
+          </div>
         ) : null}
       </div>
     </div>
@@ -596,6 +647,7 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
           </div>
           <figure className="partner-craft-hero__media">
             <img
+              className="partner-craft-hero__photo"
               src={visual.image}
               srcSet={variantSrcSet(visual.image)}
               sizes={
