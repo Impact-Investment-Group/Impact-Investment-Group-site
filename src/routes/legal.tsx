@@ -118,8 +118,8 @@ function LegalPage() {
    * does not have to inherit it.
    */
   return (
-    <>
-      <section aria-labelledby="legal-heading" className="section-light">
+    <div className="legal-page">
+      <section aria-labelledby="legal-heading" className="page-intro legal-intro">
         <div className="mx-auto w-full max-w-[1200px] px-5 pb-8 pt-14 sm:px-8 lg:pt-20">
           <Reveal>
             {/* teal-600 (4.7:1 on the cream), NOT the orange-700 the other cream
@@ -267,12 +267,10 @@ function LegalPage() {
                 key={doc.label}
                 index={index}
                 as="li"
-                className="panel flex flex-col gap-2 p-5"
+                className="panel legal-document flex flex-col gap-3 p-6"
               >
                 <p className="font-heading text-[17px] font-semibold text-ink">{doc.label}</p>
-                <p className="text-[13px] max-lg:text-[15px] leading-relaxed text-ink-muted">
-                  {doc.description}
-                </p>
+                <p className="text-[15px] leading-relaxed text-ink-muted">{doc.description}</p>
                 <a
                   href={doc.href}
                   target="_blank"
@@ -332,6 +330,6 @@ function LegalPage() {
           </Reveal>
         </div>
       </section>
-    </>
+    </div>
   );
 }

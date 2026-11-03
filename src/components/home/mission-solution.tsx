@@ -102,7 +102,7 @@ function CountUpFigure({ value, className }: { value: string; className?: string
   return (
     <>
       <span ref={ref} aria-hidden="true" className={cn("tabular-nums", className)}>
-        {display.toLocaleString("en-GB")}
+        {Math.round(display).toLocaleString("en-GB")}
       </span>
       <span className="sr-only">{value}</span>
     </>
@@ -153,12 +153,10 @@ function StatTile({ stat, filled }: { stat: (typeof purposeStats)[number]; fille
       >
         {stat.label}
       </p>
-      {/* The source line is the reward for hovering. Hidden from the eye, not
-          from assistive tech — three sources printed under three figures is
-          what "too much information" looks like. */}
+      {/* The source remains readable for touch, keyboard and pointer users. */}
       <p
         className={cn(
-          "mt-1 max-h-0 overflow-hidden text-[11px] max-lg:text-[12px] leading-snug opacity-0 transition-all duration-300 group-hover:max-h-16 group-hover:opacity-100",
+          "mt-3 text-xs leading-relaxed",
           /* SOLID white, not 85%. 85% white on the orange-600 fill is 4.32:1
              and about 4.25:1 on the teal-600 one, at 11px, against a 4.5:1
              floor; `text-page` is #ffffff and 5.34:1 on orange-600, 5.25:1 on
@@ -255,7 +253,19 @@ function FlipBar({
 
 export function MissionSolution() {
   const [showSolution, setShowSolution] = React.useState(false);
-  const flip = React.useCallback(() => setShowSolution((v) => !v), []);
+  const hasFlipped = React.useRef(false);
+  const needHeading = React.useRef<HTMLHeadingElement | null>(null);
+  const solutionHeading = React.useRef<HTMLHeadingElement | null>(null);
+  const flip = React.useCallback(() => {
+    hasFlipped.current = true;
+    setShowSolution((value) => !value);
+  }, []);
+  React.useEffect(() => {
+    if (!hasFlipped.current) return;
+    const heading = showSolution ? solutionHeading.current : needHeading.current;
+    heading?.focus({ preventScroll: true });
+    heading?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [showSolution]);
 
   /* Picked BY ID, never by position — re-ordering content/home.ts must not
      silently promote a different statistic into the big orange tile. */
@@ -296,7 +306,10 @@ export function MissionSolution() {
   const offBelowMd = "hidden md:block";
 
   return (
-    <section aria-labelledby="mission-heading" className="relative isolate grid">
+    <section
+      aria-labelledby={showSolution ? "mission-solution-heading" : "mission-heading"}
+      className="relative isolate grid"
+    >
       {/* ══ FRONT — the need ══════════════════════════════════════════════ */}
       <div
         className={cn(
@@ -326,6 +339,8 @@ export function MissionSolution() {
             <p className="eyebrow tracking-[0.14em] text-orange-700">{purposeCopy.eyebrow}</p>
             <h2
               id="mission-heading"
+              ref={needHeading}
+              tabIndex={-1}
               className="heading-tight mt-2 max-w-[24ch] text-balance font-heading text-[clamp(1.625rem,3.2vw,2.375rem)] font-extrabold tracking-[-0.025em] text-ink"
             >
               {/* The emphasis is picked out of the title rather than the title
@@ -498,7 +513,12 @@ export function MissionSolution() {
         <div className="mx-auto w-full max-w-[1440px] px-5 py-11 sm:px-8 lg:py-12">
           <Reveal>
             <p className="eyebrow tracking-[0.14em] text-teal-600">{solutionCopy.eyebrow}</p>
-            <h2 className="heading-tight mt-2 max-w-[24ch] text-balance font-heading text-[clamp(1.625rem,3.2vw,2.375rem)] font-extrabold tracking-[-0.025em] text-ink">
+            <h2
+              id="mission-solution-heading"
+              ref={solutionHeading}
+              tabIndex={-1}
+              className="heading-tight mt-2 max-w-[24ch] text-balance font-heading text-[clamp(1.625rem,3.2vw,2.375rem)] font-extrabold tracking-[-0.025em] text-ink"
+            >
               {/* The last of the three carries the accent — the same rhythm the
                   closing strapline uses everywhere else on the site. */}
               {solutionCopy.title.split(". ").map((part, i, all) => (
@@ -521,8 +541,8 @@ export function MissionSolution() {
                     strokeWidth={1.2}
                     className="pointer-events-none absolute -right-8 -top-8 size-48 text-[#ffffff] opacity-[0.14]"
                   />
-                  <p className="eyebrow tracking-[0.14em] text-ink/85">{impactProof.eyebrow}</p>
-                  <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3 font-heading font-extrabold leading-none tracking-[-0.04em] text-ink">
+                  <p className="eyebrow tracking-[0.14em] text-page">{impactProof.eyebrow}</p>
+                  <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3 font-heading font-extrabold leading-none tracking-[-0.04em] text-page">
                     <span className="text-[clamp(2.25rem,4vw,3rem)]">
                       {impactProof.multiplier.from.figure}
                     </span>
@@ -540,7 +560,7 @@ export function MissionSolution() {
                   {/* ⚠️ ILLUSTRATIVE, AND IT SAYS SO. A conversion model, not a
                       delivered result. The disclaimer travels with the figure
                       and is not a caption a later layout pass may trim. */}
-                  <p className="mt-2.5 text-[11.5px] max-lg:text-[13px] leading-snug text-ink/85">
+                  <p className="mt-3 text-[13px] leading-relaxed text-page">
                     {impactProof.multiplier.disclaimer}
                   </p>
                 </div>

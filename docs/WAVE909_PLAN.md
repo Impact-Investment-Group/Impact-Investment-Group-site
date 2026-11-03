@@ -1,5 +1,6 @@
 # Wave 909: a clearer, more modern website
-Call: Refine every marketing page | High | parallel lanes | independent page components share one design system.+1. Preserve the light navy, orange and teal branding, daylight photographs, headshots, facts and links.
+Call: Refine every marketing page | High | parallel lanes | independent page components share one design system.
+1. Preserve the light navy, orange and teal branding, daylight photographs, headshots, facts and links.
 2. Improve shared typography, spacing, cards and page introductions with subtle technical detail.
 3. Add accessible section navigation and useful reading progress on long pages.
 4. Refine home interactions and all informational routes without inventing services or figures.

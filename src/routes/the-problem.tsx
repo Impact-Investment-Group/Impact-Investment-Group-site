@@ -73,8 +73,20 @@ const PORTRAIT: Record<string, { src: string; w: number; h: number }> = {
 
 function TheProblemPage() {
   return (
-    <main>
-      <h1 className="sr-only">{problemHero.title}</h1>
+    <div>
+      <section className="page-intro border-b border-rule" aria-labelledby="problem-heading">
+        <div className="mx-auto w-full max-w-[1200px] px-5 py-12 sm:px-8 lg:py-16">
+          <h1
+            id="problem-heading"
+            className="heading-tight text-balance font-heading text-[clamp(2.5rem,5vw,4rem)] font-extrabold text-ink"
+          >
+            {problemHero.title}
+          </h1>
+          <p className="mt-5 max-w-[65ch] text-lg leading-relaxed text-ink-muted">
+            {problemHero.description}
+          </p>
+        </div>
+      </section>
 
       {problemSections.map((section, i) => {
         const portrait = section.character ? PORTRAIT[section.character] : undefined;
@@ -138,26 +150,24 @@ function TheProblemPage() {
                     >
                       {section.headline}
                     </p>
-                    <p className="mt-3.5 max-w-[32ch] text-[15px] leading-relaxed text-ink-muted">
+                    <p className="mt-4 max-w-[38ch] text-base leading-relaxed text-ink-muted">
                       {section.lead}
                     </p>
                     {section.source ? (
-                      <p className="mt-3.5 max-w-[46ch] text-[11px] max-lg:text-[15px] leading-relaxed text-ink-muted">
+                      <p className="mt-4 max-w-[50ch] text-sm leading-relaxed text-ink-muted">
                         {section.source}
                       </p>
                     ) : null}
                   </div>
 
                   <Reveal index={1}>
-                    <ul>
+                    <ul className="rounded-2xl border border-rule bg-page p-3 shadow-[var(--shadow-card)] sm:p-5">
                       {section.rows.map((r) => (
                         <li
                           key={r.label}
-                          className="flex items-baseline justify-between gap-4 border-b border-rule py-3 last:border-b-0"
+                          className="flex items-baseline justify-between gap-4 border-b border-rule px-1 py-4 last:border-b-0"
                         >
-                          <p className="text-[13.5px] max-lg:text-[15px] leading-snug max-lg:leading-[1.6] text-ink-muted">
-                            {r.label}
-                          </p>
+                          <p className="text-[15px] leading-relaxed text-ink-muted">{r.label}</p>
                           {r.value ? (
                             <p
                               className={cn(
@@ -178,6 +188,6 @@ function TheProblemPage() {
           </section>
         );
       })}
-    </main>
+    </div>
   );
 }

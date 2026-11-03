@@ -112,10 +112,10 @@ export function DirectorCard({
              the shorter ones. A minimum height that equalises nothing is
              just a hole. The card's own `pb-5` is the gap now, which is the
              20px the design already gives every other card on this page. */
-          "group section-light relative flex h-full flex-col items-center overflow-hidden rounded-[18px] bg-cream-card px-4 pb-5 pt-5 text-center md:min-h-[356px]",
-          "border border-white/70 shadow-[0_18px_42px_color-mix(in_srgb,var(--brand-ink)_20%,transparent)]",
+          "group relative flex h-full flex-col items-center overflow-hidden rounded-2xl bg-page px-4 pb-6 pt-6 text-center md:min-h-[356px]",
+          "border border-rule shadow-[var(--shadow-card)]",
           "transition-[transform,box-shadow] duration-300 motion-reduce:transition-none",
-          "hover:-translate-y-1.5 hover:shadow-[0_26px_55px_color-mix(in_srgb,var(--brand-ink)_30%,transparent)]",
+          "motion-safe:hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]",
           className,
         )}
       >
@@ -145,12 +145,12 @@ export function DirectorCard({
         <h3 className="mt-4 font-heading text-[17px] font-bold leading-tight text-navy-900">
           {director.name}
         </h3>
-        <p className="mt-1 min-h-8 text-[12.5px] max-lg:text-[15px] font-semibold leading-tight text-teal-600">
+        <p className="mt-2 min-h-10 text-[14px] font-semibold leading-snug text-teal-600">
           {director.role}
         </p>
         <span aria-hidden="true" className="my-3.5 h-[3px] w-9 rounded-full bg-orange-600" />
         {director.credentials?.length ? (
-          <ul className="flex flex-col gap-2 text-[12px] max-lg:text-[15px] leading-[1.4] max-lg:leading-[1.6] text-slate-ink">
+          <ul className="flex flex-col gap-2 text-sm leading-relaxed text-slate-ink">
             {director.credentials.map((line) => (
               <li key={line}>{line}</li>
             ))}

@@ -142,7 +142,7 @@ function HomePage() {
               >
                 {demandMapCopy.title}
               </h2>
-              <p className="measure mt-2.5 text-[13.5px] max-lg:text-[15px] leading-[1.65] text-ink-muted">
+              <p className="measure mt-4 text-base leading-relaxed text-ink-muted">
                 {demandMapCopy.lead}
               </p>
 
@@ -162,7 +162,7 @@ function HomePage() {
                   <li
                     key={stat.label}
                     className={cn(
-                      "rounded-xl border p-3 shadow-[var(--shadow-card)]",
+                      "rounded-2xl border p-4 shadow-[var(--shadow-card)]",
                       "last:col-span-2 sm:last:col-span-1",
                       /* The emphasised figure keeps its teal fill and its
                          white numeral (5.25:1); the other two are white cards
@@ -217,10 +217,10 @@ function HomePage() {
                       className="mt-0.5"
                     />
                     <div className="min-w-0">
-                      <h3 className="heading-tight text-[14.5px] font-bold text-ink">
+                      <h3 className="heading-tight text-base font-bold text-ink">
                         {statement.heading}
                       </h3>
-                      <p className="mt-1 max-w-[62ch] text-[12.5px] max-lg:text-[15px] leading-[1.6] text-ink-muted">
+                      <p className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-ink-muted">
                         {statement.body}
                       </p>
                     </div>

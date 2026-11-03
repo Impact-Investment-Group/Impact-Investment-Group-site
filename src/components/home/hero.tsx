@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { RoleIcon } from "@/components/register/role-icon";
 import { registerRoles } from "@/content/audiences";
@@ -7,17 +8,8 @@ import { registerAsDivider } from "@/content/register";
 import { cn } from "@/lib/utils";
 import { SIZES_HERO_GROUND, variantSrcSet } from "@/lib/responsive-image";
 
-/**
- * HomeHero — the approved Mock-up 1 composition: three photographs captioned
- * with the three headlines, the wait-list divider and ten role cards. No
- * buttons, no statistics, no scroll indicator. The role cards are the call to
- * action.
- *
- * The photographs lead and the words follow, and the whole section is built to
- * land inside the first screen — nothing here should need scrolling to. That
- * constraint drives the sizing: everything below the pictures is a fixed
- * stack, so the pictures take whatever height is left over and the band's
- * width follows from that rather than from the page's.
+/** Three daylight photographs, paired captions and role-based registration links.
+ * On smaller screens, native swipe and labelled controls share the same lane.
  */
 
 const headlines = [
@@ -79,14 +71,14 @@ const photos = [
     src: "/images/hero-homes.webp",
     width: 1280,
     height: 1024,
-    alt: "A woman handing a set of keys to a man on the pavement outside a brick terrace at sunset",
+    alt: "A woman handing a set of keys to a man outside a brick terrace in daylight",
   },
   {
     id: "support",
     src: "/images/hero-support.webp",
     width: 1280,
     height: 1024,
-    alt: "A carer in uniform resting a hand on the shoulder of an older woman seated in an armchair in a lamplit living room",
+    alt: "A carer in uniform resting a hand on the shoulder of an older woman in a bright living room",
   },
   {
     id: "lives",
@@ -124,6 +116,49 @@ export function HomeHero() {
    */
   const bandRef = React.useRef<HTMLDivElement | null>(null);
   const [scrollable, setScrollable] = React.useState(false);
+  const [activePanel, setActivePanel] = React.useState(0);
+
+  const goToPanel = (index: number) => {
+    const band = bandRef.current;
+    const panel = band?.children[index] as HTMLElement | undefined;
+    const first = band?.firstElementChild as HTMLElement | undefined;
+    if (!band || !panel || !first) return;
+    band.scrollTo({
+      left: panel.offsetLeft - first.offsetLeft,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
+  };
+
+  React.useEffect(() => {
+    const band = bandRef.current;
+    if (!band) return;
+    const read = () => {
+      const first = band.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      let nearest = 0;
+      let distance = Infinity;
+      Array.from(band.children).forEach((child, index) => {
+        const delta = Math.abs(
+          (child as HTMLElement).offsetLeft - first.offsetLeft - band.scrollLeft,
+        );
+        if (delta < distance) {
+          distance = delta;
+          nearest = index;
+        }
+      });
+      setActivePanel(nearest);
+    };
+    band.addEventListener("scroll", read, { passive: true });
+    const observer = new ResizeObserver(read);
+    observer.observe(band);
+    read();
+    return () => {
+      band.removeEventListener("scroll", read);
+      observer.disconnect();
+    };
+  }, []);
   React.useEffect(() => {
     const query = window.matchMedia("(max-width: 767px)");
     const read = () => setScrollable(query.matches);
@@ -219,10 +254,28 @@ export function HomeHero() {
             of the sentence the three photographs make, so no string is added
             here. */}
         <div
+          id="hero-photographs"
           ref={bandRef}
           role="group"
           aria-labelledby="hero-heading"
           tabIndex={scrollable ? 0 : undefined}
+          onKeyDown={(event) => {
+            if (!scrollable) return;
+            const next =
+              event.key === "ArrowRight"
+                ? Math.min(activePanel + 1, panels.length - 1)
+                : event.key === "ArrowLeft"
+                  ? Math.max(activePanel - 1, 0)
+                  : event.key === "Home"
+                    ? 0
+                    : event.key === "End"
+                      ? panels.length - 1
+                      : null;
+            if (next !== null) {
+              event.preventDefault();
+              goToPanel(next);
+            }
+          }}
           className="hero-band grid grid-cols-1 gap-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 md:grid-cols-3"
         >
           {panels.map((panel) => (
@@ -280,6 +333,51 @@ export function HomeHero() {
               </figcaption>
             </figure>
           ))}
+        </div>
+        <div
+          role="group"
+          className="mt-3 flex items-center justify-center gap-3 md:hidden"
+          aria-label="Photograph controls"
+        >
+          <button
+            type="button"
+            aria-label="Previous photograph"
+            aria-controls="hero-photographs"
+            disabled={activePanel === 0}
+            onClick={() => goToPanel(activePanel - 1)}
+            className="grid size-11 place-items-center rounded-full border border-rule bg-page text-ink transition-colors hover:border-teal-600 hover:bg-secondary disabled:cursor-default disabled:opacity-40"
+          >
+            <ArrowLeft aria-hidden="true" className="size-4" />
+          </button>
+          {panels.map((panel, index) => (
+            <button
+              key={panel.id}
+              type="button"
+              aria-label={`Show ${panel.headline.text.toLowerCase()}`}
+              aria-controls="hero-photographs"
+              aria-pressed={activePanel === index}
+              onClick={() => goToPanel(index)}
+              className="grid size-11 place-items-center rounded-full"
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "h-2 rounded-full transition-all motion-reduce:transition-none",
+                  activePanel === index ? "w-6 bg-teal-600" : "w-2 bg-ink-muted/40",
+                )}
+              />
+            </button>
+          ))}
+          <button
+            type="button"
+            aria-label="Next photograph"
+            aria-controls="hero-photographs"
+            disabled={activePanel === panels.length - 1}
+            onClick={() => goToPanel(activePanel + 1)}
+            className="grid size-11 place-items-center rounded-full border border-rule bg-page text-ink transition-colors hover:border-teal-600 hover:bg-secondary disabled:cursor-default disabled:opacity-40"
+          >
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </button>
         </div>
       </div>
 

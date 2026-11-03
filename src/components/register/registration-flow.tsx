@@ -101,37 +101,44 @@ function QuestionInput({
   if (question.kind === "single" || question.kind === "multi") {
     const selected = Array.isArray(value) ? value : value ? [value] : [];
     return (
-      <fieldset
-        aria-labelledby="registration-heading"
-        aria-describedby={question.help ? "question-help" : undefined}
-        className="grid gap-3 sm:grid-cols-2"
-      >
-        <legend className="sr-only">{question.label}</legend>
-        {(question.options ?? []).map((option) => (
-          <label
-            key={option}
-            className="registration-option relative flex min-h-20 cursor-pointer items-center gap-4 rounded-2xl border border-rule bg-page/70 p-5 text-base leading-relaxed text-ink-muted transition-all hover:border-teal-600 has-checked:border-teal-600 has-checked:bg-tint-teal has-checked:text-ink has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-teal-600"
-          >
-            <input
-              type={question.kind === "multi" ? "checkbox" : "radio"}
-              name={question.id}
-              value={option}
-              checked={selected.includes(option)}
-              className="size-5 shrink-0 accent-teal-600"
-              onChange={(event) =>
-                onChange(
-                  question.kind === "single"
-                    ? option
-                    : event.target.checked
-                      ? [...selected, option]
-                      : selected.filter((item) => item !== option),
-                )
-              }
-            />
-            <span>{option}</span>
-          </label>
-        ))}
-      </fieldset>
+      <div>
+        <p id="question-selection-help" className="mb-4 text-sm font-medium text-ink-muted">
+          {question.kind === "multi" ? "Select all that apply" : "Select one option"}
+        </p>
+        <fieldset
+          aria-labelledby="registration-heading"
+          aria-describedby={
+            question.help ? "question-help question-selection-help" : "question-selection-help"
+          }
+          className="grid gap-3 sm:grid-cols-2"
+        >
+          <legend className="sr-only">{question.label}</legend>
+          {(question.options ?? []).map((option) => (
+            <label
+              key={option}
+              className="registration-option relative flex min-h-20 cursor-pointer items-center gap-4 rounded-2xl border border-rule bg-page p-5 text-base leading-relaxed text-ink-muted transition-colors hover:border-teal-600 has-checked:border-teal-600 has-checked:bg-secondary has-checked:text-ink has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-teal-600"
+            >
+              <input
+                type={question.kind === "multi" ? "checkbox" : "radio"}
+                name={question.id}
+                value={option}
+                checked={selected.includes(option)}
+                className="size-5 shrink-0 accent-teal-600"
+                onChange={(event) =>
+                  onChange(
+                    question.kind === "single"
+                      ? option
+                      : event.target.checked
+                        ? [...selected, option]
+                        : selected.filter((item) => item !== option),
+                  )
+                }
+              />
+              <span>{option}</span>
+            </label>
+          ))}
+        </fieldset>
+      </div>
     );
   }
   const shared = {
@@ -453,37 +460,48 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
     <div className="registration-flow mx-auto w-full max-w-[820px]">
       <ol
         aria-label="Registration progress"
-        className="mx-auto mb-8 flex max-w-md items-center justify-center gap-3 text-sm sm:gap-5"
+        className="mb-6 grid grid-cols-3 gap-2 text-sm sm:gap-3"
       >
-        <li
-          aria-current={stage === "account" ? "step" : undefined}
-          className={cn(
-            "flex items-center gap-2",
-            stage === "account" ? "text-ink" : "text-teal-600",
-          )}
-        >
-          <span className="grid size-8 place-items-center rounded-full border border-current font-mono text-xs">
-            01
-          </span>
-          Your account
-        </li>
-        <li aria-hidden="true" className="h-px flex-1 bg-rule" />
-        <li
-          aria-current={stage === "survey" ? "step" : undefined}
-          className={cn(
-            "flex items-center gap-2",
-            stage === "account" ? "text-ink-muted" : "text-ink",
-          )}
-        >
-          <span className="grid size-8 place-items-center rounded-full border border-current font-mono text-xs">
-            02
-          </span>
-          Your preferences
-        </li>
+        {(
+          [
+            { id: "account", label: "Your account" },
+            { id: "survey", label: "Your preferences" },
+            { id: "done", label: "Complete" },
+          ] as const
+        ).map((step, stepIndex) => {
+          const active = stage === step.id;
+          const completed = stage === "done" || (stage === "survey" && step.id === "account");
+          return (
+            <li
+              key={step.id}
+              aria-current={active ? "step" : undefined}
+              className={cn(
+                "flex min-w-0 flex-col items-center gap-2 rounded-2xl border px-2 py-4 text-center sm:flex-row sm:justify-center sm:gap-3 sm:px-4",
+                active
+                  ? "border-teal-600 bg-secondary text-ink"
+                  : "border-rule bg-page text-ink-muted",
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "grid size-8 shrink-0 place-items-center rounded-full border font-mono text-xs",
+                  active || completed ? "border-teal-600 text-teal-600" : "border-rule",
+                )}
+              >
+                {completed ? <ShieldCheck size={17} /> : String(stepIndex + 1).padStart(2, "0")}
+              </span>
+              <span className="font-medium leading-snug">
+                {completed && !active ? <span className="sr-only">Completed: </span> : null}
+                {step.label}
+              </span>
+            </li>
+          );
+        })}
       </ol>
 
       {stage === "account" ? (
-        <div className="registration-panel registration-survey rounded-3xl border border-rule bg-page p-6 sm:p-10">
+        <div className="registration-panel registration-survey rounded-3xl border border-rule bg-page p-6 shadow-[var(--shadow-card)] sm:p-10">
           {/* No `data-step` here on purpose. This is the first thing the route
               paints and the server painted it; an entrance on it would blink
               away content the visitor is already reading. */}
@@ -553,11 +571,17 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
                         value={details[field]}
                         aria-invalid={!!errors[field]}
                         aria-describedby={
-                          errors[field]
-                            ? `${field}-error`
-                            : field === "password"
-                              ? "password-help"
-                              : undefined
+                          [
+                            field === "password" ? "password-help" : "",
+                            errors[field] ? `${field}-error` : "",
+                            field === "confirmPassword" &&
+                            details.confirmPassword &&
+                            details.confirmPassword === details.password
+                              ? "password-match"
+                              : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ") || undefined
                         }
                         className={cn(
                           fieldClass,
@@ -592,6 +616,17 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
                         {copy.passwordHelp}
                       </p>
                     )}
+                    {field === "confirmPassword" &&
+                    details.confirmPassword &&
+                    details.confirmPassword === details.password ? (
+                      <p
+                        id="password-match"
+                        className="mt-2 inline-flex items-center gap-2 text-sm text-teal-600"
+                      >
+                        <ShieldCheck aria-hidden="true" size={16} />
+                        Passwords match
+                      </p>
+                    ) : null}
                     {errors[field] && (
                       <p
                         id={`${field}-error`}
@@ -635,7 +670,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
                 ].map((consent) => (
                   <label
                     key={consent.id}
-                    className="flex min-h-11 cursor-pointer items-start gap-3 py-2 text-sm leading-relaxed text-ink-muted"
+                    className="mb-2 flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-rule bg-page p-3 text-sm leading-relaxed text-ink-muted has-checked:border-teal-600 has-checked:bg-secondary has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-teal-600"
                   >
                     <input
                       id={consent.id}
@@ -713,7 +748,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
         </div>
       ) : stage === "survey" ? (
         <div
-          className="registration-panel registration-survey rounded-3xl border border-rule bg-page p-6 sm:p-10"
+          className="registration-panel registration-survey rounded-3xl border border-rule bg-page p-6 shadow-[var(--shadow-card)] sm:p-10"
           aria-busy={busy}
         >
           {/* WAVE 414: THE PROGRESS CHROME IS PINNED UNDER THE BAR ON A PHONE.
@@ -746,7 +781,7 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
               aria-valuemax={questions.length}
               aria-valuenow={index + 1}
               aria-valuetext={`Question ${index + 1} of ${questions.length}`}
-              className="mb-9 h-1 overflow-hidden rounded-full bg-rule"
+              className="mb-9 h-1.5 overflow-hidden rounded-full bg-rule"
             >
               {/* WAVE 413b: scaled from its left edge rather than widened, so
               the bar's own growth is a transform. The track above clips it. */}

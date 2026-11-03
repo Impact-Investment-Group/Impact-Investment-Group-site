@@ -91,14 +91,11 @@ type FormValues = {
  * The field is min-h-11 already, so the taller line box costs no height.
  */
 const fieldClass =
-  "min-h-11 w-full rounded-[10px] border border-rule bg-page px-4 py-3 text-base text-ink placeholder:text-ink-muted aria-invalid:border-destructive focus-visible:border-teal-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600";
+  "min-h-12 w-full rounded-xl border border-rule bg-page px-4 py-3 text-base text-ink placeholder:text-ink-muted transition-colors hover:border-teal-600/60 aria-invalid:border-destructive focus-visible:border-teal-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600";
 
 function Label({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
-    <label
-      htmlFor={htmlFor}
-      className="font-heading text-sm font-semibold uppercase tracking-[0.08em] text-ink-muted"
-    >
+    <label htmlFor={htmlFor} className="text-sm font-semibold text-ink">
       {children}
     </label>
   );
@@ -137,6 +134,8 @@ export function EnquiryForm({
   const config = enquiryRoutes.find((r) => r.id === route) ?? enquiryRoutes[0]!;
   const [sent, setSent] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
+  const successHeading = React.useRef<HTMLHeadingElement>(null);
   // WAVE 413b: the success mark's dash, measured off its own path rather than
   // guessed at 48. See src/hooks/use-draw-mark.ts.
   const drawMark = useDrawMark();
@@ -150,6 +149,9 @@ export function EnquiryForm({
     register,
     handleSubmit,
     reset,
+    clearErrors,
+    watch,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver,
@@ -160,7 +162,17 @@ export function EnquiryForm({
   React.useEffect(() => {
     setSent(false);
     setFailed(false);
-  }, [route]);
+    clearErrors();
+  }, [route, clearErrors]);
+
+  React.useEffect(() => setReady(true), []);
+
+  React.useEffect(() => {
+    if (sent) successHeading.current?.focus();
+  }, [sent]);
+
+  const messageLength = watch("message")?.length ?? 0;
+  const errorFields = Object.keys(errors) as (keyof FormValues)[];
 
   const onSubmit = async (values: FormValues) => {
     setFailed(false);
@@ -194,8 +206,14 @@ export function EnquiryForm({
               reason. */}
           <HandHeart ref={drawMark} aria-hidden="true" className="draw-in size-5 text-teal-600" />
         </span>
-        <h3 className="mt-5 font-heading text-xl font-bold text-ink">Enquiry received</h3>
-        <p className="measure mt-3 text-sm leading-relaxed text-ink-muted">
+        <h3
+          ref={successHeading}
+          tabIndex={-1}
+          className="mt-5 font-heading text-2xl font-bold text-ink focus-visible:outline-2 focus-visible:outline-teal-600"
+        >
+          Enquiry received
+        </h3>
+        <p className="measure mt-3 text-base leading-relaxed text-ink-muted">
           Routed to our {config.routedTo.toLowerCase()}. {config.reply}.
         </p>
         <div className="mt-6">
@@ -211,18 +229,45 @@ export function EnquiryForm({
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className="rounded-[var(--radius-panel)] border border-rule bg-page/50 p-6 sm:p-8"
+      aria-busy={isSubmitting}
+      aria-labelledby="enquiry-form-title"
+      className="rounded-3xl border border-rule bg-page p-5 shadow-[var(--shadow-card)] sm:p-8"
     >
-      <p className="eyebrow text-teal-600">{config.label}</p>
-      <p className="mt-2 text-sm max-lg:text-[15px] max-lg:leading-[1.6] text-ink-muted">
+      <h3 id="enquiry-form-title" className="font-heading text-2xl font-bold text-ink">
+        {config.label}
+      </h3>
+      <p className="mt-2 text-sm leading-relaxed text-ink-muted">
         Routed to our {config.routedTo.toLowerCase()} · {config.reply.toLowerCase()}
       </p>
+
+      {errorFields.length > 0 ? (
+        <div className="mt-6 rounded-xl border border-destructive/40 bg-page-alt p-4">
+          <p className="text-sm font-semibold text-destructive">
+            Please check the highlighted fields.
+          </p>
+          <ul className="mt-2 flex flex-col items-start">
+            {errorFields.map((field) => (
+              <li key={field}>
+                <button
+                  type="button"
+                  onClick={() => setFocus(field)}
+                  className="min-h-11 text-left text-sm text-destructive underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive"
+                >
+                  {errors[field]?.message}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-2">
           <Label htmlFor="name">Name</Label>
           <input
             id="name"
+            maxLength={100}
+            required
             className={fieldClass}
             inputMode="text"
             autoComplete="name"
@@ -238,6 +283,8 @@ export function EnquiryForm({
           <input
             id="email"
             type="email"
+            maxLength={255}
+            required
             inputMode="email"
             className={fieldClass}
             autoComplete="email"
@@ -252,6 +299,8 @@ export function EnquiryForm({
           <Label htmlFor="organisation">Organisation</Label>
           <input
             id="organisation"
+            maxLength={150}
+            required
             className={fieldClass}
             inputMode="text"
             autoComplete="organization"
@@ -266,6 +315,7 @@ export function EnquiryForm({
           <Label htmlFor="role">Your role</Label>
           <select
             id="role"
+            required
             autoComplete="off"
             className={cn(fieldClass, "cursor-pointer")}
             aria-invalid={!!errors.role}
@@ -356,13 +406,21 @@ export function EnquiryForm({
             <textarea
               id="message"
               rows={6}
+              maxLength={2000}
+              required
               inputMode="text"
               autoComplete="off"
               className={cn(fieldClass, "min-h-[140px] resize-y")}
               aria-invalid={!!errors.message}
-              aria-describedby={errors.message ? "message-error" : undefined}
+              aria-describedby={errors.message ? "message-count message-error" : "message-count"}
               {...register("message")}
             />
+            <p
+              id="message-count"
+              className="text-right font-mono text-xs tabular-nums text-ink-muted"
+            >
+              {messageLength.toLocaleString("en-GB")} / 2,000 characters
+            </p>
             <ErrorText id="message-error">{errors.message?.message}</ErrorText>
           </div>
 
@@ -408,6 +466,7 @@ export function EnquiryForm({
           <textarea
             id="holdings"
             rows={4}
+            maxLength={2000}
             className={cn(fieldClass, "min-h-[110px] resize-y")}
             aria-invalid={!!errors.holdings}
             aria-describedby={errors.holdings ? "holdings-error" : undefined}
@@ -435,7 +494,13 @@ export function EnquiryForm({
 
       <div className="mt-8 flex flex-col gap-3">
         <div>
-          <Button type="submit" variant="primary" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={isSubmitting || !ready}
+          >
             {/* WAVE 413: the same submit pattern as the registration flow, so
                 the two forms on this site behave identically. The label
                 already changed while the request was in flight; the spinner is

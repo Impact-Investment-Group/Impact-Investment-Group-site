@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Building2,
   CheckCircle2,
@@ -15,11 +15,13 @@ import {
   User,
   UserRoundCheck,
   Users,
+  ZoomIn,
   type LucideIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { PartnerProfile } from "@/content/partners";
 import { crisisLines, crisisNote } from "@/content/site";
 import {
@@ -305,18 +307,47 @@ function ConnectedNetworkDiagram({ profile }: { profile: PartnerProfile }) {
 
   return (
     <Reveal className="mt-10">
-      <figure className="overflow-hidden rounded-3xl border border-rule bg-page shadow-[0_30px_90px_rgba(0,0,0,0.28)]">
-        <img
-          src={presentation.image}
-          alt={presentation.alt}
-          loading="lazy"
-          className="aspect-[16/9] w-full object-cover"
-          srcSet={variantSrcSet(presentation.image)}
-          sizes={SIZES_HALF_FROM_TABLET}
-          width={intrinsic(presentation.image)?.width}
-          height={intrinsic(presentation.image)?.height}
-        />
-      </figure>
+      <Dialog>
+        <figure className="overflow-hidden rounded-3xl border border-rule bg-white shadow-[var(--shadow-card)]">
+          <img
+            src={presentation.image}
+            alt={presentation.alt}
+            loading="lazy"
+            className="aspect-[16/9] w-full object-contain"
+            srcSet={variantSrcSet(presentation.image)}
+            sizes="(min-width: 1200px) 1136px, 100vw"
+            width={intrinsic(presentation.image)?.width}
+            height={intrinsic(presentation.image)?.height}
+          />
+          <figcaption className="flex justify-end border-t border-rule px-3 py-2">
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-teal-600 transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-teal-600"
+              >
+                <ZoomIn aria-hidden="true" className="size-4" />
+                View full diagram
+              </button>
+            </DialogTrigger>
+          </figcaption>
+        </figure>
+        <DialogContent
+          aria-describedby={undefined}
+          className="max-h-[90dvh] w-[calc(100%_-_2rem)] max-w-[1400px] overflow-auto rounded-2xl bg-page p-4 pt-6 sm:max-w-[1400px] sm:p-6 [&>button]:grid [&>button]:size-11 [&>button]:place-items-center"
+        >
+          <DialogTitle className="pr-12 text-base text-ink">
+            {profile.label}: connected network
+          </DialogTitle>
+          <div
+            className="overflow-auto rounded-xl border border-rule"
+            tabIndex={0}
+            role="region"
+            aria-label="Connected network diagram"
+          >
+            <img src={presentation.image} alt={presentation.alt} className="w-full min-w-[900px]" />
+          </div>
+        </DialogContent>
+      </Dialog>
     </Reveal>
   );
 }
@@ -412,7 +443,7 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
           <p className="eyebrow tracking-[0.14em] text-teal-600">01 · {presentation.eyebrow}</p>
           <h2
             id="role-heading"
-            className="heading-tight mt-3 text-[clamp(2.2rem,5vw,4rem)] font-extrabold leading-none text-ink"
+            className="heading-tight mt-3 text-balance text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-tight text-ink"
           >
             {presentation.lead} <span className="text-orange-700">{presentation.accent}</span>
           </h2>
@@ -427,19 +458,17 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
               <Reveal
                 key={point}
                 index={index}
-                className="group grid min-h-[100px] grid-cols-[58px_1fr_auto] items-center gap-3 rounded-2xl border-2 border-orange-500 bg-mist-bg px-4 py-4 text-navy-900 shadow-[0_14px_34px_rgba(0,0,0,0.18)] transition-all duration-300 hover:translate-x-2 hover:shadow-[0_20px_44px_rgba(0,0,0,0.28)] sm:grid-cols-[72px_1fr_104px] sm:px-5"
+                className="group grid min-h-[100px] grid-cols-[36px_1fr] items-center gap-4 rounded-2xl border border-rule bg-white px-4 py-5 text-ink shadow-[var(--shadow-card)] sm:grid-cols-[48px_1fr_104px] sm:px-5"
               >
-                <span className="font-heading text-[30px] font-extrabold text-orange-700">
+                <span className="self-start pt-1 font-mono text-lg font-semibold text-teal-600">
                   0{index + 1}
                 </span>
-                <p className="font-heading text-[16px] font-extrabold leading-snug sm:text-[18px]">
-                  {point}
-                </p>
-                <span className="flex items-center justify-end gap-2 font-mono text-[9px] max-lg:text-[12px] font-semibold uppercase tracking-[0.08em] text-teal-800">
+                <p className="text-base font-medium leading-relaxed">{point}</p>
+                <span className="hidden items-center justify-end gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-teal-800 sm:flex">
                   <span className="hidden sm:inline">
                     {presentation.guideLabels[index] ?? "Guide"}
                   </span>
-                  <span className="grid size-10 shrink-0 place-items-end overflow-hidden rounded-full border-2 border-orange-500 bg-page">
+                  <span className="grid size-10 shrink-0 place-items-end overflow-hidden rounded-full border border-rule bg-page">
                     <img
                       src={roleGuideImages[index] ?? roleGuideImages[0]}
                       loading="lazy"
@@ -495,12 +524,14 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
 
 function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
   const [activeStep, setActiveStep] = useState(0);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const presentation = platformPresentations[profile.id] ?? platformPresentations["investor"]!;
 
   return (
     <section
+      id="platform-journey"
       aria-labelledby="platform-heading"
-      className="relative isolate overflow-hidden bg-page"
+      className="relative isolate overflow-hidden border-y border-rule bg-page-alt"
     >
       <div
         aria-hidden="true"
@@ -512,7 +543,7 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
           <p className="eyebrow tracking-[0.16em] text-teal-600">02 · Through the platform</p>
           <h2
             id="platform-heading"
-            className="heading-tight mx-auto mt-4 max-w-[17ch] text-[clamp(2.7rem,5.6vw,5rem)] font-extrabold leading-[0.94] tracking-[-0.04em] text-ink"
+            className="heading-tight mx-auto mt-4 max-w-[24ch] text-balance text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-tight text-ink"
           >
             {presentation.lead} <span className="text-orange-700">{presentation.accent}</span>
           </h2>
@@ -523,24 +554,24 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
 
         <div
           className="relative mx-auto mt-14 max-w-[1020px] sm:mt-16"
-          role="group"
+          role="tablist"
           aria-label={`${profile.label} platform journey`}
         >
           <div
             aria-hidden="true"
-            className="absolute left-7 top-7 h-[calc(100%-3.5rem)] w-1 bg-white/15 sm:hidden"
+            className="absolute left-7 top-7 h-[calc(100%-3.5rem)] w-0.5 bg-rule sm:hidden"
           >
             <div
-              className="w-full bg-[linear-gradient(180deg,var(--brand-teal-on-ink),var(--brand-primary))] shadow-[0_0_20px_color-mix(in_srgb,var(--brand-primary)_55%,transparent)] transition-[height] duration-500"
+              className="w-full bg-teal-600 motion-safe:transition-[height] motion-safe:duration-300"
               style={{ height: `${activeStep * 50}%` }}
             />
           </div>
           <div
             aria-hidden="true"
-            className="absolute left-[16.666%] right-[16.666%] top-7 hidden h-1 bg-white/15 sm:block"
+            className="absolute left-[16.666%] right-[16.666%] top-7 hidden h-0.5 bg-rule sm:block"
           >
             <div
-              className="h-full bg-[linear-gradient(90deg,var(--brand-teal-on-ink),var(--brand-primary))] shadow-[0_0_20px_color-mix(in_srgb,var(--brand-primary)_55%,transparent)] transition-[width] duration-500"
+              className="h-full bg-teal-600 motion-safe:transition-[width] motion-safe:duration-300"
               style={{ width: `${activeStep * 50}%` }}
             />
           </div>
@@ -552,17 +583,40 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
               return (
                 <button
                   key={step}
+                  ref={(node) => {
+                    tabRefs.current[index] = node;
+                  }}
+                  role="tab"
+                  id={`journey-tab-${index}`}
+                  aria-controls="journey-panel"
                   type="button"
-                  aria-pressed={selected}
+                  tabIndex={selected ? 0 : -1}
+                  aria-selected={selected}
                   onClick={() => setActiveStep(index)}
-                  onMouseEnter={() => setActiveStep(index)}
-                  className="group grid grid-cols-[56px_1fr] items-center gap-4 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 sm:block sm:text-center"
+                  onKeyDown={(event) => {
+                    const keys = ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"];
+                    if (!keys.includes(event.key)) return;
+                    event.preventDefault();
+                    const count = profile.platformSteps.length;
+                    const next =
+                      event.key === "Home"
+                        ? 0
+                        : event.key === "End"
+                          ? count - 1
+                          : (index +
+                              (event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1) +
+                              count) %
+                            count;
+                    setActiveStep(next);
+                    tabRefs.current[next]?.focus();
+                  }}
+                  className="group grid grid-cols-[56px_1fr] items-center gap-4 rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 sm:block sm:text-center"
                 >
                   <span
-                    className={`relative z-10 grid size-14 place-items-center rounded-full border-[3px] font-mono text-[12px] font-bold transition-all duration-300 sm:mx-auto sm:mb-5 ${
+                    className={`relative z-10 grid size-14 place-items-center rounded-2xl border font-mono text-sm font-bold transition-colors duration-200 sm:mx-auto sm:mb-5 ${
                       selected
-                        ? "scale-110 border-orange-600 bg-orange-600 text-white shadow-[var(--shadow-orange-step)]"
-                        : "border-mist bg-page text-ink group-hover:border-teal-600"
+                        ? "border-teal-600 bg-teal-600 text-white shadow-[var(--shadow-card)]"
+                        : "border-rule bg-white text-ink group-hover:border-teal-600"
                     }`}
                   >
                     0{index + 1}
@@ -571,7 +625,7 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
                     <span className="block font-heading text-[20px] font-extrabold text-ink">
                       {presentation.labels[index]}
                     </span>
-                    <span className="mt-1 block text-[13px] max-lg:text-[15px] font-medium text-ink-muted">
+                    <span className="mt-1 block text-sm leading-relaxed text-ink-muted">
                       {presentation.readoutTitles[index]}
                     </span>
                   </span>
@@ -583,11 +637,14 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
 
         <Reveal className="mx-auto mt-12 max-w-[720px] sm:mt-14">
           <div
-            aria-live="polite"
-            className="border-l-4 border-orange-500 bg-page/86 px-6 py-5 shadow-[0_20px_55px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:px-8 sm:py-6"
+            id="journey-panel"
+            role="tabpanel"
+            aria-labelledby={`journey-tab-${activeStep}`}
+            tabIndex={0}
+            className="rounded-2xl border border-rule border-l-4 border-l-teal-600 bg-white px-6 py-6 shadow-[var(--shadow-card)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 sm:px-8"
           >
             <div className="flex items-center gap-3">
-              <span className="font-mono text-[10px] max-lg:text-[12px] font-bold uppercase tracking-[0.14em] text-teal-600">
+              <span className="font-mono text-xs font-bold uppercase tracking-[0.1em] text-teal-600">
                 Active checkpoint
               </span>
               <span aria-hidden="true" className="h-px flex-1 bg-teal-600/30" />
@@ -601,7 +658,7 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
                   buttons, large headings, light-surface text. If a lighter
                   orange tint is approved for small text on navy, this is the
                   one place to bring it back. */}
-              <span className="font-mono text-[10px] max-lg:text-[12px] font-bold text-ink-muted">
+              <span className="font-mono text-xs font-bold text-ink-muted">
                 0{activeStep + 1} / 03
               </span>
             </div>
@@ -631,12 +688,12 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
     connectedNetworkPresentations[profile.id] ?? connectedNetworkPresentations["investor"]!;
 
   return (
-    <main>
+    <div className="partner-page">
       {profile.crisisSignpost ? <CrisisSignpost signpost={profile.crisisSignpost} /> : null}
 
       <section
         aria-labelledby={headingId}
-        className={`section-light relative isolate overflow-hidden border-b border-rule ${
+        className={`page-intro section-light relative isolate overflow-hidden border-b border-rule ${
           isInvestor ? "min-h-[540px]" : "min-h-[610px]"
         }`}
       >
@@ -686,7 +743,7 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
           <Reveal className="max-w-[730px]">
             <Link
               to="/partners"
-              className="eyebrow inline-flex min-h-11 items-center gap-2 tracking-[0.15em] text-teal-700 transition-colors hover:text-orange-700 lg:min-h-0"
+              className="eyebrow inline-flex min-h-11 items-center gap-2 rounded-lg tracking-[0.1em] text-teal-700 transition-colors hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600"
             >
               <span aria-hidden="true">←</span> The partner ecosystem
             </Link>
@@ -782,15 +839,19 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
 
       <PartnerRoleLedger profile={profile} />
 
-      <PartnerPlatformStack profile={profile} />
+      <PartnerPlatformStack key={profile.id} profile={profile} />
 
-      <section aria-labelledby="network-heading" className="relative overflow-hidden bg-page">
+      <section
+        id="connected-network"
+        aria-labelledby="network-heading"
+        className="relative overflow-hidden bg-page"
+      >
         <div className="relative mx-auto w-full max-w-[1200px] px-5 py-16 sm:px-8 lg:py-20">
           <Reveal className="mx-auto max-w-[820px] text-center">
             <p className="eyebrow tracking-[0.14em] text-teal-600">03 · The connected network</p>
             <h2
               id="network-heading"
-              className="heading-tight mt-3 text-[clamp(2.2rem,5vw,4rem)] font-extrabold leading-none text-ink"
+              className="heading-tight mt-3 text-balance text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-tight text-ink"
             >
               {networkPresentation.lead}{" "}
               <span className="text-orange-700">{networkPresentation.accent}</span>
@@ -807,12 +868,10 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
               <Reveal
                 key={point}
                 index={index}
-                className="flex gap-3 rounded-2xl border-2 border-orange-500 bg-mist-bg p-5 text-navy-900 transition-transform duration-300 hover:-translate-y-1"
+                className="flex gap-3 rounded-2xl border border-rule bg-white p-5 text-ink shadow-[var(--shadow-card)]"
               >
                 <CheckCircle2 aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-teal-700" />
-                <p className="font-heading text-[15px] font-bold leading-snug text-navy-900">
-                  {point}
-                </p>
+                <p className="text-base font-medium leading-relaxed text-ink">{point}</p>
               </Reveal>
             ))}
           </div>
@@ -827,6 +886,6 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
           ) : null}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

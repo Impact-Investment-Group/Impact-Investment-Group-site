@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -10,9 +11,11 @@ import {
   Home,
   Landmark,
   Network,
+  Search,
   User,
   UserRoundCheck,
   Users,
+  X,
   type LucideIcon,
 } from "lucide-react";
 
@@ -133,39 +136,29 @@ function PartnerCard({ profile, outcome = false }: { profile: PartnerProfile; ou
     <Link
       to={profile.path}
       className={cn(
-        "group relative flex min-h-[145px] flex-col items-center justify-center rounded-2xl border-2 border-orange-500 p-4 text-center transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600",
-        outcome
-          ? "bg-mist-bg text-navy-900 shadow-[0_12px_28px_rgba(0,0,0,0.24)] hover:-translate-y-1"
-          : "bg-mist-bg text-navy-900 shadow-[0_8px_20px_rgba(0,0,0,0.18)] hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(0,0,0,0.26)]",
+        "group relative flex min-h-[175px] flex-col items-start rounded-2xl border border-rule bg-white p-5 text-left shadow-[var(--shadow-card)] transition-[transform,border-color,box-shadow] duration-200 hover:border-teal-600/50 hover:shadow-[var(--shadow-card-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 motion-safe:hover:-translate-y-1",
+        outcome ? "border-orange-500/40 text-ink" : "text-ink",
       )}
     >
       <span
         className={cn(
-          "grid size-12 place-items-center rounded-full bg-gradient-to-br shadow-[inset_0_2px_2px_rgba(255,255,255,0.65),0_5px_12px_color-mix(in_srgb,var(--brand-ink)_15%,transparent)] transition-transform duration-300 group-hover:scale-110",
-          detail.icon,
+          "grid size-12 place-items-center rounded-xl",
+          profile.stage === "property" || outcome
+            ? "bg-tint-orange text-orange-700"
+            : "bg-secondary text-teal-600",
         )}
       >
-        <span className="drop-shadow-sm">
-          <RoleIcon profile={profile} />
-        </span>
+        <RoleIcon profile={profile} />
       </span>
 
-      <h3 className="mt-3 font-heading text-[16px] font-extrabold leading-tight">
-        {profile.label}
-      </h3>
-      <p
-        className={cn(
-          "mt-1.5 max-w-[32ch] text-[11px] max-lg:text-[15px] leading-[1.6]",
-          "text-ink-muted",
-        )}
-      >
+      <h3 className="mt-4 pr-4 font-heading text-lg font-bold leading-tight">{profile.label}</h3>
+      <p className={cn("mt-2 max-w-[36ch] text-sm leading-relaxed", "text-ink-muted")}>
         {detail.description}
       </p>
 
       <span
         className={cn(
-          "absolute right-3 top-3 grid size-7 place-items-center rounded-full opacity-0 transition-opacity group-hover:opacity-100",
-          outcome ? "bg-orange-500 text-white" : "bg-white text-navy-900",
+          "absolute right-4 top-5 grid size-8 place-items-center rounded-full text-teal-600 transition-colors group-hover:bg-secondary group-focus-visible:bg-secondary",
         )}
       >
         <ArrowRight aria-hidden="true" className="size-3.5" />
@@ -175,9 +168,23 @@ function PartnerCard({ profile, outcome = false }: { profile: PartnerProfile; ou
 }
 
 export function PartnersHub() {
+  const [query, setQuery] = useState("");
+  const search = query.trim().toLocaleLowerCase("en-GB");
+  const matches = partnerProfiles.filter((profile) =>
+    `${profile.label} ${profile.summary} ${roleDetails[profile.id]?.description ?? ""}`
+      .toLocaleLowerCase("en-GB")
+      .includes(search),
+  );
+  const visibleStages = ecosystemStages
+    .map((stage) => ({
+      ...stage,
+      roles: stage.roles.filter((id) => matches.some((profile) => profile.id === id)),
+    }))
+    .filter((stage) => stage.roles.length > 0);
+
   return (
-    <main>
-      <section className="section-light relative isolate overflow-hidden">
+    <div className="partner-hub">
+      <section className="page-intro section-light relative isolate overflow-hidden">
         {/* WAVE 413b: eager. The hub's opening band, in the first viewport
           from lg up, where it is the only image on the screen. */}
         <img
@@ -238,8 +245,61 @@ export function PartnersHub() {
             </p>
           </Reveal>
 
-          <div className="mx-auto mt-10 max-w-[960px]">
-            {ecosystemStages.map((stage, stageIndex) => {
+          <div className="mx-auto mt-8 max-w-[640px] rounded-2xl border border-rule bg-white p-4 shadow-[var(--shadow-card)] sm:p-5">
+            <label htmlFor="partner-search" className="mb-2 block text-sm font-semibold text-ink">
+              Find your role
+            </label>
+            <div className="relative">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3.5 top-3.5 size-5 text-teal-600"
+              />
+              <input
+                id="partner-search"
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search partners"
+                aria-controls="partner-results"
+                className="min-h-12 w-full rounded-xl border border-rule bg-page py-3 pl-11 pr-12 text-base text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 [&::-webkit-search-cancel-button]:appearance-none"
+              />
+              {query ? (
+                <button
+                  type="button"
+                  aria-label="Clear partner search"
+                  onClick={() => setQuery("")}
+                  className="absolute right-1 top-1 grid size-10 place-items-center rounded-lg text-ink-muted hover:bg-secondary focus-visible:outline-2 focus-visible:outline-teal-600"
+                >
+                  <X aria-hidden="true" className="size-4" />
+                </button>
+              ) : null}
+            </div>
+            <p
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="mt-2 text-sm text-ink-muted"
+            >
+              {search
+                ? `${matches.length} of ${partnerProfiles.length} roles`
+                : `All ${partnerProfiles.length} roles`}
+            </p>
+          </div>
+
+          <div id="partner-results" className="mx-auto mt-10 max-w-[960px]">
+            {visibleStages.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-rule bg-page-alt px-6 py-10 text-center">
+                <p className="text-base font-semibold text-ink">No matching roles</p>
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="mt-3 min-h-11 rounded-lg px-4 text-sm font-semibold text-teal-600 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-teal-600"
+                >
+                  Show all partners
+                </button>
+              </div>
+            ) : null}
+            {visibleStages.map((stage, stageIndex) => {
               const outcome = stage.roles[0] === "resident";
 
               return (
@@ -254,7 +314,7 @@ export function PartnersHub() {
                              `text-page` rather than `text-white` so the light
                              remap's substring rule cannot repaint it while the
                              unconverted files still rely on that rule. */
-                          "grid size-8 place-items-center rounded-full font-mono text-[10px] max-lg:text-[12px] font-bold text-page",
+                          "grid size-9 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold text-page",
                           stage.node,
                         )}
                       >
@@ -272,7 +332,7 @@ export function PartnersHub() {
                     </div>
                   </Reveal>
 
-                  {stageIndex < ecosystemStages.length - 1 ? <FlowConnector /> : null}
+                  {stageIndex < visibleStages.length - 1 ? <FlowConnector /> : null}
                 </div>
               );
             })}
@@ -305,6 +365,6 @@ export function PartnersHub() {
           </Reveal>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

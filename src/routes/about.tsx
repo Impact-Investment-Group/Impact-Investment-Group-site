@@ -221,6 +221,7 @@ function Band({
       aria-labelledby={id}
       className={cn(
         "relative isolate border-t border-rule",
+        id === "about-heading" && "page-intro",
         light ? "section-light" : "bg-page",
         image && "overflow-hidden",
       )}
@@ -249,7 +250,7 @@ function Band({
           />
         </>
       ) : null}
-      <div className="mx-auto w-full max-w-[1200px] px-5 py-12 sm:px-8 lg:py-14">{children}</div>
+      <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-16">{children}</div>
     </section>
   );
 }
@@ -349,7 +350,7 @@ function Summary({
 
 function AboutPage() {
   return (
-    <main>
+    <div>
       {/* ── 1 · Who We Are + the team ── navy ────────────────────────────── */}
       <Band id="about-heading">
         <div className="relative">
@@ -368,7 +369,7 @@ function AboutPage() {
             <p className="eyebrow tracking-[0.14em] text-teal-600">{teamTitle}</p>
             <ul
               aria-label="Leadership team"
-              className="mt-3.5 grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5"
+              className="mt-5 grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5"
             >
               {team.map((member, i) => (
                 <Reveal key={member.name} index={i} as="li" className="h-full">
@@ -514,16 +515,14 @@ function AboutPage() {
                   </p>
                   <div className="min-w-0 flex-1">
                     <p className={cn("eyebrow", accent.text)}>{figure.kind}</p>
-                    <p className="mt-1 text-[14px] max-lg:text-[15px] leading-snug max-lg:leading-[1.6] text-ink">
-                      {figure.label}
-                    </p>
+                    <p className="mt-2 text-[15px] leading-relaxed text-ink">{figure.label}</p>
                   </div>
                   {/* A figure without its source does not go on this page. */}
                   <a
                     href={figure.href}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="inline-flex min-h-11 shrink-0 items-center gap-1 text-[11px] max-lg:text-[12px] font-semibold leading-snug text-teal-600 lg:min-h-0 lg:items-start transition-colors duration-200 hover:text-ink sm:max-w-[17rem]"
+                    className="inline-flex min-h-11 shrink-0 items-center gap-1 text-[13px] font-semibold leading-relaxed text-teal-600 transition-colors duration-200 hover:text-ink sm:max-w-[17rem]"
                   >
                     <span>Source: {figure.source}</span>
                     <ArrowUpRight aria-hidden="true" className="mt-px size-3 shrink-0" />
@@ -653,6 +652,6 @@ function AboutPage() {
        * both the nav and the footer; with three side by side none of them read
        * as the primary.
        */}
-    </main>
+    </div>
   );
 }

@@ -41,6 +41,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { ImageFade } from "@/components/image-fade";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { PageOutline, ReadingProgress } from "@/components/page-outline";
 import { siteDescription } from "@/content/site";
 
 function NotFoundComponent() {
@@ -212,6 +213,8 @@ function RootComponent() {
           Skip to content
         </a>
         <SiteHeader />
+        <ReadingProgress />
+        <PageOutline />
         <main id="main" data-route-enter={routeEnter} className="flex-1">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />

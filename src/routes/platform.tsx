@@ -141,6 +141,7 @@ function Band({
       aria-labelledby={id}
       className={cn(
         "relative overflow-hidden border-t border-rule",
+        id === "services-heading" && "page-intro",
         light ? "section-light" : "bg-page",
       )}
     >
@@ -225,6 +226,11 @@ const DIFFERENCE_VISUAL = {
 
 function DifferenceStory() {
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const tabRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const selectChapter = (index: number) => {
+    setActiveIndex(index);
+    tabRefs.current[index]?.focus();
+  };
   const activeChapter = differenceStory[activeIndex]!;
   const activeVisual = DIFFERENCE_VISUAL[activeChapter.id as keyof typeof DIFFERENCE_VISUAL];
   const activeAccent = ACCENT[activeChapter.tone as Accent];
@@ -236,7 +242,7 @@ function DifferenceStory() {
         {differenceLead}
       </p>
 
-      <div className="relative mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-rule bg-page/55 shadow-[0_24px_70px_-35px_rgba(0,0,0,0.8)]">
+      <div className="relative mt-8 overflow-hidden rounded-[var(--radius-panel)] border border-rule bg-page shadow-[var(--shadow-card)]">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:36px_36px]"
@@ -271,9 +277,30 @@ function DifferenceStory() {
                     key={chapter.id}
                     type="button"
                     role="tab"
+                    id={`difference-tab-${chapter.id}`}
+                    ref={(element) => {
+                      tabRefs.current[i] = element;
+                    }}
+                    tabIndex={selected ? 0 : -1}
                     aria-selected={selected}
                     aria-controls="difference-story-panel"
                     onClick={() => setActiveIndex(i)}
+                    onKeyDown={(event) => {
+                      const next =
+                        event.key === "ArrowRight" || event.key === "ArrowDown"
+                          ? (i + 1) % differenceStory.length
+                          : event.key === "ArrowLeft" || event.key === "ArrowUp"
+                            ? (i - 1 + differenceStory.length) % differenceStory.length
+                            : event.key === "Home"
+                              ? 0
+                              : event.key === "End"
+                                ? differenceStory.length - 1
+                                : null;
+                      if (next !== null) {
+                        event.preventDefault();
+                        selectChapter(next);
+                      }
+                    }}
                     className={cn(
                       "group flex min-h-[64px] items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-300",
                       selected
@@ -315,11 +342,13 @@ function DifferenceStory() {
           <div
             id="difference-story-panel"
             role="tabpanel"
+            aria-labelledby={`difference-tab-${activeChapter.id}`}
+            tabIndex={0}
             className="relative min-h-[500px] p-5 sm:p-8 lg:min-h-[440px] lg:p-10"
           >
             <div
               key={activeChapter.id}
-              className="[animation:rise-in_520ms_var(--ease-out-soft)_both]"
+              className="motion-safe:[animation:rise-in_320ms_var(--ease-out-soft)_both]"
             >
               <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(250px,0.78fr)] lg:items-center">
                 <div>
@@ -759,26 +788,8 @@ function MissionControl() {
   );
 }
 
-/**
- * The product capture, and the tap that opens it on a phone.
- *
- * ⚠ WAVE 490. This is a 2,241px DESKTOP screenshot of the Property Finder,
- * served at 348 CSS px on a 390px screen: every word inside it renders under
- * 4px tall. The words are the product. The caption is right and the picture
- * was unreadable, so below `md` the figure opens at the capture's own width in
- * a horizontally scrollable, pinch-zoomable box.
- *
- * NO NEW STRING. The trigger takes its accessible name from the capture's
- * existing `alt`; the dialog takes its name from the figure's existing
- * caption, which is also the sentence a visitor needs at the moment they are
- * looking at illustrative figures at full size. The close control reuses the
- * word `dialog.tsx` already ships.
- *
- * AND THE DESKTOP DOES NOT GAIN A CONTROL. The query defaults to false, so the
- * prerendered document is the figure this page has always shipped, at every
- * width, and a phone with no JavaScript gets exactly what it gets today rather
- * than a button that does nothing. Above `md` the capture is half the page
- * wide and legible, and there is nothing for a dialog to do.
+/** Open the illustrative platform capture at its native size on any screen.
+ * The dialog keeps the existing caption and supports keyboard dismissal.
  */
 function ProductCapture() {
   /* ⚠ ONE ID, SET BY HAND, AND BOTH THINGS THAT NEED A NAME POINT AT IT.
@@ -788,15 +799,6 @@ function ProductCapture() {
      title was there and nothing pointed at it. `useId` gives one stable id
      that the content and the title agree on. */
   const titleId = React.useId();
-  const [phone, setPhone] = React.useState(false);
-  React.useEffect(() => {
-    const query = window.matchMedia("(max-width: 767px)");
-    const read = () => setPhone(query.matches);
-    read();
-    query.addEventListener("change", read);
-    return () => query.removeEventListener("change", read);
-  }, []);
-
   const capture = (
     <img
       src={servicesHero.image.src}
@@ -812,27 +814,30 @@ function ProductCapture() {
 
   return (
     <figure className="panel overflow-hidden">
-      {phone ? (
-        <Dialog>
-          <DialogTrigger asChild>
-            <button
-              type="button"
-              className="block w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
-            >
-              {capture}
-            </button>
-          </DialogTrigger>
-          <DialogPortal>
-            <DialogOverlay />
-            <DialogPrimitive.Content
-              aria-labelledby={titleId}
-              aria-describedby={undefined}
-              className="fixed inset-0 z-50 flex flex-col bg-page"
-            >
-              <DialogTitle id={titleId} className="sr-only">
-                {servicesHero.image.caption}
-              </DialogTitle>
-              {/* ⚠ A SCROLL CONTAINER NEEDS A TAB STOP, which is what axe
+      <Dialog>
+        <DialogTrigger asChild>
+          <button
+            type="button"
+            aria-label="View larger platform preview"
+            className="group relative block w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
+          >
+            {capture}
+            <span className="absolute bottom-4 right-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-rule bg-page px-4 text-sm font-semibold text-ink shadow-[var(--shadow-card)] transition-colors group-hover:bg-secondary">
+              View larger <span aria-hidden="true">↗</span>
+            </span>
+          </button>
+        </DialogTrigger>
+        <DialogPortal>
+          <DialogOverlay />
+          <DialogPrimitive.Content
+            aria-labelledby={titleId}
+            aria-describedby={undefined}
+            className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-page sm:inset-6 sm:rounded-2xl sm:border sm:border-rule"
+          >
+            <DialogTitle id={titleId} className="sr-only">
+              {servicesHero.image.caption}
+            </DialogTitle>
+            {/* ⚠ A SCROLL CONTAINER NEEDS A TAB STOP, which is what axe
                   returns as `scrollable-region-focusable`, serious, and what
                   the first cut of this dialog shipped. `tabIndex` is the stop.
 
@@ -852,37 +857,34 @@ function ProductCapture() {
                   where the file on disk is 1600 by 862. Opening the capture at
                   a width it does not have would upscale it, which is the one
                   thing this dialog exists to avoid. */}
-              <div
-                tabIndex={0}
-                role="group"
-                className="flex-1 overflow-auto [touch-action:pan-x_pan-y_pinch-zoom] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
-              >
-                <img
-                  src={servicesHero.image.src}
-                  alt=""
-                  aria-hidden="true"
-                  width={intrinsic(servicesHero.image.src)?.width}
-                  height={intrinsic(servicesHero.image.src)?.height}
-                  className="h-auto max-w-none"
-                />
-              </div>
-              {/* The one new string this wave authors, and it is the
+            <div
+              tabIndex={0}
+              role="group"
+              className="flex-1 overflow-auto [touch-action:pan-x_pan-y_pinch-zoom] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
+            >
+              <img
+                src={servicesHero.image.src}
+                alt=""
+                aria-hidden="true"
+                width={intrinsic(servicesHero.image.src)?.width}
+                height={intrinsic(servicesHero.image.src)?.height}
+                className="h-auto max-w-none"
+              />
+            </div>
+            {/* The one new string this wave authors, and it is the
                   accessible name of an icon-only control, which is the only
                   place the canon allows one. `aria-label` rather than an
                   `sr-only` span so it is an attribute rather than a rendered
                   run of text. */}
-              <DialogClose
-                aria-label="Close"
-                className="absolute right-3 top-3 grid size-11 place-items-center rounded-full border border-rule bg-page text-ink shadow-[var(--shadow-card)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
-              >
-                <X aria-hidden="true" className="size-5" strokeWidth={1.6} />
-              </DialogClose>
-            </DialogPrimitive.Content>
-          </DialogPortal>
-        </Dialog>
-      ) : (
-        capture
-      )}
+            <DialogClose
+              aria-label="Close"
+              className="absolute right-3 top-3 grid size-11 place-items-center rounded-full border border-rule bg-page text-ink shadow-[var(--shadow-card)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+            >
+              <X aria-hidden="true" className="size-5" strokeWidth={1.6} />
+            </DialogClose>
+          </DialogPrimitive.Content>
+        </DialogPortal>
+      </Dialog>
       <figcaption className="px-4 py-2.5 text-center text-[12px] max-lg:text-[13px] text-ink-muted">
         {servicesHero.image.caption}
       </figcaption>
@@ -994,7 +996,7 @@ function LivingComic() {
 
 function ServicesPage() {
   return (
-    <main>
+    <div>
       {/* ── 1 · Hero + the product ── cream ──────────────────────────────── */}
       <Band id="services-heading" light>
         <div className="mx-auto max-w-[820px] text-center">
@@ -1072,9 +1074,7 @@ function ServicesPage() {
                   {i + 1}
                 </span>
                 <h3 className="mt-3.5 font-heading text-[16px] font-bold text-ink">{step.name}</h3>
-                <p className="mt-2 text-[13.5px] max-lg:text-[15px] leading-relaxed text-ink-muted">
-                  {step.body}
-                </p>
+                <p className="mt-3 text-[15px] leading-relaxed text-ink-muted">{step.body}</p>
               </div>
             </Reveal>
           ))}
@@ -1129,6 +1129,6 @@ function ServicesPage() {
       </Band>
 
       {/* ── 5 · Close ── cream ───────────────────────────────────────────── */}
-    </main>
+    </div>
   );
 }

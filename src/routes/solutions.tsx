@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { PreReleaseBadge } from "@/components/ui/pre-release-badge";
@@ -65,13 +66,13 @@ export const Route = createFileRoute("/solutions")({
 
 function SolutionsPage() {
   return (
-    <main>
+    <div>
       {/* ── 1 · The statement ── cream ─────────────────────────────────────
           The street photograph sits at 12% and fades to solid cream before the
           copy starts, so nothing is read against a busy part of the image. */}
       <section
         aria-labelledby="solution-heading"
-        className="section-light relative isolate overflow-hidden"
+        className="page-intro section-light relative isolate overflow-hidden"
       >
         {/* WAVE 413b: eager. The statement's own ground, in the first
           viewport, so deferring it until layout puts it behind the words it
@@ -127,11 +128,10 @@ function SolutionsPage() {
               <ol>
                 {dealLayers.map((layer, i) => (
                   <Reveal key={layer.number} index={i} as="li">
-                    {/* The stagger is the cascade. It is capped at 26px a step —
-                        deeper and the last row loses too much width to read. */}
+                    {/* Keep the sequence aligned on phones; stagger only when there is room. */}
                     <div
-                      className="mt-[7px] flex items-center gap-[18px] rounded-r-xl border-l-[3px] border-teal-600 bg-linear-to-r from-teal-600/25 to-transparent px-4 py-[11px]"
-                      style={{ marginLeft: `${i * 26}px` }}
+                      className="mt-3 flex items-center gap-4 rounded-xl border border-rule border-l-[3px] border-l-teal-600 bg-secondary/60 px-4 py-4 sm:ml-[var(--layer-offset)]"
+                      style={{ "--layer-offset": `${i * 20}px` } as CSSProperties}
                     >
                       <span className="font-heading text-[20px] font-extrabold text-teal-600">
                         {layer.number}
@@ -140,7 +140,7 @@ function SolutionsPage() {
                         <span className="block font-heading text-[18px] font-extrabold text-ink">
                           {layer.title}
                         </span>
-                        <span className="mt-0.5 block text-[13px] max-lg:text-[15px] text-ink-muted">
+                        <span className="mt-1 block text-[15px] leading-relaxed text-ink-muted">
                           {layer.detail}
                         </span>
                       </span>
@@ -333,6 +333,6 @@ function SolutionsPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

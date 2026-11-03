@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 import { RoleIcon } from "@/components/register/role-icon";
 import { registerRoles } from "@/content/audiences";
@@ -38,8 +38,8 @@ export function RolePicker({ labelledBy }: { labelledBy: string }) {
                  somebody to press a second tile. It answers to Enter and Space
                  as well, because a Link is an anchor and :active fires for
                  both. */
-          "press group flex min-h-11 w-full items-center gap-4 rounded-[14px] border bg-page p-5 text-left shadow-[var(--shadow-card)] transition-all duration-200 ease-out",
-          "motion-safe:hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] focus-visible:-translate-y-0.5 focus-visible:shadow-[var(--shadow-card-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600",
+          "press group flex min-h-28 w-full items-center gap-4 rounded-2xl border bg-page p-5 text-left shadow-[var(--shadow-card)] transition-all duration-200 ease-out motion-reduce:transition-none",
+          "motion-safe:hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] motion-safe:focus-visible:-translate-y-0.5 focus-visible:shadow-[var(--shadow-card-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600",
           role.tone === "route-out"
             ? "registration-resident max-w-[540px] justify-center gap-5 border-teal-600 px-6 py-7 sm:py-8"
             : "border-rule hover:border-orange-500/70",
@@ -55,10 +55,15 @@ export function RolePicker({ labelledBy }: { labelledBy: string }) {
                 {role.detail}
               </span>
             </span>
-            {role.id === "resident" && (
+            {role.href ? (
               <ArrowUpRight
                 aria-hidden="true"
-                className="ml-auto size-6 shrink-0 text-teal-600 transition-transform motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:translate-x-1"
+                className="ml-auto size-5 shrink-0 text-teal-600 transition-transform motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
+              />
+            ) : (
+              <ArrowRight
+                aria-hidden="true"
+                className="ml-auto size-5 shrink-0 text-teal-600 transition-transform motion-safe:group-hover:translate-x-1"
               />
             )}
           </>

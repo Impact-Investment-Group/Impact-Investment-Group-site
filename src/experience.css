@@ -1,0 +1,186 @@
+/* Wave 909. Light technical detail, clear reading order and purposeful motion. */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 80;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--color-teal-600), var(--color-orange-500));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.page-outline {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 35;
+  border-bottom: 1px solid var(--color-rule);
+  background: var(--color-page);
+}
+.page-outline__inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 32px;
+  min-height: 55px;
+}
+.page-outline__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  color: var(--color-ink-muted);
+  font-size: 12px;
+}
+.page-outline__links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  min-width: 0;
+  padding: 5px 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rule) transparent;
+}
+.page-outline__links li {
+  flex-shrink: 0;
+}
+.page-outline__links a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  transition:
+    background-color 160ms,
+    color 160ms;
+}
+.page-outline__links a > span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+}
+.page-outline__links a:hover,
+.page-outline__links a[aria-current="location"] {
+  color: var(--color-teal-600);
+  background: var(--secondary);
+}
+html:has(.page-outline) {
+  scroll-padding-top: calc(var(--header-height) + 80px);
+}
+html:has(.page-outline) main [id] {
+  scroll-margin-top: 0;
+}
+
+.page-intro {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-page);
+  background-image:
+    radial-gradient(
+      ellipse at 90% 0%,
+      color-mix(in oklab, var(--color-teal-500) 9%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 5% 100%,
+      color-mix(in oklab, var(--color-orange-500) 5%, transparent),
+      transparent 55%
+    );
+}
+.page-intro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--color-rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.3;
+  mask-image: linear-gradient(110deg, transparent 35%, black);
+}
+#main .measure {
+  max-width: 64ch;
+  line-height: 1.75;
+}
+#main :is(h1, h2, h3) {
+  text-wrap: balance;
+}
+#main .panel {
+  box-shadow: 0 8px 28px -20px color-mix(in oklab, var(--color-ink) 28%, transparent);
+}
+/* Informational cards stay still; only actionable cards imply a click. */
+#main .panel:not(:has(a, button, input, summary)):hover {
+  transform: none;
+}
+#main .panel:has(a, button):hover {
+  border-color: color-mix(in oklab, var(--color-teal-600) 40%, var(--color-rule));
+}
+#main summary {
+  touch-action: manipulation;
+}
+#main :is(input, textarea, select) {
+  scroll-margin-block: 150px;
+}
+.legal-page .section-light {
+  background-color: var(--color-page);
+}
+.legal-page .legal-intro {
+  padding-bottom: 32px;
+}
+.legal-page dl > div {
+  border-left: 2px solid var(--color-rule);
+  padding-left: 18px;
+  gap: 10px;
+}
+.legal-page dl dd {
+  line-height: 1.65;
+}
+.legal-page .legal-document {
+  border-top: 3px solid var(--color-teal-600);
+  padding: 24px;
+}
+footer :is(p, a, dd) {
+  text-wrap: pretty;
+}
+footer .footer-column a {
+  transition: color 160ms;
+}
+@media (max-width: 767px) {
+  .page-outline__inner {
+    padding-inline: 18px;
+    gap: 0;
+  }
+  .page-outline__label {
+    display: none;
+  }
+  .page-outline__links {
+    width: 100%;
+  }
+  .page-outline__links a {
+    padding-inline: 10px;
+  }
+  .page-intro::before {
+    background-size: 48px 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-outline__links a {
+    transition: none;
+  }
+  #main .panel:hover {
+    transform: none;
+  }
+  .reading-progress {
+    display: none;
+  }
+}

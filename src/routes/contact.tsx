@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { Clock, LifeBuoy, Mail, Phone, Plus } from "lucide-react";
+import { ArrowUpRight, Clock, LifeBuoy, Mail, Phone, Plus } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { EnquiryForm } from "@/components/contact/enquiry-form";
 import {
@@ -95,7 +95,7 @@ function ContactPage() {
   };
 
   return (
-    <main>
+    <div className="contact-page">
       {/* ── 1 · Talk to us ── cream ───────────────────────────────────────
           The trio wave rather than point. On every other page they explain
           something; here they are the greeting, which is why the artwork is
@@ -153,7 +153,7 @@ function ContactPage() {
       </section>
 
       {/* ── 2 · The form + the rail ── cream, joined to section 1 ────────── */}
-      <section aria-label="Enquiry form" className="section-light">
+      <section id="contact-enquiry" aria-labelledby="enquiry-heading" className="section-light">
         <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-6 sm:px-8">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-14">
             {/* ── The rail ───────────────────────────── */}
@@ -221,11 +221,12 @@ function ContactPage() {
               </section>
             </div>
             <div className="lg:col-start-1 lg:row-start-1">
-              {/* The route changes the fields, the team and the reply time, so
-                  it has to stay choosable — a chip row rather than the grid of
-                  six cards it used to be. */}
-              <p className="eyebrow tracking-[0.14em] text-orange-700">What do you need?</p>
-              <ul className="mt-3 flex flex-wrap gap-2">
+              {/* Each choice keeps its existing description visible so the
+                  visitor can compare the routes before completing the form. */}
+              <h2 id="enquiry-heading" className="font-heading text-2xl font-bold text-ink">
+                What do you need?
+              </h2>
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {enquiryRoutes.map((option) => {
                   const active = option.id === selected;
                   return (
@@ -233,28 +234,32 @@ function ContactPage() {
                       <button
                         type="button"
                         aria-pressed={active}
+                        aria-controls="contact-enquiry-form"
                         onClick={() => select(option.id)}
                         className={cn(
-                          "min-h-11 cursor-pointer rounded-full border px-4 font-heading text-[13.5px] font-bold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600",
+                          "group flex h-full min-h-11 w-full cursor-pointer flex-col gap-2 rounded-2xl border p-4 text-left transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600",
                           active
-                            ? /* White on the teal-600 fill is 5.25:1 and is the
-                                 measured pairing; `text-page` rather than
-                                 `text-white` so the light remap's substring
-                                 rule cannot repaint it navy on the teal while
-                                 the unconverted files still depend on that
-                                 rule. */
-                              "border-teal-600 bg-teal-600 text-page"
-                            : "border-rule bg-page text-ink hover:border-teal-600",
+                            ? "border-teal-600 bg-secondary text-ink shadow-[var(--shadow-card)]"
+                            : "border-rule bg-page text-ink hover:border-teal-600 hover:bg-secondary/40",
                         )}
                       >
-                        {option.label}
+                        <span className="flex w-full items-center justify-between gap-3 font-heading text-base font-bold">
+                          {option.label}
+                          <ArrowUpRight
+                            aria-hidden="true"
+                            className="size-4 shrink-0 text-teal-600 transition-transform motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
+                          />
+                        </span>
+                        <span className="text-sm leading-relaxed text-ink-muted">
+                          {option.subline}
+                        </span>
                       </button>
                     </li>
                   );
                 })}
               </ul>
 
-              <div className="mt-7">
+              <div id="contact-enquiry-form" className="mt-6">
                 <EnquiryForm route={selected} prefilledRole={role} />
               </div>
             </div>
@@ -284,20 +289,17 @@ function ContactPage() {
                     up in navy; on a white page the equivalent is a step up in
                     lift, because there is nowhere lighter to go. */}
                 <details className="group rounded-[var(--radius-panel)] border border-rule bg-page shadow-[var(--shadow-card)] transition-shadow duration-200 open:shadow-[var(--shadow-card-hover)]">
-                  <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-4 font-heading text-[15.5px] font-bold text-ink [&::-webkit-details-marker]:hidden">
+                  <summary className="flex min-h-14 cursor-pointer list-none items-start justify-between gap-4 rounded-[var(--radius-panel)] p-5 font-heading text-lg font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 [&::-webkit-details-marker]:hidden">
                     {item.q}
                     <Plus
                       aria-hidden="true"
-                      className="mt-0.5 size-4 shrink-0 text-teal-600 transition-transform duration-200 group-open:rotate-45"
+                      className="mt-1 size-5 shrink-0 text-teal-600 transition-transform duration-200 group-open:rotate-45 motion-reduce:transition-none"
                       strokeWidth={2}
                     />
                   </summary>
-                  <div className="flex flex-col gap-3 px-4 pb-4">
+                  <div className="flex max-w-[75ch] flex-col gap-3 px-5 pb-5">
                     {item.a.map((paragraph) => (
-                      <p
-                        key={paragraph}
-                        className="text-[13.5px] max-lg:text-[15px] leading-relaxed text-ink-muted"
-                      >
+                      <p key={paragraph} className="text-base leading-relaxed text-ink-muted">
                         {paragraph}
                       </p>
                     ))}
@@ -308,6 +310,6 @@ function ContactPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

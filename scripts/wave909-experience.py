@@ -1,0 +1,199 @@
+"""GitHub Actions browser checks and review images for the marketing site.
+
+Uses the real static build. No enquiry or registration is ever submitted.
+"""
+import functools
+import http.server
+import json
+import re
+import threading
+from pathlib import Path
+from playwright.sync_api import sync_playwright, expect
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "docs/screenshots/wave909"
+OUT.mkdir(parents=True, exist_ok=True)
+roles_source = (ROOT / "src/content/audiences.ts").read_text(encoding="utf-8")
+roles_block = roles_source.split("export const registerRoles", 1)[1].split("\n];", 1)[0]
+roles = [re.search(r'id:\s*"([a-z0-9-]+)"', block).group(1)
+         for block in re.findall(r'\{([^{}]+)\}', roles_block)
+         if 'href:' not in block and re.search(r'id:\s*"([a-z0-9-]+)"', block)]
+partners = ["/" + p.stem for p in sorted((ROOT / "src/routes").glob("partner-with-*.tsx"))]
+paths = ["/", "/about", "/platform", "/the-problem", "/solutions", "/partners", "/contact", "/register", "/legal"]
+paths += partners + ["/register/" + role for role in roles] + ["/this-route-does-not-exist"]
+
+
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *args):
+        pass
+
+    def send_error(self, code, message=None, explain=None):
+        fallback = ROOT / "dist/client/404.html"
+        if code == 404 and fallback.exists():
+            body = fallback.read_bytes()
+            self.send_response(404)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        else:
+            super().send_error(code, message, explain)
+
+
+server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Handler, directory=str(ROOT / "dist/client")))
+threading.Thread(target=server.serve_forever, daemon=True).start()
+base = f"http://127.0.0.1:{server.server_address[1]}"
+report = {"pages": [], "interactions": [], "failures": []}
+
+
+def check(condition, message):
+    if not condition:
+        raise AssertionError(message)
+
+
+with sync_playwright() as pw:
+    browser = pw.chromium.launch()
+    for width in [390, 1280]:
+        context = browser.new_context(viewport={"width": width, "height": 900}, reduced_motion="reduce")
+        context.route("**/api/**", lambda route: route.abort() if route.request.method == "POST" else route.continue_())
+        page = context.new_page()
+        for path in paths:
+            errors = []
+            listener = lambda error: errors.append(str(error))
+            page.on("pageerror", listener)
+            row = {"path": path, "width": width}
+            try:
+                response = page.goto(base + path, wait_until="networkidle")
+                check(response.status == (404 if path == "/this-route-does-not-exist" else 200), f"HTTP {response.status}")
+                page.wait_for_timeout(350)
+                check(len(page.locator("body").inner_text()) > 60, "Empty page")
+                check(page.locator("main").count() == 1, "Expected exactly one main landmark")
+                check(page.locator("h1").count() == 1, "Expected exactly one h1")
+                check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Horizontal overflow")
+                # Visit lazy images and sections before taking the complete reading view.
+                page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(img => img.loading='eager')")
+                page.wait_for_function("Array.from(document.images).every(img => img.complete)")
+                broken = page.locator("img").evaluate_all("nodes => nodes.filter(n => !n.naturalWidth).map(n => n.src)")
+                check(not broken, f"Broken images: {broken}")
+                for link in page.locator(".page-outline a").all():
+                    check(page.locator(link.get_attribute("href")).count() == 1, "Missing or duplicate section target")
+                page.add_script_tag(path=str(ROOT / "node_modules/axe-core/axe.min.js"))
+                axe = page.evaluate("async () => await axe.run(document, {runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})")
+                violations = [{"id": v["id"], "impact": v["impact"], "nodes": [{"target": n["target"], "summary": n.get("failureSummary", "")} for n in v["nodes"]]} for v in axe["violations"]]
+                row["accessibility"] = violations
+                row["contrast_incomplete"] = sum(len(v["nodes"]) for v in axe["incomplete"] if v["id"] == "color-contrast")
+                check(not violations, f"Accessibility: {json.dumps(violations)}")
+                check(not errors, f"Browser errors: {errors}")
+                row["status"] = "pass"
+            except Exception as error:
+                row["status"] = "fail"
+                row["error"] = str(error)
+                report["failures"].append(f"{path} at {width}: {error}")
+            finally:
+                page.screenshot(path=str(OUT / f"{path.strip('/').replace('/', '-') or 'home'}-{width}.png"), full_page=True, animations="disabled")
+                page.remove_listener("pageerror", listener)
+                row["browser_errors"] = errors
+                report["pages"].append(row)
+                print(json.dumps({"path": path, "width": width, "status": row["status"], "error": row.get("error", "")}), flush=True)
+
+        def interaction(name, action):
+            try:
+                action()
+                report["interactions"].append({"name": name, "width": width, "status": "pass"})
+            except Exception as error:
+                report["interactions"].append({"name": name, "width": width, "status": "fail", "error": str(error)})
+                report["failures"].append(f"{name} at {width}: {error}")
+
+        def outline():
+            page.goto(base + "/about", wait_until="networkidle")
+            nav = page.get_by_role("navigation", name="On this page")
+            nav.get_by_role("link", name="What we do").click()
+            expect(nav.get_by_role("link", name="What we do")).to_have_attribute("aria-current", "location")
+            check(page.locator("#what-heading").bounding_box()["y"] >= page.locator(".page-outline").bounding_box()["y"], "Section obscured")
+            page.get_by_role("link", name="About Us", exact=True).first.click() if width == 1280 else None
+
+        def partner_search():
+            page.goto(base + "/partners", wait_until="networkidle")
+            field = page.locator("#partner-search")
+            field.fill("investor")
+            results = page.locator("#partner-results")
+            expect(results.locator('a[href="/partner-with-investor"]')).to_be_visible()
+            field.fill("zzqnomatch")
+            check(results.locator('a[href^="/partner-with-"]').count() == 0, "Search did not filter")
+            page.get_by_role("button", name="Clear partner search").click()
+            check(results.locator('a[href^="/partner-with-"]').count() == len(partners), "Reset did not restore every partner")
+
+        def journey():
+            page.goto(base + "/partner-with-investor", wait_until="networkidle")
+            tabs = page.get_by_role("tablist").get_by_role("tab")
+            tabs.first.focus()
+            page.keyboard.press("ArrowRight")
+            expect(tabs.nth(1)).to_be_focused()
+            expect(tabs.nth(1)).to_have_attribute("aria-selected", "true")
+            trigger = page.get_by_role("button", name="View full diagram")
+            trigger.click()
+            expect(page.get_by_role("dialog")).to_be_visible()
+            page.keyboard.press("Escape")
+            expect(page.get_by_role("dialog")).to_have_count(0)
+            expect(trigger).to_be_focused()
+
+        def services():
+            page.goto(base + "/platform", wait_until="networkidle")
+            tabs = page.get_by_role("tablist").get_by_role("tab")
+            tabs.first.focus()
+            page.keyboard.press("End")
+            expect(tabs.last).to_be_focused()
+            expect(tabs.last).to_have_attribute("aria-selected", "true")
+            trigger = page.get_by_role("button", name="View larger platform preview")
+            trigger.click()
+            expect(page.get_by_role("dialog")).to_be_visible()
+            page.keyboard.press("Escape")
+            expect(trigger).to_be_focused()
+
+        def photos():
+            page.goto(base + "/", wait_until="networkidle")
+            page.get_by_role("button", name="Next photograph").click()
+            check(page.locator(".hero-band").evaluate("n => n.scrollLeft > 0"), "Photo strip did not advance")
+            page.get_by_role("button", name="Previous photograph").click()
+            expect(page.locator(".hero-band")).to_have_js_property("scrollLeft", 0)
+
+        def contact_validation():
+            page.goto(base + "/contact", wait_until="networkidle")
+            page.locator('form button[type="submit"]').click()
+            expect(page.locator('[aria-invalid="true"]').first).to_be_visible()
+            page.locator("textarea").fill("A test message that stays in this browser.")
+            expect(page.locator("textarea")).to_have_value("A test message that stays in this browser.")
+            check(page.locator("form").count() == 1, "Contact form missing")
+
+        def mobile_menu():
+            page.goto(base + "/", wait_until="networkidle")
+            trigger = page.locator('header button[aria-controls="site-drawer"]')
+            trigger.click()
+            expect(page.locator("#site-drawer")).to_be_visible()
+            page.keyboard.press("Escape")
+            expect(trigger).to_be_focused()
+
+        def registration_feedback():
+            page.goto(base + "/register/investor", wait_until="networkidle")
+            expect(page.locator('li[aria-current="step"]')).to_contain_text("Your account")
+            page.locator('#password').fill("LocalOnly-Example-42!")
+            page.locator('#confirmPassword').fill("LocalOnly-Example-42!")
+            expect(page.locator('#password-match')).to_have_text("Passwords match")
+            page.locator('#confirmPassword').fill("Different-Example-42!")
+            expect(page.locator('#password-match')).to_have_count(0)
+
+        interaction("section navigation", outline)
+        interaction("partner search and reset", partner_search)
+        interaction("partner keyboard tabs and diagram", journey)
+        interaction("services tabs and preview", services)
+        interaction("contact validation without submission", contact_validation)
+        interaction("registration progress and password feedback", registration_feedback)
+        if width == 390:
+            interaction("home photo controls", photos)
+            interaction("mobile menu focus return", mobile_menu)
+        context.close()
+    browser.close()
+server.shutdown()
+(OUT / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+print(json.dumps({"pages": len(report["pages"]), "interactions": len(report["interactions"]), "failures": report["failures"]}, indent=2))
+raise SystemExit(1 if report["failures"] else 0)

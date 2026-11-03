@@ -81,6 +81,26 @@ jobs:
             echo "CNAME in artifact: $(cat dist/client/CNAME)"
           fi
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install browser verification tools
+        run: |
+          python -m pip install playwright pillow
+          python -m playwright install --with-deps chromium
+
+      - name: Check every page and interactive journeys
+        run: python scripts/wave909-experience.py
+
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-experience-${{ github.sha }}
+          path: docs/screenshots/wave909
+          retention-days: 7
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/client

@@ -41,10 +41,10 @@ function RegisterPickerPage() {
   return (
     <div className="registration-picker">
       <section className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-24">
-        <Reveal className="text-center">
+        <Reveal className="mx-auto max-w-3xl text-center">
           <PreReleaseBadge className="mx-auto mb-6 w-fit" />
           <p className="eyebrow text-teal-600">{pickerContent.eyebrow}</p>
-          <h1 className="heading-tight mt-4 text-balance text-[clamp(1.75rem,3.2vw,2.75rem)] font-bold text-ink">
+          <h1 className="heading-tight mt-4 text-balance text-[clamp(2.125rem,4vw,3.5rem)] font-bold text-ink">
             {pickerContent.h1}
           </h1>
           <p className="measure mx-auto mt-5 text-[17px] leading-relaxed text-ink-muted">
@@ -52,7 +52,7 @@ function RegisterPickerPage() {
           </p>
         </Reveal>
 
-        <Reveal index={1} className="mt-12">
+        <Reveal index={1} className="mt-10 border-t border-rule pt-8">
           <h2
             id="register-picker-grid"
             className="text-center font-heading text-sm font-semibold uppercase tracking-[0.14em] text-ink-muted"
