@@ -340,10 +340,12 @@ in `orange-500`, and "Platform" beneath in wide-tracked caps flanked by two oran
 
 ### Imagery
 
-Photoreal UK residential settings — Victorian terraces, brick, sash windows. Warm golden-hour
-or soft interior lamplight with amber highlights tying back to the brand orange. Real people
-mid-moment, natural diversity of age and ethnicity. 12px corner radius, 1px subtle border,
-shallow depth of field. Images in the same row are always identical dimensions.
+Photoreal UK residential settings: Victorian terraces, brick, sash windows. Bright, soft
+daylight with neutral white balance, natural skin tones and readable shadow detail, per
+Israel's 3 November 2026 direction. Avoid golden-hour grading, amber washes and dark interiors.
+Real people mid-moment, natural diversity of age and ethnicity. Preserve team headshots,
+logos, diagrams and AI characters. 12px corner radius, 1px subtle border, shallow depth of
+field. Images in the same row are always identical dimensions.
 
 Never: generic corporate stock, cold blue-grey lighting, cut-out people on flat backgrounds,
 duotones, colour overlays, visible AI artefacts.

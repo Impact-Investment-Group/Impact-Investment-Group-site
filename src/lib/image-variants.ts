@@ -105,7 +105,7 @@ export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; he
     height: 640,
   },
   "/images/hero-ground-street.webp": {
-    steps: [400, 640, 960],
+    steps: [400, 640, 960, 1440],
     width: 1672,
     height: 941,
   },
@@ -295,7 +295,7 @@ export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; he
     height: 1536,
   },
   "/images/solution-street-blueprint.webp": {
-    steps: [400, 640, 960],
+    steps: [400, 640, 960, 1440],
     width: 1600,
     height: 900,
   },
@@ -365,7 +365,7 @@ export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; he
     height: 440,
   },
   "/images/why-estate-aerial.webp": {
-    steps: [400, 640, 960],
+    steps: [400, 640, 960, 1440],
     width: 1600,
     height: 640,
   },
