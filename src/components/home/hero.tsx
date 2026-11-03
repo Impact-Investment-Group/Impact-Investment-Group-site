@@ -403,12 +403,16 @@ export function HomeHero() {
               <Link
                 to="/register/$role"
                 params={{ role: role.id }}
+                aria-labelledby={`hero-role-${role.id}-label`}
                 aria-describedby={`hero-role-${role.id}-detail`}
                 className="hero-role-link group flex h-full items-start gap-3 border-b border-rule px-2 py-4 text-left transition-colors hover:bg-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
               >
                 <RoleIcon roleId={role.id} />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold leading-snug text-ink group-hover:text-teal-600">
+                  <span
+                    id={`hero-role-${role.id}-label`}
+                    className="block text-sm font-semibold leading-snug text-ink group-hover:text-teal-600"
+                  >
                     {role.label}
                   </span>
                   <span
