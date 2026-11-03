@@ -221,7 +221,7 @@ with sync_playwright() as pw:
         motion_page.goto(base + "/about/", wait_until="networkidle")
         motion_page.get_by_role("navigation", name="On this page").get_by_role("link", name="What we do").click()
         motion_page.wait_for_function("new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.reading-progress')).transform).a > 0")
-        expect(motion_page.locator('.page-outline a[aria-current="location"]')).to_contain_text("What we do")
+        expect(motion_page.get_by_role("navigation", name="On this page").get_by_role("link", name="What we do")).to_have_attribute("aria-current", "location")
         report["interactions"].append({"name": "desktop motion and reading progress", "width": 1280, "status": "pass"})
     except Exception as error:
         report["failures"].append(f"Desktop motion: {error}")
