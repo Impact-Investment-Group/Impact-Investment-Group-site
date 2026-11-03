@@ -89,9 +89,9 @@ export function PartnerEcosystem() {
                   </button>
                 </DialogTrigger>
                 <DialogContent className="max-h-[85dvh] w-[calc(100%_-_2rem)] overflow-y-auto rounded-2xl bg-page p-6 sm:max-w-[560px] sm:p-8 [&>button]:grid [&>button]:size-11 [&>button]:place-items-center [&>button]:opacity-100">
-                  <div className="flex items-center gap-3 pr-10 text-teal-600">
+                  <div className="flex items-center gap-3 pr-14 text-teal-600">
                     <Icon aria-hidden="true" className="size-7 shrink-0" />
-                    <DialogTitle className="font-heading text-2xl font-bold leading-tight text-ink">
+                    <DialogTitle className="min-w-0 font-heading text-2xl font-bold leading-tight text-ink">
                       {profile?.label ?? role.label}
                     </DialogTitle>
                   </div>

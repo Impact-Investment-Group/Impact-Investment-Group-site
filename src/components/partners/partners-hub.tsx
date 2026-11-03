@@ -202,7 +202,7 @@ export function PartnersHub() {
           <Reveal className="max-w-[760px]">
             <div className="inline-flex items-center gap-3">
               <span aria-hidden="true" className="h-0.5 w-9 bg-orange-700" />
-              <p className="eyebrow tracking-[0.16em] text-teal-800">
+              <p className="eyebrow tracking-[0.16em] text-ink">
                 Connected roles. Shared purpose.
               </p>
             </div>

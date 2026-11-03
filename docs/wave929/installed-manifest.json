@@ -1,0 +1,315 @@
+[
+  {
+    "path": "public/images/hero-homes.webp",
+    "master": "masters\\hero-homes-candid.png",
+    "dimensions": [
+      1280,
+      1024
+    ],
+    "before_mean_luma": 106.75,
+    "after_mean_luma": 107.41,
+    "files": [
+      {
+        "path": "public/images/hero-homes.webp",
+        "sha256": "c68502e4b41abcec7bf9c90484ccb8b74949d6c63a8f9bd081f865b8275d257e",
+        "bytes": 336646
+      },
+      {
+        "path": "public/images/hero-homes-400.webp",
+        "sha256": "646d77df5201df49a93aaff79600296a74dad826899594a9244828eabfe40104",
+        "bytes": 37224
+      },
+      {
+        "path": "public/images/hero-homes-640.webp",
+        "sha256": "7234ed72a869cdd5a7802464ad34abe63ef491f8abcc11fb9c2cfd189d414346",
+        "bytes": 87912
+      },
+      {
+        "path": "public/images/hero-homes-960.webp",
+        "sha256": "197454ce9bf4d20afe038cacd793c8876396f1331a83559d40e3c98aeb0063d4",
+        "bytes": 172002
+      }
+    ]
+  },
+  {
+    "path": "public/images/hero-support.webp",
+    "master": "masters\\hero-support-candid.png",
+    "dimensions": [
+      1280,
+      1024
+    ],
+    "before_mean_luma": 134.42,
+    "after_mean_luma": 130.23,
+    "files": [
+      {
+        "path": "public/images/hero-support.webp",
+        "sha256": "c1d6ee2c0e06bb0539219923740a82cdc0d93fde8e36b5ee9735b1834d7a28b6",
+        "bytes": 278730
+      },
+      {
+        "path": "public/images/hero-support-400.webp",
+        "sha256": "8c75a0e57ee803aa4a082a15f0212443646a2670bf42086a55f711d262202996",
+        "bytes": 27368
+      },
+      {
+        "path": "public/images/hero-support-640.webp",
+        "sha256": "7890a5e024664e5ca924308e910b527268180d2dc0398006e710c577a82bf01a",
+        "bytes": 65000
+      },
+      {
+        "path": "public/images/hero-support-960.webp",
+        "sha256": "e577918147290145645658bdaeb5940ff1518730042faf20a1a47e962e4bfeb5",
+        "bytes": 134668
+      }
+    ]
+  },
+  {
+    "path": "public/images/hero-lives.webp",
+    "master": "masters\\hero-lives-candid.png",
+    "dimensions": [
+      1280,
+      1024
+    ],
+    "before_mean_luma": 113.51,
+    "after_mean_luma": 113.92,
+    "files": [
+      {
+        "path": "public/images/hero-lives.webp",
+        "sha256": "88f27d858496af883480b0c283d0c33043e325b203fe2425cc239b9c46c04f7a",
+        "bytes": 427014
+      },
+      {
+        "path": "public/images/hero-lives-400.webp",
+        "sha256": "d0d87ad86f49fe719d7141877472f71c56432eb5c2102d8a63922f9dcc293b75",
+        "bytes": 41028
+      },
+      {
+        "path": "public/images/hero-lives-640.webp",
+        "sha256": "1d8c539d01b92d0da822814c422c389a1633ebc35700c8e40fa03f44087a80e0",
+        "bytes": 101414
+      },
+      {
+        "path": "public/images/hero-lives-960.webp",
+        "sha256": "7e1bd7c81043d0fd2c07df62237c8e78c56c2724a15540147f50401688543ae4",
+        "bytes": 210584
+      }
+    ]
+  },
+  {
+    "path": "public/images/human-insight.jpg",
+    "master": "masters\\human-insight-candid.png",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "before_mean_luma": 151.73,
+    "after_mean_luma": 144.73,
+    "files": [
+      {
+        "path": "public/images/human-insight.jpg",
+        "sha256": "9be1174e69add6c9b9c7deae32b8e9469afe9c8c4fc472faf206afaac221e446",
+        "bytes": 280208
+      },
+      {
+        "path": "public/images/human-insight-1440.webp",
+        "sha256": "6137a0cd76572dc3bbcd1fb6afbbbf01456bb1f67ab8d78702b28b3a7f68e6ae",
+        "bytes": 98200
+      },
+      {
+        "path": "public/images/human-insight-400.webp",
+        "sha256": "7a448a2e2e68bdf9448c21fd3b5ce08cb3c32f12791a9fb441662e5cb50c8845",
+        "bytes": 11586
+      },
+      {
+        "path": "public/images/human-insight-640.webp",
+        "sha256": "d9b227db73ddc1b4c292eee8b1a6c90bb3ed6530e38832f2e62070b50c04021b",
+        "bytes": 24040
+      },
+      {
+        "path": "public/images/human-insight-960.webp",
+        "sha256": "e064bc287eb04bbfd99d2a1835ea29c4326ba714827325599b1dfa6066c632df",
+        "bytes": 49334
+      }
+    ]
+  },
+  {
+    "path": "public/images/human-partnership.jpg",
+    "master": "masters\\human-partnership-candid.png",
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "before_mean_luma": 164.64,
+    "after_mean_luma": 144.87,
+    "files": [
+      {
+        "path": "public/images/human-partnership.jpg",
+        "sha256": "0b4e0a1e204115a64fcede0293b43cc5d570b469aa9682cad71a306d61abf233",
+        "bytes": 274901
+      },
+      {
+        "path": "public/images/human-partnership-400.webp",
+        "sha256": "7c6c78c5b9530a5d8bab764bd35524b6b50121a627c80fb0f35b06a1a4a24461",
+        "bytes": 23304
+      },
+      {
+        "path": "public/images/human-partnership-640.webp",
+        "sha256": "9b3c29915c22f739fb689d4d4a319b4a17c6d1fcfd2353ef7f91b844c7d9c879",
+        "bytes": 46764
+      },
+      {
+        "path": "public/images/human-partnership-960.webp",
+        "sha256": "b20cdb8b52d87c88b2eb225192314f834b8875c64a0d80d7459ce2bcae472189",
+        "bytes": 90666
+      }
+    ]
+  },
+  {
+    "path": "public/images/hero-ground-street.webp",
+    "master": "masters\\hero-ground-street-candid.png",
+    "dimensions": [
+      1672,
+      941
+    ],
+    "before_mean_luma": 138.52,
+    "after_mean_luma": 139.7,
+    "files": [
+      {
+        "path": "public/images/hero-ground-street.webp",
+        "sha256": "32fb4bf90256905a0e69c4b543c4f05b5b7399c9258890c9ef2b84668aa34b5f",
+        "bytes": 481124
+      },
+      {
+        "path": "public/images/hero-ground-street-1440.webp",
+        "sha256": "0eadbd89f791f78562b2cbc3ecf657cf7df00e76247e898e331cece309c66262",
+        "bytes": 295554
+      },
+      {
+        "path": "public/images/hero-ground-street-400.webp",
+        "sha256": "f357b7225edc916bcdbe015cc900fc6bc2178f594b4436360d9f431f9f294f1e",
+        "bytes": 29082
+      },
+      {
+        "path": "public/images/hero-ground-street-640.webp",
+        "sha256": "ce5804b1a1bab78e08d2c1ac03361f086377c96e1001222bce9e33069c3860b0",
+        "bytes": 71528
+      },
+      {
+        "path": "public/images/hero-ground-street-960.webp",
+        "sha256": "857f649b447df3c1de85298cc18e83a6a8689114e98411712199277ac1a5a414",
+        "bytes": 151360
+      }
+    ]
+  },
+  {
+    "path": "public/images/solution-street-blueprint.webp",
+    "master": "masters\\hero-ground-street-candid.png",
+    "dimensions": [
+      1600,
+      900
+    ],
+    "before_mean_luma": 138.52,
+    "after_mean_luma": 139.7,
+    "files": [
+      {
+        "path": "public/images/solution-street-blueprint.webp",
+        "sha256": "3acd26bd42b7afea29e427faf5754032f528c451de396219f4b22ac88ee0db3b",
+        "bytes": 446284
+      },
+      {
+        "path": "public/images/solution-street-blueprint-1440.webp",
+        "sha256": "37b58aaae7cc3e98b36ab3b8a7a3690383131d5aa40b37ada4647df4973d7199",
+        "bytes": 294742
+      },
+      {
+        "path": "public/images/solution-street-blueprint-400.webp",
+        "sha256": "c95634f223fdb611d46a5956008e56364f675f7b812678a9cb25dbe7e61dac90",
+        "bytes": 29332
+      },
+      {
+        "path": "public/images/solution-street-blueprint-640.webp",
+        "sha256": "9bcabd7dfbb6478d300c0457aaa2b38866dbcf98c5f1ee63e086828d4c8a1bcd",
+        "bytes": 71682
+      },
+      {
+        "path": "public/images/solution-street-blueprint-960.webp",
+        "sha256": "d11cdf0a206f344fc96973d0b8c0aa356de8b2b7e003a3df3748917cafeb5bf2",
+        "bytes": 151586
+      }
+    ]
+  },
+  {
+    "path": "public/images/ecosystem-band.jpg",
+    "master": "masters\\ecosystem-band-candid.png",
+    "dimensions": [
+      1920,
+      640
+    ],
+    "before_mean_luma": 188.09,
+    "after_mean_luma": 185.03,
+    "files": [
+      {
+        "path": "public/images/ecosystem-band.jpg",
+        "sha256": "ad02891bfb8a96e8267e57d14688ffa614e29d694ea5677dcedb8e4d4f50ee22",
+        "bytes": 385476
+      },
+      {
+        "path": "public/images/ecosystem-band-1440.webp",
+        "sha256": "9a932620d506c3e3c4b5c6ebc47455c6011285984fc4bfe09ff6163046c2545c",
+        "bytes": 135414
+      },
+      {
+        "path": "public/images/ecosystem-band-400.webp",
+        "sha256": "ba6f8dc01095e457a796d07cb5c37997fa552d3354704e27550daa09d42cf714",
+        "bytes": 10698
+      },
+      {
+        "path": "public/images/ecosystem-band-640.webp",
+        "sha256": "1ef64c266f2e9330875feb3c2fc674be63644162f9c645b967d30d833e54e48a",
+        "bytes": 27108
+      },
+      {
+        "path": "public/images/ecosystem-band-960.webp",
+        "sha256": "503b86e4ea4136beb0b00bfea5d74da9965ca2fd355a34c6203e8df8e2f39146",
+        "bytes": 61748
+      }
+    ]
+  },
+  {
+    "path": "public/images/why-estate-aerial.webp",
+    "master": "masters\\why-estate-aerial-candid.png",
+    "dimensions": [
+      1600,
+      640
+    ],
+    "before_mean_luma": 119.96,
+    "after_mean_luma": 124.64,
+    "files": [
+      {
+        "path": "public/images/why-estate-aerial.webp",
+        "sha256": "17928d48c847d9448e3f8f5978148bbc5c09e5dc366b64025875130f843716e5",
+        "bytes": 366422
+      },
+      {
+        "path": "public/images/why-estate-aerial-1440.webp",
+        "sha256": "92df871b9dd7660c256a3a6c0333bf9435060d0580e01c895782e55e6117da10",
+        "bytes": 239866
+      },
+      {
+        "path": "public/images/why-estate-aerial-400.webp",
+        "sha256": "20503a593c17102f4cb5c8272501ac690a597aef0c8cb57d8300bc95f09a6ee6",
+        "bytes": 23082
+      },
+      {
+        "path": "public/images/why-estate-aerial-640.webp",
+        "sha256": "8f8c5ff92ede53328f67cbf4013cc8f339446cedcbb972d2b050cd1b93c7b514",
+        "bytes": 56874
+      },
+      {
+        "path": "public/images/why-estate-aerial-960.webp",
+        "sha256": "90e7793c3886d17984fc47203515b28d6cd69573f3f1604975162fd45f5b2a6f",
+        "bytes": 119488
+      }
+    ]
+  }
+]
