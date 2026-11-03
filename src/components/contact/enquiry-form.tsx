@@ -152,6 +152,7 @@ export function EnquiryForm({
     clearErrors,
     watch,
     setFocus,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver,
@@ -166,6 +167,11 @@ export function EnquiryForm({
   }, [route, clearErrors]);
 
   React.useEffect(() => setReady(true), []);
+
+  React.useEffect(() => {
+    // Query prefill arrives after the canonical static form hydrates.
+    if (prefilledRole) setValue("role", prefilledRole);
+  }, [prefilledRole, setValue]);
 
   React.useEffect(() => {
     if (sent) successHeading.current?.focus();

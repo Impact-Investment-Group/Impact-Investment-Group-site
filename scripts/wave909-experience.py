@@ -55,7 +55,7 @@ with sync_playwright() as pw:
     browser = pw.chromium.launch()
     for width in [390, 1280]:
         context = browser.new_context(viewport={"width": width, "height": 900}, reduced_motion="reduce")
-        context.route("**/api/**", lambda route: route.abort() if route.request.method == "POST" else route.continue_())
+        context.route("**/*", lambda route: route.abort() if route.request.method == "POST" else route.continue_())
         page = context.new_page()
         for path in paths:
             errors = []
@@ -202,6 +202,9 @@ with sync_playwright() as pw:
                     check(not errors, f"Enquiry deep link hydration: {errors}")
                 finally:
                     page.remove_listener("pageerror", listener)
+            page.goto(base + "/contact/?enquiry=investor&role=Investor", wait_until="networkidle")
+            expect(page.locator("#enquiry-form-title")).to_have_text("Investor enquiry")
+            expect(page.locator("#role")).to_have_value("Investor")
 
         interaction("section navigation", outline)
         interaction("partner search and reset", partner_search)
