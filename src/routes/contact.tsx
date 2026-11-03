@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { ArrowUpRight, Clock, LifeBuoy, Mail, Phone, Plus } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
@@ -88,7 +89,11 @@ const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
 function ContactPage() {
   const { enquiry, type, role } = Route.useSearch();
   const navigate = useNavigate({ from: "/contact" });
-  const selected = toRouteId(type ?? enquiry);
+  // Pages serves one canonical HTML file for every enquiry query. Hydrate
+  // that same form first, then apply the visitor's deep-linked selection.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const selected = toRouteId(hydrated ? type ?? enquiry : undefined);
 
   const select = (id: EnquiryRouteId) => {
     void navigate({ search: { ...{ enquiry: id, type: id }, ...(role ? { role } : {}) } });
@@ -260,7 +265,7 @@ function ContactPage() {
               </ul>
 
               <div id="contact-enquiry-form" className="mt-6">
-                <EnquiryForm route={selected} prefilledRole={role} />
+                <EnquiryForm route={selected} prefilledRole={hydrated ? role : undefined} />
               </div>
             </div>
           </div>

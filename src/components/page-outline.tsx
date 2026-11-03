@@ -44,7 +44,8 @@ const partnerSections: SectionLink[] = [
 /** Real fragment links still work before hydration and with JavaScript off. */
 export function PageOutline() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const links = pathname.startsWith("/partner-with-") ? partnerSections : sections[pathname];
+  const path = pathname.replace(/\/+$/, "") || "/";
+  const links = path.startsWith("/partner-with-") ? partnerSections : sections[path];
   if (!links) return null;
   return <Outline key={pathname} links={links} />;
 }

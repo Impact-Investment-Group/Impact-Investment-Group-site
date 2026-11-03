@@ -77,6 +77,9 @@ export default defineConfig({
           prerender: {
             enabled: true,
             crawlLinks: true,
+            // Query variants share one file on Pages. Keep the canonical HTML
+            // so a crawled enquiry cannot overwrite the default contact form.
+            filter: (page) => !new URL(page.path, "https://impactinvestmentgroup.co.uk").search,
             autoSubfolderIndex: true,
             failOnError: true,
             retryCount: 2,

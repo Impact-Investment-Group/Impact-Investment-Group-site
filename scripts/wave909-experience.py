@@ -182,12 +182,25 @@ with sync_playwright() as pw:
             page.locator('#confirmPassword').fill("Different-Example-42!")
             expect(page.locator('#password-match')).to_have_count(0)
 
+        def contact_deep_links():
+            for query, label in [("investor", "Investor enquiry"), ("support", "Support"), ("demo", "Talk to the team")]:
+                errors = []
+                listener = lambda error: errors.append(str(error))
+                page.on("pageerror", listener)
+                try:
+                    page.goto(base + "/contact/?enquiry=" + query, wait_until="networkidle")
+                    expect(page.locator("#enquiry-form-title")).to_have_text(label)
+                    check(not errors, f"Enquiry deep link hydration: {errors}")
+                finally:
+                    page.remove_listener("pageerror", listener)
+
         interaction("section navigation", outline)
         interaction("partner search and reset", partner_search)
         interaction("partner keyboard tabs and diagram", journey)
         interaction("services tabs and preview", services)
         interaction("contact validation without submission", contact_validation)
         interaction("registration progress and password feedback", registration_feedback)
+        interaction("contact enquiry deep links", contact_deep_links)
         if width == 390:
             interaction("home photo controls", photos)
             interaction("mobile menu focus return", mobile_menu)

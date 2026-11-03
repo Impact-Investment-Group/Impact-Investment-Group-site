@@ -18,4 +18,6 @@ No photographic, portrait, brand or diagram asset files changed. Factual content
 ## Validation
 Project notice `NOTICE_2026-11-03_all-testing-on-github-actions.md` requires verification in GitHub Actions. No local test, build, audit or screenshot gate was run. The Pages workflow now builds, checks every page at phone and desktop widths, checks keyboard and form interactions, and saves screenshots before deploying. Results and live verification will be recorded after the run.
 
-The pre-existing contact hydration error is included in the strict browser-error check and remains an investigation item until CI proves it resolved.
+The first CI run (41653936127, source f3d9ac4) passed all accessibility checks and every interaction except section navigation. It caught a slash mismatch in the new navigation: prerender and a direct trailing-slash request chose different markup. Route lookup now normalizes the slash. The standalone 404 also lacked a main landmark, now added.
+
+The inherited contact hydration error came from query-specific crawls overwriting the same static contact file. Prerender now excludes query variants, and contact applies a deep-linked enquiry only after canonical HTML hydration. Direct-query checks cover this repair. The next CI run must prove all fixes before publication.
