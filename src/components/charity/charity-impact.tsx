@@ -87,19 +87,11 @@ export function CharityImpact() {
             >
               <h4 id="charity-work-title">{work.title}</h4>
               <p>{work.body}</p>
-              <a href={work.source} target="_blank" rel="noopener noreferrer">
-                Explore this work
-                <ArrowUpRight size={15} aria-hidden="true" />
-                <span className="sr-only">
-                  {" "}
-                  on Metro World Child's website (opens in a new tab)
-                </span>
-              </a>
             </div>
           </div>
           <a
             className="charity-impact__action"
-            href={charity.website}
+            href={charity.recordUrl}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -107,6 +99,7 @@ export function CharityImpact() {
             <ArrowUpRight size={18} aria-hidden="true" />
             <span className="sr-only"> (opens in a new tab)</span>
           </a>
+          <p className="charity-impact__registration">{charity.registration}</p>
         </div>
       </div>
     </section>

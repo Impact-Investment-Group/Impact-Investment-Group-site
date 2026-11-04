@@ -87,13 +87,18 @@ with sync_playwright() as pw:
                     check(statement.evaluate("n => getComputedStyle(n).color") == "rgb(38, 121, 119)", "Transforming Lives differs from the supplied teal")
                 row["teal_statement_count"] = lives.count()
                 charity_footer = page.locator("footer [data-charity-footer]")
-                expect(charity_footer).to_have_count(1)
-                expect(charity_footer.get_by_text(charity_pledge, exact=True)).to_be_visible()
-                charity_logo = charity_footer.get_by_role("img", name="Metro World Child", exact=True)
-                expect(charity_logo).to_have_attribute("src", "/images/charity/metro-world-child-80.png")
-                expect(charity_logo).to_be_visible()
-                expect(charity_footer.get_by_role("link", name="Read about our commitment", exact=True)).to_have_attribute("href", "/about#charity-impact")
-                row["charity_footer"] = "canonical pledge, original logo and commitment link"
+                if path == "/this-route-does-not-exist":
+                    expect(charity_footer).to_have_count(0)
+                    expect(page.locator("footer")).to_have_count(0)
+                    row["charity_footer"] = "standalone error page has no site footer"
+                else:
+                    expect(charity_footer).to_have_count(1)
+                    expect(charity_footer.get_by_text(charity_pledge, exact=True)).to_be_visible()
+                    charity_logo = charity_footer.get_by_role("img", name="Metro World Child", exact=True)
+                    expect(charity_logo).to_have_attribute("src", "/images/charity/metro-world-child-80.png")
+                    expect(charity_logo).to_be_visible()
+                    expect(charity_footer.get_by_role("link", name="Read about our commitment", exact=True)).to_have_attribute("href", "/about#charity-impact")
+                    row["charity_footer"] = "canonical pledge, original logo and commitment link"
                 check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Horizontal overflow")
                 # Visit lazy images and sections before taking the complete reading view.
                 page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(img => img.loading='eager')")
@@ -375,8 +380,9 @@ with sync_playwright() as pw:
                 expect(section.get_by_text("10%", exact=True)).to_be_visible()
                 expect(section.get_by_text("of our profits", exact=True)).to_be_visible()
                 expect(section.get_by_text(charity_pledge, exact=True)).to_be_visible()
-                cta = section.get_by_role("link", name="Meet Metro World Child (opens in a new tab)", exact=True)
-                expect(cta).to_have_attribute("href", "https://www.metroworldchild.co.uk/")
+                cta = section.get_by_role("link", name="View the charity record (opens in a new tab)", exact=True)
+                expect(cta).to_have_attribute("href", "https://register-of-charities.charitycommission.gov.uk/en/charity-search/-/charity-details/3963704")
+                expect(section.get_by_text("Registered charity 1079863", exact=True)).to_be_visible()
                 expect(cta).to_have_attribute("target", "_blank")
                 check("noopener" in (cta.get_attribute("rel") or "").split(), "Charity link lacks noopener")
                 group = section.get_by_role("group", name="How Metro World Child helps", exact=True)

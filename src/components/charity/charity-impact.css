@@ -83,7 +83,6 @@
 }
 .charity-impact__recipient {
   margin: 18px 0 0;
-  max-width: 23ch;
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-ink-muted);
@@ -157,7 +156,7 @@
   transform: translateY(-2px);
 }
 .charity-impact__detail {
-  min-height: 166px;
+  min-height: 130px;
   margin-top: 20px;
   border-left: 2px solid var(--color-orange-600);
   padding-left: 18px;
@@ -174,7 +173,6 @@
   font-size: 15px;
   line-height: 1.65;
 }
-.charity-impact__detail a,
 .charity-footer a {
   display: inline-flex;
   align-items: center;
@@ -209,6 +207,12 @@
 .charity-impact__action:hover {
   transform: translateY(-2px);
   background: var(--color-orange-700);
+}
+.charity-impact__registration {
+  margin: 12px 0 0;
+  color: var(--color-ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 .charity-impact :is(a, button):focus-visible,
 .charity-footer a:focus-visible {
@@ -264,7 +268,7 @@
     flex: 1 1 140px;
   }
   .charity-impact__detail {
-    min-height: 190px;
+    min-height: 170px;
   }
   .charity-footer {
     gap: 16px;

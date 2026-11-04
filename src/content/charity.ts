@@ -9,12 +9,14 @@ export const charityPledge =
 
 export const charity = {
   name: "Metro World Child",
-  website: "https://www.metroworldchild.co.uk/",
+  recordUrl:
+    "https://register-of-charities.charitycommission.gov.uk/en/charity-search/-/charity-details/3963704",
   eyebrow: "Our commitment to children",
   heading: "Helping children build brighter futures.",
   introduction:
     "Metro World Child is a faith-based humanitarian charity supporting children in vulnerable communities around the world.",
-  action: "Meet Metro World Child",
+  action: "View the charity record",
+  registration: "Registered charity 1079863",
   footerAction: "Read about our commitment",
   work: [
     {
