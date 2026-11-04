@@ -154,7 +154,6 @@ export function PlatformGuides() {
   const [activeStep, setActiveStep] = React.useState(0);
   const [screenKey, setScreenKey] = React.useState(initialScreen(firstGuide));
   const sectionRef = React.useRef<HTMLElement>(null);
-  const stepNavRef = React.useRef<HTMLElement>(null);
   const guide = platformGuides.find((item) => item.id === roleId) ?? firstGuide;
   const step = guide.steps[activeStep] ?? guide.steps[0];
   const screens: GuideScreen[] =
@@ -168,18 +167,6 @@ export function PlatformGuides() {
           },
         ];
   const screen = screens.find((item) => item.key === screenKey) ?? screens[0];
-
-  React.useEffect(() => {
-    const rail = stepNavRef.current;
-    const active = rail?.querySelector<HTMLElement>('[aria-current="step"]');
-    if (!rail || !active) return;
-    const button = active.getBoundingClientRect();
-    const bounds = rail.getBoundingClientRect();
-    if (activeStep === 0) rail.scrollTo({ left: 0, behavior: "instant" });
-    else if (button.left < bounds.left || button.right > bounds.right) {
-      rail.scrollTo({ left: rail.scrollLeft + button.left - bounds.left - 4, behavior: "instant" });
-    }
-  }, [roleId, activeStep]);
 
   const activateRole = React.useCallback((next: PlatformGuide) => {
     setRoleId(next.id);
@@ -365,7 +352,6 @@ export function PlatformGuides() {
           </div>
           <nav
             key={guide.id}
-            ref={stepNavRef}
             className="platform-guides__step-nav"
             aria-label={`${guide.label} walkthrough steps`}
           >

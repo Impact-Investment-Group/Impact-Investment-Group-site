@@ -644,11 +644,31 @@
   .platform-guides__walkthrough {
     padding: 24px 20px;
   }
+  .platform-guides__step-nav ol {
+    flex-direction: column;
+    gap: 8px;
+  }
   .platform-guides__step-nav li {
-    flex: 1 0 128px;
+    flex: none;
+  }
+  .platform-guides__step-nav li::after {
+    display: none;
   }
   .platform-guides__step-nav button {
+    flex-direction: row;
+    padding: 8px;
+    gap: 14px;
     font-size: 13px;
+    text-align: left;
+  }
+  .platform-guides__step-nav button[aria-current="step"] {
+    background: var(--secondary);
+  }
+  .platform-guides__step-number {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
   }
   .platform-guides__step-panel {
     padding: 20px;
