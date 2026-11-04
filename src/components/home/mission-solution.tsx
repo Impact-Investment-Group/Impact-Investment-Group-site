@@ -56,6 +56,7 @@ export function MissionSolution() {
             </h2>
           </div>
           <div className="max-w-[45ch] text-xl leading-relaxed text-ink lg:pt-8">
+            <p className="text-base leading-relaxed text-ink-muted">{purposeCopy.statement}</p>
             {purposeCopy.closing.map((line) => (
               <p key={line} className="mt-3 font-medium">
                 {line}

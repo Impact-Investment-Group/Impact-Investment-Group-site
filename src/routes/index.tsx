@@ -5,7 +5,6 @@ import type { LucideIcon } from "lucide-react";
 import { CouncilPanel } from "@/components/home/council-panel";
 import { DemandMap } from "@/components/home/demand-map";
 import { HomeHero } from "@/components/home/hero";
-import { ConnectionJourney } from "@/components/home/connection-journey";
 import { MissionSolution } from "@/components/home/mission-solution";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -19,6 +18,7 @@ import {
   platformStatsSource,
 } from "@/content/trust";
 import { iconByName } from "@/lib/icon-registry";
+import "@/components/home/friendly-home.css";
 
 const icon = (name: string): LucideIcon => iconByName(name);
 
@@ -66,7 +66,6 @@ function HomePage() {
   return (
     <>
       <HomeHero />
-      <ConnectionJourney />
       <MissionSolution />
       <CouncilPanel />
       <section
@@ -132,11 +131,11 @@ function HomePage() {
               <DemandMap readout="below" />
             </Reveal>
           </div>
-          <div className="mt-10 border-t border-rule pt-6">
-            <h3 className="text-sm font-semibold text-teal-600">{dataSourcesEyebrow}</h3>
-            <ul className="mt-4 flex flex-wrap items-center gap-6">
+          <div id="data-sources" className="mt-10 border-t border-rule pt-8 text-center">
+            <h3 id="data-sources-heading" className="text-base font-semibold text-teal-600">{dataSourcesEyebrow}</h3>
+            <ul aria-labelledby="data-sources-heading" className="mx-auto mt-6 flex max-w-[1200px] flex-wrap items-center justify-center gap-x-6 gap-y-8 sm:gap-x-10">
               {dataSources.map((source) => (
-                <li key={source.id} className="h-10">
+                <li key={source.id} className={`flex h-20 items-center justify-center sm:h-24 ${source.id === "ons" ? "w-64 sm:w-72" : "w-40 sm:w-44"}`}>
                   <img
                     src={source.logo}
                     alt={source.name + ": " + source.blurb}
@@ -144,12 +143,12 @@ function HomePage() {
                     height={source.artwork.h}
                     loading="lazy"
                     decoding="async"
-                    className="h-full w-auto max-w-[10.5rem] object-contain"
+                    className="h-auto max-h-full w-auto max-w-full object-contain"
                   />
                 </li>
               ))}
             </ul>
-            <p className="mt-5 max-w-[100ch] text-xs leading-relaxed text-ink-muted">
+            <p className="mx-auto mt-6 max-w-[100ch] text-xs leading-relaxed text-ink-muted">
               {dataSourcesDisclaimer} · {openStreetMapAttribution} ·{" "}
               <Link
                 to="/about"

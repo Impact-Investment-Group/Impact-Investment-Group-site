@@ -808,13 +808,11 @@ async () => {
           Math.ceil(box.right + scrollX),
           Math.ceil(box.bottom + scrollY),
         ];
-        // Wave 964: the same hero-only snap strip now runs at every width.
-        // Offscreen slides cannot yield screenshot colour samples. The bucket
-        // remains limited to .hero-band, and wave909-experience checks all
-        // three visible photo/caption states at both widths with axe and images.
+        // Only the mobile hero snap strip can put captions beyond its edge.
+        // Every photograph state is also checked by wave909-experience.
         entry.pastScrollEdge = false;
         const strip = element.closest('.hero-band');
-        if (strip && strip.scrollWidth > strip.clientWidth + 2) {
+        if (innerWidth < 768 && strip && strip.scrollWidth > strip.clientWidth + 2) {
           const lane = strip.getBoundingClientRect();
           const shown = Math.min(box.right, lane.right) - Math.max(box.left, lane.left);
           if (shown < box.width / 2) entry.pastScrollEdge = true;
