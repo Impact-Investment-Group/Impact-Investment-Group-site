@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": "ask-a-new-question",
+    "q": "How do I ask a question that is not answered here?",
+    "a": [
+      "Use Ask a new question on this page. Write your question and choose Email my question to open an email addressed to our enquiries team, then send it from your email app. If you use webmail, Copy question lets you paste the draft into your own email.",
+      "You can choose whether we may publish an anonymous version of your question and our answer. The team reviews the answer and removes personal details before adding it to the FAQs. Questions are never published automatically."
+    ]
+  }
+]
