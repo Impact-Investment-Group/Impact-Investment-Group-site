@@ -135,7 +135,7 @@ function HomePage() {
             <h3 id="data-sources-heading" className="text-base font-semibold text-teal-600">{dataSourcesEyebrow}</h3>
             <ul aria-labelledby="data-sources-heading" className="mx-auto mt-6 flex max-w-[1200px] flex-wrap items-center justify-center gap-x-6 gap-y-8 sm:gap-x-10">
               {dataSources.map((source) => (
-                <li key={source.id} className={`flex h-20 items-center justify-center sm:h-24 ${source.id === "ons" ? "w-64 sm:w-72" : "w-40 sm:w-44"}`}>
+                <li key={source.id} className="flex h-16 w-40 items-center justify-center sm:w-44">
                   <img
                     src={source.logo}
                     alt={source.name + ": " + source.blurb}
@@ -143,7 +143,7 @@ function HomePage() {
                     height={source.artwork.h}
                     loading="lazy"
                     decoding="async"
-                    className="h-auto max-h-full w-auto max-w-full object-contain"
+                    className="h-auto max-h-14 w-auto max-w-full object-contain"
                   />
                 </li>
               ))}

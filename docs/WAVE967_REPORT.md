@@ -6,7 +6,7 @@ The homepage had overrides shrinking the shared 48px role icon plate to 28px and
 
 Our mission, About Us and its director cards are restored exactly from 5485b88, the pre-wave-964 baseline used for the requested hero restoration. Their source diff against that baseline is empty. Existing copy, facts, image files, links, mission keyboard tabs and About section navigation remain. Unused mission-only CSS is removed; the other homepage demand styling stays.
 
-The restored three-photo hero, removed connection section and centred larger UK data logos from wave 965 remain. No changed image files or signed-in application changes.
+The restored three-photo hero and removed connection section from wave 965 remain. Israel then requested the UK data logos made smaller and consistent: all five now share the same display area, with contained proportional artwork and a lower height cap. The extra-wide ONS slot is removed; all wrapped rows remain centred. No changed image files or signed-in application changes.
 
 Powered by Zoopla now uses a larger original logo and a hover, keyboard and tap reveal. A decorative search animation finds a home in a miniature street. The approved new copy is "Your next best investment could be right under your nose." and "Explore the potential in on-market property." It contains no invented prices, addresses, returns or actual property matches. The animation finishes, the reduced-motion version shows its final state, and Escape dismisses the reveal.
 

@@ -12,3 +12,4 @@ Call: restore icon colours, Our mission and About Us - Medium - root plus disjoi
 9. Follow-up: enlarge Powered by Zoopla and add a polished hover, keyboard and tap reveal of an animated on-market property search.
 10. Approved reveal copy: "Your next best investment could be right under your nose." and "Explore the potential in on-market property." No invented prices, listings or returns.
 11. Preserve Zoopla's supplied artwork and colour. Animation is decorative and bounded; reduced motion presents the final state. Escape closes the reveal.
+12. Follow-up: reduce the UK data logos from wave 965's oversized treatment, using equal display areas and proportional artwork; keep the strip centred.
