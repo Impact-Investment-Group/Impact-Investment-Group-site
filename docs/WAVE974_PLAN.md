@@ -1,4 +1,4 @@
-# Wave 968: compact Zoopla attribution
+# Wave 974: compact Zoopla attribution
 
 Call: reduce homepage Zoopla credit - Medium - one writer with read review - targeted size correction.
 1. Reduce the oversized badge, logo, label spacing and padding while keeping the original artwork and colours.
