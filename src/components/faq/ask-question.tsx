@@ -32,7 +32,7 @@ export function AskQuestion() {
     try {
       await navigator.clipboard.writeText(body);
       setCopyFallback(false);
-      setNotice("Question copied. Paste it into an email to the address below.");
+      setNotice("Question copied. Paste it into an email to our enquiries address.");
     } catch {
       setCopyFallback(true);
       draftField.current?.focus();
