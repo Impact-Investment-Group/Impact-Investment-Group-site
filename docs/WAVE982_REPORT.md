@@ -15,3 +15,5 @@ The normal website Actions gate covers all pages and new tests for every role, w
 Source photographs, team headshots, restored homepage hero, Mission/About, data-logo sizes, supplied teal and public FAQs remain intact. Only the public website is changed. Initial number 978 collided with the chair's claimed 978-981; this wave became 982 before implementation. All user-facing changes fall within the role-guide, map-basis and Zoopla copy/controls specified by the plan.
 
 Initial website CI 41824546479 passed every page and new guide/map interaction, but two inherited assertions still required the removed August snapshot label. These now require its absence and the current sourced timestamp. Screenshot review also corrected the Services section-navigation targets and reset the mobile walkthrough rail on role changes; new checks cover both.
+
+Run 41825987728 again passed every page, map, Zoopla and contrast check; the new phone rail-reset assertion exposed residual scroll reuse. Each role now gets a fresh walkthrough rail, with acceptance checking that its active first control is fully visible rather than requiring an implementation-specific scroll offset.

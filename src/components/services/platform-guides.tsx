@@ -364,6 +364,7 @@ export function PlatformGuides() {
             </p>
           </div>
           <nav
+            key={guide.id}
             ref={stepNavRef}
             className="platform-guides__step-nav"
             aria-label={`${guide.label} walkthrough steps`}
