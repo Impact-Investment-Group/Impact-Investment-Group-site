@@ -26,6 +26,8 @@ paths += partners + ["/register/" + role for role in roles] + ["/this-route-does
 
 stock_snapshot = json.loads((ROOT / "src/data/public-property-stock.json").read_text(encoding="utf-8"))
 stock_fixture = {"as_of": "2026-11-05T09:00:00Z", "total": 4321, "regions": {"North West": {"count": 4000}, "London": {"count": 231}, "Northern Ireland": {"count": 0}, "Unmapped": {"count": 90}}, "basis": "Demonstration aggregate for browser verification."}
+charity_pledge = "10% of all profits made go to Metro World Child UK to bring hope and joy to children today and change lives for tomorrow."
+charity_capture_style = ".site-header,.page-outline,.back-to-top{visibility:hidden!important}"
 def answer_stock(route):
     route.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body=json.dumps(stock_fixture))
 
@@ -84,6 +86,14 @@ with sync_playwright() as pw:
                 for statement in lives.all():
                     check(statement.evaluate("n => getComputedStyle(n).color") == "rgb(38, 121, 119)", "Transforming Lives differs from the supplied teal")
                 row["teal_statement_count"] = lives.count()
+                charity_footer = page.locator("footer [data-charity-footer]")
+                expect(charity_footer).to_have_count(1)
+                expect(charity_footer.get_by_text(charity_pledge, exact=True)).to_be_visible()
+                charity_logo = charity_footer.get_by_role("img", name="Metro World Child", exact=True)
+                expect(charity_logo).to_have_attribute("src", "/images/charity/metro-world-child-80.png")
+                expect(charity_logo).to_be_visible()
+                expect(charity_footer.get_by_role("link", name="Read about our commitment", exact=True)).to_have_attribute("href", "/about#charity-impact")
+                row["charity_footer"] = "canonical pledge, original logo and commitment link"
                 check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Horizontal overflow")
                 # Visit lazy images and sections before taking the complete reading view.
                 page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(img => img.loading='eager')")
@@ -350,6 +360,88 @@ with sync_playwright() as pw:
             check(not violations, f"Interactive accessibility: {violations}")
             page.screenshot(path=str(OUT / f"interactive-{name}-{width}.png"), full_page=True, animations="disabled")
 
+        def charity_commitment():
+            states = [
+                ("Everyday essentials", "Practical help for everyday needs"),
+                ("Personal support", "A familiar face, week after week"),
+                ("Learning and hope", "Encouragement for the future"),
+            ]
+            for path, label in [("/", "home"), ("/about", "about")]:
+                page.goto(base + path, wait_until="networkidle")
+                section = page.locator("#charity-impact")
+                expect(section).to_have_count(1)
+                expect(page.locator("#charity-impact-heading")).to_have_count(1)
+                expect(section.get_by_role("heading", name="Helping children build brighter futures.", exact=True)).to_have_attribute("id", "charity-impact-heading")
+                expect(section.get_by_text("10%", exact=True)).to_be_visible()
+                expect(section.get_by_text("of our profits", exact=True)).to_be_visible()
+                expect(section.get_by_text(charity_pledge, exact=True)).to_be_visible()
+                cta = section.get_by_role("link", name="Meet Metro World Child (opens in a new tab)", exact=True)
+                expect(cta).to_have_attribute("href", "https://www.metroworldchild.co.uk/")
+                expect(cta).to_have_attribute("target", "_blank")
+                check("noopener" in (cta.get_attribute("rel") or "").split(), "Charity link lacks noopener")
+                group = section.get_by_role("group", name="How Metro World Child helps", exact=True)
+                buttons = group.get_by_role("button")
+                expect(buttons).to_have_count(3)
+                panel = section.locator("#charity-work-detail")
+                expect(panel).to_have_attribute("role", "region")
+                expect(panel).to_have_attribute("aria-labelledby", "charity-work-title")
+                expect(panel.locator("#charity-work-title")).to_have_text(states[0][1])
+                section.locator("img").evaluate_all("nodes => nodes.forEach(img => img.loading='eager')")
+                page.wait_for_function("() => [...document.querySelectorAll('#charity-impact img')].every(img => img.complete && img.naturalWidth > 0)")
+                for index, (name, _) in enumerate(states):
+                    button = group.get_by_role("button", name=name, exact=True)
+                    expect(button).to_have_attribute("aria-controls", "charity-work-detail")
+                    expect(button).to_have_attribute("aria-pressed", "true" if index == 0 else "false")
+                descriptions = []
+                for index, (name, title) in enumerate(states):
+                    group.get_by_role("button", name=name, exact=True).click()
+                    expect(panel.locator("#charity-work-title")).to_have_text(title)
+                    expect(section.get_by_role("region", name=title, exact=True)).to_be_visible()
+                    expect(group.locator('[aria-pressed="true"]')).to_have_count(1)
+                    for other, (other_name, _) in enumerate(states):
+                        expect(group.get_by_role("button", name=other_name, exact=True)).to_have_attribute("aria-pressed", "true" if other == index else "false")
+                    description = " ".join(panel.locator("p").all_text_contents()).strip()
+                    check(bool(description), "Charity work explanation is empty")
+                    check(description not in descriptions, "Charity selection changed its title without replacing the explanation")
+                    descriptions.append(description)
+                    section.screenshot(path=str(OUT / f"charity-{label}-{index + 1}-{width}.png"), animations="disabled", style=charity_capture_style)
+                    check_crafted_state(f"charity-{label}-{index + 1}")
+                # These are ordinary toggle buttons, so native Tab, Space and
+                # Enter must operate them without assuming tab-list semantics.
+                buttons.first.focus()
+                page.keyboard.press("Space")
+                expect(buttons.first).to_have_attribute("aria-pressed", "true")
+                expect(panel.locator("#charity-work-title")).to_have_text(states[0][1])
+                page.keyboard.press("Tab")
+                expect(buttons.nth(1)).to_be_focused()
+                page.keyboard.press("Enter")
+                expect(buttons.nth(1)).to_have_attribute("aria-pressed", "true")
+                expect(panel.locator("#charity-work-title")).to_have_text(states[1][1])
+                page.keyboard.press("Tab")
+                expect(buttons.last).to_be_focused()
+                page.keyboard.press("Space")
+                expect(buttons.last).to_have_attribute("aria-pressed", "true")
+                expect(panel.locator("#charity-work-title")).to_have_text(states[2][1])
+                if path == "/about":
+                    outline = page.get_by_role("navigation", name="On this page")
+                    if width == 390:
+                        outline.locator("summary").click()
+                    link = outline.get_by_role("link", name="Giving back", exact=True)
+                    expect(link).to_have_attribute("href", "#charity-impact")
+                    link.click()
+                    expect(section).to_be_in_viewport()
+                    if width == 390:
+                        expect(outline.locator("summary")).to_contain_text("Giving back")
+                    else:
+                        expect(link).to_have_attribute("aria-current", "location")
+                else:
+                    footer = page.locator("footer [data-charity-footer]")
+                    footer.scroll_into_view_if_needed()
+                    footer.screenshot(path=str(OUT / f"charity-footer-{width}.png"), animations="disabled", style=charity_capture_style)
+                    footer.get_by_role("link", name="Read about our commitment", exact=True).click()
+                    expect(page).to_have_url(re.compile(r"/about/?#charity-impact$"))
+                    expect(page.locator("#charity-impact")).to_be_in_viewport()
+
         def home_mission():
             page.goto(base + "/", wait_until="networkidle")
             expect(page.locator(".hero-role-grid a")).to_have_count(10)
@@ -596,6 +688,7 @@ with sync_playwright() as pw:
             expect(page).to_have_url(re.compile(r"/faqs#ask-a-question$"))
             expect(page.locator("#ask-question-heading")).to_be_in_viewport()
 
+        interaction("charity pledge, work selection, keyboard and commitment links", charity_commitment)
         interaction("FAQ search, disclosure, email draft and copy fallback", faq_journey)
         interaction("Zoopla hover, keyboard and reduced motion", zoopla_discovery)
         interaction("restored hero and centred data credits", restored_home_layout)

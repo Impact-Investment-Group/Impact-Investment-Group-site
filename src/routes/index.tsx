@@ -7,6 +7,7 @@ import { DemandMap } from "@/components/home/demand-map";
 import { HomeHero } from "@/components/home/hero";
 import { MissionSolution } from "@/components/home/mission-solution";
 import { HomeFaq } from "@/components/faq/home-faq";
+import { CharityImpact } from "@/components/charity/charity-impact";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { demandMapCopy } from "@/content/home";
@@ -66,6 +67,7 @@ function HomePage() {
     <>
       <HomeHero />
       <MissionSolution />
+      <CharityImpact />
       <CouncilPanel />
       <section
         aria-labelledby="demand-heading"

@@ -1,0 +1,14 @@
+{
+  "images": [
+    {
+      "file": "metro-world-child-160.png",
+      "sha256": "ddb5eb83806c3718af74d9dc9716a3588c41cc0e3b2ff507626a1265e399f125",
+      "source": "Existing approved platform Metro World Child 160px asset, unchanged"
+    },
+    {
+      "file": "metro-world-child-80.png",
+      "sha256": "948d13c2bd315ec642300e3e5f8110546e0796340e48e65c779d618395dce93a",
+      "source": "User attachment, unchanged"
+    }
+  ]
+}

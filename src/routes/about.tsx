@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, ArrowUpRight, ShieldAlert } from "lucide-react";
 import { DirectorCard } from "@/components/about/director-card";
+import { CharityImpact } from "@/components/charity/charity-impact";
 import {
   accountableChain,
   chainNotice,
@@ -208,6 +209,7 @@ function AboutPage() {
           </div>
         </div>
       </section>
+      <CharityImpact />
       <section aria-labelledby="what-heading" className="border-t border-rule">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <h2

@@ -7,6 +7,7 @@ const sections: Record<string, SectionLink[]> = {
   "/about": [
     { id: "about-heading", label: "About us" },
     { id: "why-heading", label: "Why we exist" },
+    { id: "charity-impact", label: "Giving back" },
     { id: "what-heading", label: "What we do" },
   ],
   "/platform": [
