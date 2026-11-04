@@ -472,7 +472,7 @@ with sync_playwright() as pw:
             page.locator("#ask-a-question").screenshot(path=str(OUT / f"faq-question-{width}.png"), animations="disabled")
             check_crafted_state("faq-question")
             # Explicitly deny clipboard to exercise the webmail fallback.
-            page.evaluate("navigator.clipboard.writeText = async () => { throw new Error('denied') }")
+            page.evaluate("() => { navigator.clipboard.writeText = async () => { throw new Error('denied') }; }")
             page.get_by_role("button", name="Copy question", exact=True).click()
             expect(page.locator("#ask-a-question [role=status]")).to_contain_text("Copy the full email draft")
             expect(page.get_by_role("textbox", name="Email draft", exact=True)).to_have_value(draft["body"][0])

@@ -10,4 +10,6 @@ The source-only review caught a manual-copy fallback that omitted the publicatio
 
 No local tests, builds, audits or browser captures were run. GitHub Actions is the gate; final run, screenshot review and public proof are recorded in Context Library Platform/Live-State.md and local 05-Artifacts/website-faq-2026-11-04. No real enquiry or email is sent for verification. Existing photography, team portraits, hero, Mission, About, role icons, ecosystem and compact Zoopla credit are preserved.
 
+The first CI run passed every page, accessibility, ecosystem and colour check but the clipboard-denied test setup returned its replacement function, which Playwright invoked immediately. Wrapping the assignment in a callback fixes the test setup; the rejected clipboard operation is now triggered by the actual Copy question control and its fallback remains asserted.
+
 Copy added is confined to the requested FAQ discovery/search, question/email/copy/validation/permission states and maintainer publication controls. No new service, financial or personal-case claims were added. Existing FAQ factual and compliance text is unchanged.
