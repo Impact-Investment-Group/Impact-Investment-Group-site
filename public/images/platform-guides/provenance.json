@@ -1,0 +1,160 @@
+{
+  "sourceSha": "be6673d2643a2023ceb72ba167ffc2f5ef6490cb",
+  "capturedAt": "2026-11-04T11:48:57.551Z",
+  "data": "Synthetic demonstration records, no live accounts or backend.",
+  "images": [
+    {
+      "key": "investor",
+      "file": "investor.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "a2df7f81b080f3be2f8b62dead2c7cdcc4d5248a9c2a546b1886a1d0a454eff0",
+      "route": "/investor/search",
+      "role": "investor"
+    },
+    {
+      "key": "resident",
+      "file": "resident.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "110a3c1c28a0cd4fedfac8de4f208b66cae1c8b72e586cef223f855250e71012",
+      "route": "/seeker/matches",
+      "role": "seeker"
+    },
+    {
+      "key": "care-provider",
+      "file": "care-provider.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "6171856cfd73ed951dc54d1ff2dd980a890b50361cccf0d30cd69f227a37ccdf",
+      "route": "/care_provider/requirements",
+      "role": "care_provider"
+    },
+    {
+      "key": "housing-association",
+      "file": "housing-association.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "d0a273683343aa6011812f14ae82363aeba5c6c0c56ddc2cff4e5f24a9063864",
+      "route": "/housing_association",
+      "role": "housing_association"
+    },
+    {
+      "key": "local-authority",
+      "file": "local-authority.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "272f5417ddbe957f19fe630571c5368f5faed4ce57b2016a59ccfdfd8ca6f7af",
+      "route": "/local_authority",
+      "role": "local_authority"
+    },
+    {
+      "key": "co-sourcer",
+      "file": "co-sourcer.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "f513ffd509aa92c07840c74e629706032ad79cfeffa770bdf0fa9d11f704aeb5",
+      "route": "/sourcer",
+      "role": "deal_sourcer"
+    },
+    {
+      "key": "housing-provider",
+      "file": "housing-provider.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "6170d7dd58335160e3cf541e729a8693e15fd0fcd12cbc4b8db368129e9fd61f",
+      "route": "/housing_provider",
+      "role": "housing_provider"
+    },
+    {
+      "key": "estate-agent",
+      "file": "estate-agent.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "647d67d0a46825a1ead037a5aa800c274cbf5cbd1262f71ef28e9cf4f7de49cb",
+      "route": "/agent",
+      "role": "estate_agent"
+    },
+    {
+      "key": "contractor",
+      "file": "contractor.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "a9abe414cee71f8c210b655a662d8b0b5d1255a9fd260404f53628debc70f694",
+      "route": "/contractor",
+      "role": "contractor"
+    },
+    {
+      "key": "valuer",
+      "file": "valuer.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "69af781ed931c450d01f0c93fd39d571fe19e93cc8f12c945bf391a6852531b5",
+      "route": "/valuer",
+      "role": "valuer"
+    },
+    {
+      "key": "viewer",
+      "file": "viewer.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "83da33cb3df66eb3a975436b94f0588d03b04491b42552cc1be515b7228a0c9a",
+      "route": "/viewer",
+      "role": "viewer"
+    },
+    {
+      "key": "management-agent",
+      "file": "management-agent.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "8b805a993277032ec8929d32811fe44025ab1679a20041776b497f4f0b3cca17",
+      "route": "/management_agent/properties",
+      "role": "management_agent"
+    },
+    {
+      "key": "management-agent-dashboard",
+      "file": "management-agent-dashboard.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "a64e50512194e7d182a39ca8358955fc4495c2fb8d1f1ecf3166fe195726b891",
+      "route": "/management_agent",
+      "role": "management_agent"
+    },
+    {
+      "key": "management-agent-contacts",
+      "file": "management-agent-contacts.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "07b589f8baf8676979e0cbc323fe8348fd1faf82f9915e07d4d78e3ca0d13e00",
+      "route": "/management_agent/properties/contacts",
+      "role": "management_agent"
+    },
+    {
+      "key": "management-agent-calendar",
+      "file": "management-agent-calendar.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "57c45dce2d0519e2957c4c32369ffc5a5f60e7861b876d73384baaf6102d1192",
+      "route": "/management_agent/calendar",
+      "role": "management_agent"
+    },
+    {
+      "key": "management-agent-maintenance",
+      "file": "management-agent-maintenance.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "14fec8ed3e0e52d6f093f0154a0aed45d9a1173115ef657dec083f09ab7fc843",
+      "route": "/management_agent/properties/maintenance",
+      "role": "management_agent"
+    },
+    {
+      "key": "management-agent-compliance",
+      "file": "management-agent-compliance.webp",
+      "width": 1300,
+      "height": 820,
+      "sha256": "0f7397367fd38b2c1e89f2f6a8f2014c4301ddcb97357fb82212f564c1699e15",
+      "route": "/management_agent/properties/compliance",
+      "role": "management_agent"
+    }
+  ]
+}

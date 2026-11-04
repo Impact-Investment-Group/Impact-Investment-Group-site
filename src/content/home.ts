@@ -428,7 +428,10 @@ export const impactProof = {
   outcomes: {
     heading: "What it changes",
     points: [
-      { text: "Children out of temporary accommodation and into homes of their own.", icon: "Baby" },
+      {
+        text: "Children out of temporary accommodation and into homes of their own.",
+        icon: "Baby",
+      },
       {
         text: "Fewer people stuck in NHS beds waiting for somewhere suitable to live.",
         icon: "Stethoscope",
@@ -465,8 +468,8 @@ export const impactProof = {
  */
 export const demandMapCopy = {
   eyebrow: "Explore housing demand",
-  title: "Visualising Housing Need Across the Nation",
-  lead: "See where housing is needed most and where partners can respond.",
+  title: "Explore the homes behind the possibilities",
+  lead: "Explore current property listings by region, then see how the platform helps connect homes with housing needs.",
   /** Client-approved, final copy. Verbatim — do not paraphrase. */
   statements: [
     {
@@ -518,7 +521,7 @@ export const demandMapCopy = {
    * nothing else has to change.
    */
   illustrativeNote:
-    "Illustrative demonstration. The completed platform will provide detailed regional and local-authority analysis, live demand intelligence, partner connections and property matching.",
+    "The map shows property listings recorded on the platform. Choose a region for its count and the latest update time; housing demand is a separate measure.",
 };
 
 /*
@@ -605,9 +608,24 @@ export interface PlatformCapability {
 }
 
 export const platformCapabilities: PlatformCapability[] = [
-  { id: "matching", title: "Matching", detail: "Referral to room, with the evidence attached.", icon: "GitCompareArrows" },
-  { id: "intelligence", title: "Property intelligence", detail: "Condition, compliance and yield in one record.", icon: "Building2" },
-  { id: "analytics", title: "Analytics", detail: "Demand, placements and outcomes over time.", icon: "ChartNoAxesColumn" },
+  {
+    id: "matching",
+    title: "Matching",
+    detail: "Referral to room, with the evidence attached.",
+    icon: "GitCompareArrows",
+  },
+  {
+    id: "intelligence",
+    title: "Property intelligence",
+    detail: "Condition, compliance and yield in one record.",
+    icon: "Building2",
+  },
+  {
+    id: "analytics",
+    title: "Analytics",
+    detail: "Demand, placements and outcomes over time.",
+    icon: "ChartNoAxesColumn",
+  },
 ];
 
 export interface MatchRow {

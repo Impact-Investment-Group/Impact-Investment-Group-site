@@ -1,17 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ArrowLeft, ArrowRight, ChevronDown, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { registerRoute } from "@/content/site";
 import {
   aiTeamNote,
   compareUpdated,
@@ -20,32 +10,31 @@ import {
   differenceLead,
   differenceStory,
   leaseComparison,
-  servicesClose,
   servicesHero,
   steps,
   sustainabilityPrinciples,
   workflow,
   workflowFooter,
 } from "@/content/services";
-import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 import { cn } from "@/lib/utils";
 import "./editorial-friendly.css";
+import { PlatformGuides } from "@/components/services/platform-guides";
 
 export const Route = createFileRoute("/platform")({
   component: ServicesPage,
   head: () => ({
     meta: [
-      { title: "Our Services — Impact Investment Group" },
+      { title: "Our Services | Impact Investment Group" },
       {
         name: "description",
         content:
-          "Find it, price it, match it. We source UK residential property, price every home against named public data, and follow it into managed supported housing.",
+          "Explore the Impact Investment Platform for your role, from property sourcing to housing management CRM, with real screens and step-by-step guides.",
       },
-      { property: "og:title", content: "Our Services — Impact Investment Group" },
+      { property: "og:title", content: "Our Services | Impact Investment Group" },
       {
         property: "og:description",
         content:
-          "The Property Finder, the Demand Map and an AI team that finds, prices and matches every home — one workflow, every figure sourced.",
+          "Property sourcing, housing management and partner workflows. Choose your role to see the platform and learn the next steps.",
       },
       { property: "og:type", content: "article" },
       { property: "og:url", content: "/platform" },
@@ -54,107 +43,6 @@ export const Route = createFileRoute("/platform")({
     links: [{ rel: "canonical", href: "/platform" }],
   }),
 });
-
-function ProductCapture() {
-  /* ⚠ ONE ID, SET BY HAND, AND BOTH THINGS THAT NEED A NAME POINT AT IT.
-     Radix names a dialog by wiring `aria-labelledby` to the id it generates
-     for its own `Title`. Overriding that id with a literal broke the wiring
-     and axe returned `aria-dialog-name`, serious, on the open state: the
-     title was there and nothing pointed at it. `useId` gives one stable id
-     that the content and the title agree on. */
-  const titleId = React.useId();
-  const capture = (
-    <img
-      src={servicesHero.image.src}
-      loading="lazy"
-      alt={servicesHero.image.alt}
-      width={2241}
-      height={1207}
-      className="w-full"
-      srcSet={variantSrcSet(servicesHero.image.src)}
-      sizes="(min-width: 1200px) 1136px, calc(100vw - 40px)"
-    />
-  );
-
-  return (
-    <figure className="friendly-capture panel overflow-hidden">
-      <Dialog>
-        <DialogTrigger asChild>
-          <button
-            type="button"
-            aria-label="View larger platform preview"
-            className="group relative block w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
-          >
-            {capture}
-            <span className="absolute bottom-4 right-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-rule bg-page px-4 text-sm font-semibold text-ink shadow-[var(--shadow-card)] transition-colors group-hover:bg-secondary">
-              View larger <span aria-hidden="true">↗</span>
-            </span>
-          </button>
-        </DialogTrigger>
-        <DialogPortal>
-          <DialogOverlay />
-          <DialogPrimitive.Content
-            aria-labelledby={titleId}
-            aria-describedby={undefined}
-            className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-page sm:inset-6 sm:rounded-2xl sm:border sm:border-rule"
-          >
-            <DialogTitle id={titleId} className="sr-only">
-              {servicesHero.image.caption}
-            </DialogTitle>
-            {/* ⚠ A SCROLL CONTAINER NEEDS A TAB STOP, which is what axe
-                  returns as `scrollable-region-focusable`, serious, and what
-                  the first cut of this dialog shipped. `tabIndex` is the stop.
-
-                  ⚠ AND NO NAME OF ITS OWN (wave 490b). It used to point
-                  `aria-labelledby` at the dialog's title, so a screen reader
-                  entering the dialog heard the caption once as the dialog's
-                  name and again as this group's. The dialog already carries
-                  the name; the group inside it is only the thing that
-                  scrolls.
-
-                  `touch-action` names the two gestures the box is for: drag it
-                  sideways, or pinch it. Without it a drag inside a fixed layer
-                  is ambiguous and the browser picks.
-
-                  The width comes from the variants manifest rather than from
-                  the two numbers on the figure above, which say 2241 by 1207
-                  where the file on disk is 1600 by 862. Opening the capture at
-                  a width it does not have would upscale it, which is the one
-                  thing this dialog exists to avoid. */}
-            <div
-              tabIndex={0}
-              role="group"
-              className="flex-1 overflow-auto [touch-action:pan-x_pan-y_pinch-zoom] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
-            >
-              <img
-                src={servicesHero.image.src}
-                alt=""
-                aria-hidden="true"
-                width={intrinsic(servicesHero.image.src)?.width}
-                height={intrinsic(servicesHero.image.src)?.height}
-                className="h-auto max-w-none"
-              />
-            </div>
-            {/* The one new string this wave authors, and it is the
-                  accessible name of an icon-only control, which is the only
-                  place the canon allows one. `aria-label` rather than an
-                  `sr-only` span so it is an attribute rather than a rendered
-                  run of text. */}
-            <DialogClose
-              aria-label="Close"
-              className="absolute right-3 top-3 grid size-11 place-items-center rounded-full border border-rule bg-page text-ink shadow-[var(--shadow-card)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
-            >
-              <X aria-hidden="true" className="size-5" strokeWidth={1.6} />
-            </DialogClose>
-          </DialogPrimitive.Content>
-        </DialogPortal>
-      </Dialog>
-      <figcaption className="px-4 py-2.5 text-center text-[12px] max-lg:text-[13px] text-ink-muted">
-        {servicesHero.image.caption}
-      </figcaption>
-    </figure>
-  );
-}
 
 const GUIDE_ART = {
   petra: "/images/ai-team/petra-point.webp",
@@ -429,7 +317,7 @@ function ServicesPage() {
                 id="services-heading"
                 className="mt-4 max-w-[15ch] font-heading text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.05] text-ink"
               >
-                {servicesHero.title}
+                See how the platform works for you.
               </h1>
               <div className="friendly-hero-guides" aria-hidden="true">
                 {workflow.map((guide) => (
@@ -444,37 +332,50 @@ function ServicesPage() {
               </div>
             </div>
             <div className="lg:pt-8">
-              <p className="text-xl font-medium leading-relaxed text-ink">{servicesHero.lead}</p>
+              <p className="text-xl font-medium leading-relaxed text-ink">
+                From finding a property to looking after a home.
+              </p>
               <p className="mt-4 text-base leading-relaxed text-ink-muted">
-                {servicesHero.summary
-                  .map((part) => (typeof part === "string" ? part : part.t))
-                  .join("")}
+                Choose your role to explore the tools you can use, see the real screens and follow a
+                simple walkthrough. Housing teams can also explore our housing management customer
+                relationship management (CRM) system.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button variant="primary" asChild>
-                  <Link to={registerRoute.to}>{registerRoute.label}</Link>
+                  <a href="#platform-guides">Find your role</a>
                 </Button>
                 <Button variant="secondary" asChild withArrow={false}>
-                  <Link to="/contact">Contact Us</Link>
+                  <Link to="/contact">Talk to our team</Link>
                 </Button>
               </div>
-              <p className="mt-3 text-sm text-ink-muted">{servicesClose.ctaNote}</p>
+              <p className="mt-3 text-sm text-ink-muted">
+                Explore the walkthroughs here, or talk to us about access for your organisation.
+              </p>
             </div>
-          </div>
-          <div id="services-preview" className="mt-10 scroll-mt-40">
-            <ProductCapture />
           </div>
         </div>
       </section>
+      <div id="services-preview">
+        <PlatformGuides />
+      </div>
       <Section id="steps-heading" title="From search to supported home">
         <ServiceJourney />
       </Section>
-      <Section id="tools-heading" title="Explore the platform tools" muted>
-        <ToolExplorer />
-      </Section>
-      <Section id="compare-heading" title={differenceHeading}>
-        <DifferenceStory />
-      </Section>
+      <section className="friendly-section friendly-section-tinted">
+        <details className="mx-auto w-full max-w-[1200px] px-5 py-10 sm:px-8" data-services-more>
+          <summary className="cursor-pointer font-heading text-2xl font-semibold text-ink">
+            More about property sourcing and supported housing
+          </summary>
+          <h2 id="tools-heading" className="mt-10 font-heading text-2xl font-bold text-ink">
+            Explore the platform tools
+          </h2>
+          <ToolExplorer />
+          <h2 id="compare-heading" className="mt-12 font-heading text-2xl font-bold text-ink">
+            {differenceHeading}
+          </h2>
+          <DifferenceStory />
+        </details>
+      </section>
     </div>
   );
 }

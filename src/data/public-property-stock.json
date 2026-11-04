@@ -1,0 +1,50 @@
+{
+  "as_of": "2026-11-04T11:39:29.474211Z",
+  "total": 279893,
+  "regions": {
+    "North East": {
+      "count": 5728
+    },
+    "North West": {
+      "count": 21927
+    },
+    "Yorkshire & The Humber": {
+      "count": 17728
+    },
+    "East Midlands": {
+      "count": 14646
+    },
+    "West Midlands": {
+      "count": 16996
+    },
+    "Lincolnshire": {
+      "count": 1198
+    },
+    "East of England": {
+      "count": 28753
+    },
+    "South East": {
+      "count": 49867
+    },
+    "South West": {
+      "count": 30023
+    },
+    "London": {
+      "count": 53795
+    },
+    "Wales": {
+      "count": 6937
+    },
+    "Scotland": {
+      "count": 3983
+    },
+    "Northern Ireland": {
+      "count": 0
+    },
+    "Unmapped": {
+      "count": 28312
+    }
+  },
+  "basis": "Live listings on the platform: status approved / sent to investors / soft-reserved, excluding off-market, new-build, quarantined, signed-reservation, auction and rental stock. This count INCLUDES listings that can only be viewed once you are signed in, so it is larger than the number of properties browsable on this page.",
+  "suppression_reason": "unlicensed_stock_hidden:showcase_counts"
+}

@@ -15,8 +15,6 @@ import {
   dataSourcesDisclaimer,
   dataSourcesEyebrow,
   openStreetMapAttribution,
-  platformStats,
-  platformStatsSource,
 } from "@/content/trust";
 import { iconByName } from "@/lib/icon-registry";
 import "@/components/home/friendly-home.css";
@@ -90,22 +88,6 @@ function HomePage() {
                 <Info aria-hidden="true" className="mt-1 size-4 shrink-0 text-teal-600" />
                 {demandMapCopy.illustrativeNote}
               </p>
-              <dl className="home-demand-stats mt-7">
-                {platformStats.map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="grid grid-cols-[.65fr_1fr] items-baseline gap-4 border-b border-rule py-3.5 last:border-b-0"
-                  >
-                    <dt className="col-start-2 text-sm leading-relaxed text-ink-muted">
-                      {stat.label}
-                    </dt>
-                    <dd className="col-start-1 row-start-1 font-heading text-2xl font-bold text-ink">
-                      {stat.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="mt-3 text-xs leading-relaxed text-ink-muted">{platformStatsSource}</p>
               <ul className="mt-8 space-y-5">
                 {demandMapCopy.statements.map((statement) => {
                   const Glyph = icon(statement.icon);
@@ -133,8 +115,13 @@ function HomePage() {
             </Reveal>
           </div>
           <div id="data-sources" className="mt-10 border-t border-rule pt-8 text-center">
-            <h3 id="data-sources-heading" className="text-base font-semibold text-teal-600">{dataSourcesEyebrow}</h3>
-            <ul aria-labelledby="data-sources-heading" className="mx-auto mt-6 flex max-w-[1200px] flex-wrap items-center justify-center gap-x-6 gap-y-8 sm:gap-x-10">
+            <h3 id="data-sources-heading" className="text-base font-semibold text-teal-600">
+              {dataSourcesEyebrow}
+            </h3>
+            <ul
+              aria-labelledby="data-sources-heading"
+              className="mx-auto mt-6 flex max-w-[1200px] flex-wrap items-center justify-center gap-x-6 gap-y-8 sm:gap-x-10"
+            >
               {dataSources.map((source) => (
                 <li key={source.id} className="flex h-16 w-40 items-center justify-center sm:w-44">
                   <img
