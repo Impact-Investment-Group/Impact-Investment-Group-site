@@ -2417,9 +2417,6 @@ canvas[data-map="in"] {
 }
 /* Five columns keep each role and its explanation together on wide screens. */
 .hero-role-grid { column-gap: 1.25rem; }
-.hero-role-link .role-plate { width: 1.75rem; height: 1.75rem; background: transparent; }
-.hero-role-link:hover .role-plate,
-.hero-role-link:focus-visible .role-plate { background: transparent; }
 .mission-panel[hidden] { display: none; }
 @media (max-width: 639px) {
   .hero-role-grid { column-gap: .75rem; }

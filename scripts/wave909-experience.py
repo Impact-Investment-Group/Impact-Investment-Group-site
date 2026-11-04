@@ -112,6 +112,7 @@ with sync_playwright() as pw:
 
         def outline():
             page.goto(base + "/about", wait_until="networkidle")
+            expect(page.locator(".friendly-editorial")).to_have_count(0)
             nav = page.get_by_role("navigation", name="On this page")
             if width == 390:
                 nav.locator("summary").click()
@@ -243,6 +244,11 @@ with sync_playwright() as pw:
         def home_mission():
             page.goto(base + "/", wait_until="networkidle")
             expect(page.locator(".hero-role-grid a")).to_have_count(10)
+            plates = page.locator(".hero-role-grid .role-plate")
+            expect(plates).to_have_count(10)
+            check(plates.evaluate_all("nodes => nodes.every(n => {const b=n.getBoundingClientRect(),c=getComputedStyle(n).backgroundColor; return b.width >= 48 && b.height >= 48 && c !== 'transparent' && c !== 'rgba(0, 0, 0, 0)';})"), "Role icon tint or original size missing")
+            check(plates.locator("svg").evaluate_all("nodes => nodes.every(n => ['rgb(20, 54, 106)', 'rgb(204, 74, 34)'].includes(getComputedStyle(n).color))"), "Role glyph is outside the navy/orange palette")
+            expect(page.locator(".mission-friendly")).to_have_count(0)
             check(page.locator(".hero-panel figcaption.text-teal-600").evaluate("n => getComputedStyle(n).color") == "rgb(38, 121, 119)", "Hero sample teal changed")
             tabs = page.get_by_role("tablist", name="Our mission").get_by_role("tab")
             tabs.first.focus()
