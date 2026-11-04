@@ -116,6 +116,7 @@ PAGES = [
     ("/solutions", "solutions"),
     ("/partners", "partners"),
     ("/contact", "contact"),
+    ("/faqs", "faqs"),
     ("/register", "register"),
     ("/register/investor", "register-investor"),
     ("/register/resident", "register-resident"),

@@ -6,6 +6,7 @@ import { CouncilPanel } from "@/components/home/council-panel";
 import { DemandMap } from "@/components/home/demand-map";
 import { HomeHero } from "@/components/home/hero";
 import { MissionSolution } from "@/components/home/mission-solution";
+import { HomeFaq } from "@/components/faq/home-faq";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { demandMapCopy } from "@/content/home";
@@ -160,6 +161,7 @@ function HomePage() {
           </div>
         </div>
       </section>
+      <HomeFaq />
     </>
   );
 }

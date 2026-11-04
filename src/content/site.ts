@@ -113,6 +113,7 @@ export const contactDetails = {
 
 /** Same labels as the header, so the two never drift apart. */
 export const footerSiteLinks: NavItem[] = [
+  { label: "FAQs", to: "/faqs" },
   { label: "About Us", to: "/about" },
   { label: "Our Services", to: "/platform" },
   { label: "The Problem", to: "/the-problem" },

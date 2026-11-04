@@ -7,6 +7,7 @@ import http.server
 import json
 import re
 import threading
+from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
@@ -19,7 +20,7 @@ roles = [re.search(r'id:\s*"([a-z0-9-]+)"', block).group(1)
          for block in re.findall(r'\{([^{}]+)\}', roles_block)
          if 'href:' not in block and re.search(r'id:\s*"([a-z0-9-]+)"', block)]
 partners = ["/" + p.stem for p in sorted((ROOT / "src/routes").glob("partner-with-*.tsx"))]
-paths = ["/", "/about", "/platform", "/the-problem", "/solutions", "/partners", "/contact", "/register", "/legal"]
+paths = ["/", "/about", "/platform", "/the-problem", "/solutions", "/partners", "/contact", "/faqs", "/register", "/legal"]
 paths += partners + ["/register/" + role for role in roles] + ["/this-route-does-not-exist"]
 
 
@@ -422,6 +423,67 @@ with sync_playwright() as pw:
             page.keyboard.press("Tab")
             expect(trigger).to_have_attribute("aria-expanded", "false")
 
+        def faq_journey():
+            page.goto(base + "/", wait_until="networkidle")
+            preview = page.locator("#faqs")
+            expect(preview.locator("details")).to_have_count(4 + min(2, len(json.loads((ROOT / "src/content/faq-community.json").read_text()))))
+            preview.get_by_role("link", name="Explore all FAQs").click()
+            expect(page).to_have_url(re.compile(r"/faqs/?$"))
+            search = page.get_by_role("searchbox", name="Search frequently asked questions")
+            search.fill("numbers honest")
+            expect(page.locator("#faq-numbers summary")).to_contain_text("How do you keep the numbers honest?")
+            row = page.locator("#faq-numbers")
+            row.locator("summary").focus()
+            page.keyboard.press("Enter")
+            expect(row).to_have_attribute("open", "")
+            expect(row.locator(".faq-answer")).to_contain_text("named source")
+            page.keyboard.press("Enter")
+            check(not row.evaluate("n => n.open"), "FAQ keyboard close failed")
+            row.locator("summary").click()
+            expect(row).to_have_attribute("open", "")
+            search.fill("no-matching-question-975")
+            expect(page.locator(".faq-results")).to_contain_text("No answers found")
+            page.get_by_role("button", name="Clear FAQ search").click()
+            expect(search).to_be_focused()
+            expect(page.locator(".faq-item")).to_have_count(7 + len(json.loads((ROOT / "src/content/faq-community.json").read_text())))
+            page.get_by_role("link", name="Ask a new question", exact=True).click()
+            question = page.get_by_role("textbox", name="Your question", exact=True)
+            page.get_by_role("link", name="Email my question", exact=True).click()
+            expect(question).to_be_focused()
+            expect(page.get_by_role("alert")).to_contain_text("at least 10 characters")
+            sample = "Can a housing provider ask about a home & local needs?"
+            question.fill(sample)
+            consent = page.get_by_role("checkbox", name=re.compile("You may publish"))
+            expect(consent).not_to_be_checked()
+            email = page.get_by_role("link", name="Email my question", exact=True)
+            link = urlparse(email.get_attribute("href"))
+            check(link.scheme == "mailto" and link.path == "enquires@impactig.co.uk", "Question is not addressed to the canonical enquiry mailbox")
+            draft = parse_qs(link.query)
+            check(sample in draft["body"][0] and "No, please reply privately only" in draft["body"][0], "Draft lost question or default private preference")
+            check(draft["subject"] == ["Website FAQ question"], "Question lacks inbox subject")
+            consent.check()
+            draft = parse_qs(urlparse(email.get_attribute("href")).query)
+            check("as an FAQ: Yes." in draft["body"][0], "Draft lost publication permission")
+            context.grant_permissions(["clipboard-read", "clipboard-write"], origin=base)
+            page.get_by_role("button", name="Copy question", exact=True).click()
+            expect(page.locator("#ask-a-question [role=status]")).to_contain_text("Question copied")
+            check(page.evaluate("navigator.clipboard.readText()") == draft["body"][0], "Copy differs from email draft")
+            expect(page.locator("#ask-a-question")).to_contain_text("Nothing is sent or published automatically.")
+            page.locator("#ask-a-question").screenshot(path=str(OUT / f"faq-question-{width}.png"), animations="disabled")
+            check_crafted_state("faq-question")
+            # Explicitly deny clipboard to exercise the webmail fallback.
+            page.evaluate("navigator.clipboard.writeText = async () => { throw new Error('denied') }")
+            page.get_by_role("button", name="Copy question", exact=True).click()
+            expect(page.locator("#ask-a-question [role=status]")).to_contain_text("Copy the full email draft")
+            expect(page.get_by_role("textbox", name="Email draft", exact=True)).to_have_value(draft["body"][0])
+            expect(page.get_by_role("textbox", name="Email draft", exact=True)).to_be_focused()
+            expect(question).to_have_value(sample)
+            page.goto(base + "/contact", wait_until="networkidle")
+            page.locator(".contact-faq").get_by_role("link", name="Ask a new question").click()
+            expect(page).to_have_url(re.compile(r"/faqs#ask-a-question$"))
+            expect(page.locator("#ask-question-heading")).to_be_in_viewport()
+
+        interaction("FAQ search, disclosure, email draft and copy fallback", faq_journey)
         interaction("Zoopla hover, keyboard and reduced motion", zoopla_discovery)
         interaction("restored hero and centred data credits", restored_home_layout)
         interaction("all three hero photograph states", photo_variants)

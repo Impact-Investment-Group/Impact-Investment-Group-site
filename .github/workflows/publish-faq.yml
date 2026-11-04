@@ -1,0 +1,109 @@
+name: Publish an approved FAQ
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What would you like to do?"
+        type: choice
+        options: [publish, update, remove]
+        required: true
+      id:
+        description: "Unique lowercase ID, for example asking-about-a-property. Reuse the exact ID to update or remove."
+        type: string
+        required: true
+      question:
+        description: "Approved anonymous question (leave blank only when removing)."
+        type: string
+        required: false
+      answer:
+        description: "Approved plain-text answer. Separate paragraphs with ||. Leave blank only when removing."
+        type: string
+        required: false
+      approved:
+        description: "I have reviewed accuracy, permission to publish and removal of all personal details."
+        type: boolean
+        default: false
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: approved-faq-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Require the main branch and editorial approval
+        env:
+          FAQ_APPROVED: ${{ inputs.approved }}
+        run: |
+          test "$GITHUB_REF" = "refs/heads/main" || { echo "Run this editor from main only."; exit 1; }
+          test "$FAQ_APPROVED" = "true" || { echo "Review the anonymous question and answer before publishing."; exit 1; }
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          sparse-checkout: |
+            .github
+            scripts
+            src/content
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check publication rules
+        run: node --test scripts/publish-faq.test.mjs
+
+      - name: Prepare only the approved public answer
+        env:
+          FAQ_ACTION: ${{ inputs.action }}
+          FAQ_ID: ${{ inputs.id }}
+          FAQ_QUESTION: ${{ inputs.question }}
+          FAQ_ANSWER: ${{ inputs.answer }}
+          FAQ_APPROVED: ${{ inputs.approved }}
+        run: node scripts/publish-faq.mjs
+
+      - name: Commit and publish the reviewed FAQ source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- src/content/faq-community.json; then
+            git add src/content/faq-community.json
+            git commit -m "docs(faq): publish reviewed community answer"
+          fi
+          for attempt in 1 2 3; do
+            git fetch --no-tags origin main
+            git merge --no-edit origin/main
+            node scripts/publish-faq.mjs --validate
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+          done
+          echo "Main moved repeatedly or the push was refused. Review this run before retrying."
+          exit 1
+
+      # Bot commits do not trigger push workflows. Dispatch the normal gate on current main.
+      - name: Start the normal website checks and deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy.yml',
+              ref: 'main',
+              inputs: { source_ref: '' }
+            });
+            await core.summary
+              .addHeading('Approved FAQ source saved')
+              .addRaw('The normal Deploy to GitHub Pages workflow has been requested on current main. The public website changes only after its checks and deployment succeed.')
+              .write();

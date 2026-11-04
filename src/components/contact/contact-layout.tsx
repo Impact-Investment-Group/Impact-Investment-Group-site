@@ -13,7 +13,10 @@ import {
 } from "lucide-react";
 import { EnquiryForm } from "@/components/contact/enquiry-form";
 import { contactHero, enquiryRoutes, type EnquiryRouteId } from "@/content/contact";
-import { faq, faqEyebrow, faqHeading } from "@/content/faq";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { faqEyebrow, faqHeading } from "@/content/faq";
+import { publishedFaq as faq } from "@/content/published-faq";
 import { contactDetails, crisisLines, crisisNote } from "@/content/site";
 import { SIZES_CARD_ILLUSTRATION, variantSrcSet } from "@/lib/responsive-image";
 import "./contact-experience.css";
@@ -186,6 +189,10 @@ export function ContactLayout({
             >
               {faqHeading}
             </h2>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild variant="secondary"><Link to="/faqs" hash="ask-a-question">Ask a new question</Link></Button>
+              <Button asChild variant="ghost"><Link to="/faqs">Explore all FAQs</Link></Button>
+            </div>
           </div>
           <div className="contact-faq__rows">
             {faq.map((item) => (
