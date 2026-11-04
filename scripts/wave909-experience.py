@@ -71,6 +71,12 @@ with sync_playwright() as pw:
                 check(page.locator("main").count() == 1, "Expected exactly one main landmark")
                 check(page.locator("h1").count() == 1, "Expected exactly one h1")
                 expect(page.locator("h1")).to_be_visible()
+                lives = page.locator("span, figcaption").filter(has_text=re.compile(r"^\s*Transforming Lives\.?\s*$"))
+                if not path.startswith("/register") and path != "/this-route-does-not-exist":
+                    check(lives.count() > 0, "Expected the shared closing statement")
+                for statement in lives.all():
+                    check(statement.evaluate("n => getComputedStyle(n).color") == "rgb(38, 121, 119)", "Transforming Lives differs from the supplied teal")
+                row["teal_statement_count"] = lives.count()
                 check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Horizontal overflow")
                 # Visit lazy images and sections before taking the complete reading view.
                 page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(img => img.loading='eager')")

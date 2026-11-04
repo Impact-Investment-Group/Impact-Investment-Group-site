@@ -177,7 +177,7 @@ export function SiteFooter() {
                     aria-hidden="true"
                     className={
                       "heading-tight inline-block whitespace-nowrap font-heading text-[clamp(1.25rem,2.4vw,1.875rem)] font-extrabold leading-[1.2] tracking-[-0.02em] " +
-                      (i === 1 ? "text-orange-700" : "text-ink") +
+                      (i === 2 ? "text-teal-600" : i === 1 ? "text-orange-700" : "text-ink") +
                       (i < 2 ? " mr-2" : "")
                     }
                   >
