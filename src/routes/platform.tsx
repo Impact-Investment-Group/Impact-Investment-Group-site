@@ -363,7 +363,10 @@ function ServicesPage() {
       </Section>
       <section className="friendly-section friendly-section-tinted">
         <details className="mx-auto w-full max-w-[1200px] px-5 py-10 sm:px-8" data-services-more>
-          <summary className="cursor-pointer font-heading text-2xl font-semibold text-ink">
+          <summary
+            id="services-more-heading"
+            className="cursor-pointer font-heading text-2xl font-semibold text-ink"
+          >
             More about property sourcing and supported housing
           </summary>
           <h2 id="tools-heading" className="mt-10 font-heading text-2xl font-bold text-ink">

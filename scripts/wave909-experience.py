@@ -90,6 +90,10 @@ with sync_playwright() as pw:
                 page.wait_for_function("Array.from(document.images).every(img => img.complete)")
                 broken = page.locator("img").evaluate_all("nodes => nodes.filter(n => !n.naturalWidth).map(n => n.src)")
                 check(not broken, f"Broken images: {broken}")
+                if path == "/platform":
+                    page.locator("#platform-guides").scroll_into_view_if_needed()
+                    page.evaluate("async () => { await Promise.all([...document.images].map(img => img.decode().catch(() => {}))); scrollTo({top:0,behavior:'instant'}); }")
+                    page.wait_for_timeout(100)
                 for figure in page.locator(".partner-craft-guides").all():
                     caption_top = figure.locator("figcaption").bounding_box()["y"]
                     for guide in figure.locator("img").all():
@@ -199,6 +203,11 @@ with sync_playwright() as pw:
             picker = page.locator("#platform-guide-role")
             expect(picker.locator('optgroup[label="Platform workspaces"] option')).to_have_count(12)
             expect(picker.locator('optgroup[label="Partner pathways"] option')).to_have_count(5)
+            outline = page.get_by_role("navigation", name="On this page")
+            if width == 390:
+                outline.locator("summary").click()
+            outline.get_by_role("link", name="Your role").click()
+            expect(section).to_be_in_viewport()
             options = picker.locator("option").evaluate_all("nodes => nodes.map(n => ({id:n.value,label:n.textContent.trim()}))")
             for option in options:
                 picker.select_option(option["id"])
@@ -213,6 +222,7 @@ with sync_playwright() as pw:
                 expect(article.locator("figcaption")).to_contain_text(re.compile("demonstration data", re.I))
                 choices = section.get_by_role("navigation", name=option["label"] + " walkthrough steps").get_by_role("button")
                 first_title = page.locator("#platform-guide-step-title").inner_text()
+                check(section.locator(".platform-guides__step-nav").evaluate("n => n.scrollLeft === 0"), "New role retains the previous walkthrough scroll")
                 choices.last.click()
                 expect(choices.last).to_have_attribute("aria-current", "step")
                 check(page.locator("#platform-guide-step-title").inner_text() != first_title, "Role walkthrough did not advance")
@@ -233,7 +243,7 @@ with sync_playwright() as pw:
                 page.wait_for_function("document.querySelector('[data-testid=platform-guide-screenshot] img').naturalWidth === 1300")
                 seen.add(section.locator('[data-testid="platform-guide-screenshot"] img').get_attribute("src"))
             check(len(seen) == 6, "CRM screens reuse the same image")
-            section.screenshot(path=str(OUT / f"platform-guides-crm-{width}.png"), animations="disabled")
+            section.screenshot(path=str(OUT / f"platform-guides-crm-{width}.png"), animations="disabled", style="header,.page-outline,.back-to-top{visibility:hidden!important}")
             check_crafted_state("platform-role-guides")
             preview = section.locator('[data-testid="platform-guide-screenshot"]')
             preview.click()
@@ -265,7 +275,7 @@ with sync_playwright() as pw:
             expect(panel.locator("[data-region-count]")).to_have_text("90")
             expect(panel.locator('[data-region-marker="Unmapped"]')).to_have_count(0)
             picker.select_option("North West")
-            panel.screenshot(path=str(OUT / f"property-map-{width}.png"), animations="disabled")
+            panel.screenshot(path=str(OUT / f"property-map-{width}.png"), animations="disabled", style="header,.page-outline,.back-to-top{visibility:hidden!important}")
             check_crafted_state("current-property-map")
             page.route("**/public/showcase-counts*", lambda route: route.fulfill(status=503, headers={"Access-Control-Allow-Origin":"*"}, body="unavailable"))
             page.reload(wait_until="networkidle")
@@ -360,7 +370,8 @@ with sync_playwright() as pw:
             expect(page.locator("#mission-panel-need")).to_be_visible()
             expect(page.locator("#mission-panel-need")).to_contain_text("176,130")
             expect(page.locator("#mission-panel-need")).to_contain_text("not cumulative")
-            expect(page.get_by_text("Platform snapshot recorded 3 August 2026", exact=True)).to_be_visible()
+            expect(page.get_by_text("Platform snapshot recorded 3 August 2026", exact=True)).to_have_count(0)
+            expect(page.locator("[data-stock-as-of]")).to_have_attribute("datetime", stock_fixture["as_of"])
 
         def restored_home_layout():
             page.goto(base + "/", wait_until="networkidle")

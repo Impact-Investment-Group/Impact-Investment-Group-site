@@ -11,9 +11,9 @@ const sections: Record<string, SectionLink[]> = {
   ],
   "/platform": [
     { id: "services-heading", label: "Overview" },
-    { id: "steps-heading", label: "How it works" },
-    { id: "tools-heading", label: "Your tools" },
-    { id: "compare-heading", label: "How we differ" },
+    { id: "platform-guides", label: "Your role" },
+    { id: "steps-heading", label: "How it connects" },
+    { id: "services-more-heading", label: "More about sourcing" },
   ],
   "/the-problem": [
     { id: "scale-heading", label: "The scale" },
