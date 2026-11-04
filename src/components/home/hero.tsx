@@ -7,6 +7,7 @@ import { registerRoles } from "@/content/audiences";
 import { registerAsDivider } from "@/content/register";
 import { cn } from "@/lib/utils";
 import { SIZES_HERO_GROUND, variantSrcSet } from "@/lib/responsive-image";
+import { ZooplaDiscovery } from "./zoopla-discovery";
 
 const headlines = [
   { id: "homes", text: "Providing Homes", orange: false },
@@ -280,21 +281,7 @@ export function HomeHero() {
           ))}
         </ul>
 
-        <p className="mt-6 flex items-center justify-center gap-2.5">
-          <span className="font-heading text-[10px] max-lg:text-[12px] font-bold uppercase tracking-[0.16em] text-ink-muted">
-            Powered by
-          </span>
-
-          <img
-            src="/images/brand/zoopla-ink.webp"
-            loading="eager"
-            fetchPriority="low"
-            alt="Zoopla"
-            width={548}
-            height={120}
-            className="h-[18px] w-auto"
-          />
-        </p>
+        <ZooplaDiscovery />
       </div>
     </section>
   );
