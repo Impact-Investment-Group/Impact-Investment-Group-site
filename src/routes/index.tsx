@@ -47,7 +47,7 @@ export const Route = createFileRoute("/")({
          under 300 KB: WhatsApp ignores a relative path and a larger file. */
       {
         property: "og:image",
-        content: "https://impactinvestmentgroup.co.uk/images/brand/og-default-20261105-v2.png",
+        content: "https://impactinvestmentgroup.co.uk/images/brand/og-default-20261105-v3.png",
       },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:image",
-        content: "https://impactinvestmentgroup.co.uk/images/brand/og-default-20261105-v2.png",
+        content: "https://impactinvestmentgroup.co.uk/images/brand/og-default-20261105-v3.png",
       },
     ],
     links: [{ rel: "canonical", href: "https://impactinvestmentgroup.co.uk/" }],

@@ -64,6 +64,11 @@ export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; he
     width: 2012,
     height: 332,
   },
+  "/images/brand/logo-lockup-20261105-v3.webp": {
+    steps: [400, 640, 960, 1440],
+    width: 2023,
+    height: 326,
+  },
   "/images/brand/logo-lockup-20261105.webp": {
     steps: [400, 640, 960, 1440],
     width: 2170,
