@@ -1,0 +1,71 @@
+name: Website scroll performance comparison
+
+on:
+  push:
+    branches: [feat/wave1003-site-performance]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-performance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          sparse-checkout: |
+            .github
+            src
+            public
+            scripts
+      - uses: actions/checkout@v4
+        with:
+          ref: 6f69711ba7c6571b9a494dd43953ed7b0c3d2a1d
+          path: baseline
+          sparse-checkout: |
+            src
+            public
+            scripts
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser tools
+        run: |
+          python -m pip install playwright pillow
+          python -m playwright install --with-deps chromium
+      - name: Build and measure previous website
+        working-directory: baseline
+        env:
+          STATIC_BUILD: 'true'
+          BASE_PATH: /
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+          node scripts/pages-postbuild.mjs dist/client
+          python ../candidate/scripts/site-performance.py --site . --output ../performance/baseline
+      - name: Build and measure candidate
+        working-directory: candidate
+        env:
+          STATIC_BUILD: 'true'
+          BASE_PATH: /
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+          node scripts/pages-postbuild.mjs dist/client
+          python scripts/site-performance.py --site . --output ../performance/candidate
+      - name: Summarise comparison
+        run: python candidate/scripts/site-performance.py --compare performance
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: website-performance-${{ github.sha }}
+          path: performance
+          retention-days: 7
