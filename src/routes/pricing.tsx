@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, BookOpen, ChevronDown, Clock3, Handshake } from "lucide-react";
+import { ArrowUpRight, BookOpen, ChevronDown, CheckCircle2, Handshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { pricing } from "@/content/pricing";
+import { ServicePackages } from "@/components/pricing/service-packages";
+import { FeeCalculator } from "@/components/pricing/fee-calculator";
 import "@/components/pricing/pricing.css";
 
 export const Route = createFileRoute("/pricing")({
@@ -13,7 +15,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "Our pricing is coming soon. Impact Investment Group is committed to transparent prices, clear inclusions and explaining additional costs before you decide.",
+          "Transparent property service charges: Silver from £5,000 per service, Gold from £10,000 and Platinum from £12,500. VAT not applicable. Explore the fees and estimate your service costs.",
       },
     ],
     links: [{ rel: "canonical", href: "https://impactinvestmentgroup.co.uk/pricing" }],
@@ -36,11 +38,24 @@ function PricingPage() {
           </p>
           <p className="pricing-intro__description">{pricing.introduction}</p>
           <p className="pricing-intro__commitment">{pricing.commitment}</p>
-          <Button asChild variant="primary" size="lg">
-            <Link to="/contact">{pricing.contactAction}</Link>
-          </Button>
+          <p className="pricing-intro__tax">Value Added Tax (VAT) is not applicable.</p>
+          <div className="pricing-intro__actions">
+            <Button asChild variant="primary" size="lg">
+              <Link to="/contact" search={{ enquiry: "investor" }}>{pricing.contactAction}</Link>
+            </Button>
+            <a href="#fee-calculator" className="pricing-estimate-link">Estimate your fees <ArrowUpRight size={18} aria-hidden="true" /></a>
+          </div>
         </header>
-
+      </section>
+      <ServicePackages />
+      <FeeCalculator taxLabel={pricing.taxLabel} />
+      <section className="pricing-clarity" aria-labelledby="pricing-promise-heading">
+        <div className="pricing-clarity__copy">
+          <p className="pricing-eyebrow">Clear before you commit</p>
+          <h2>Know what you’re paying for.</h2>
+          <p>Start with the service you need, see how its fee is calculated, then agree the details with our team.</p>
+          <p className="pricing-tax-note"><CheckCircle2 size={18} aria-hidden="true" />{pricing.taxLabel}</p>
+        </div>
         <div className="pricing-paper" aria-labelledby="pricing-promise-heading">
           <div className="pricing-paper__heading">
             <div className="pricing-paper__mark" aria-hidden="true">
@@ -48,7 +63,7 @@ function PricingPage() {
             </div>
             <div>
               <p className="pricing-eyebrow">{pricing.panelEyebrow}</p>
-              <h2 id="pricing-promise-heading">{pricing.panelHeading}</h2>
+              <h3 id="pricing-promise-heading">{pricing.panelHeading}</h3>
             </div>
             <ArrowUpRight className="pricing-paper__arrow" size={26} aria-hidden="true" />
           </div>
@@ -71,15 +86,15 @@ function PricingPage() {
                   <ChevronDown size={20} aria-hidden="true" />
                 </summary>
                 <div className="pricing-disclosures__content">
-                  <h3>{point.title}</h3>
+                  <h4>{point.title}</h4>
                   <p>{point.body}</p>
                 </div>
               </details>
             ))}
           </div>
           <div className="pricing-paper__footer">
-            <Clock3 size={17} aria-hidden="true" />
-            <span>{pricing.status}</span>
+            <CheckCircle2 size={17} aria-hidden="true" />
+            <span>Clear scope. Agreed service charges.</span>
           </div>
         </div>
       </section>
