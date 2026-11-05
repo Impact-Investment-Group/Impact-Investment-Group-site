@@ -138,7 +138,7 @@ export const collectionNotice = {
   purpose: "is the data controller for this form. We use your details only to answer this enquiry.",
   /**
    * How to reach the controller ABOUT THE DATA, which is a different question
-   * from how to reach the business. `enquires@` answers enquiries; this is the
+   * from how to reach the business. The general mailbox handles enquiries; this is the
    * address a person writes to in order to ask what is held about them, or to
    * ask for it to be corrected or deleted. Callum settled it on 9 September
    * 2026 (wave 298, O-1) and `legalMailboxes` in content/legal.ts publishes

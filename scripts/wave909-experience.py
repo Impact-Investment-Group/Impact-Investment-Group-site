@@ -92,6 +92,10 @@ with sync_playwright() as pw:
                     expect(page.locator("footer")).to_have_count(0)
                     row["charity_footer"] = "standalone error page has no site footer"
                 else:
+                    email = page.locator('footer a[href="mailto:enquiries@impactig.co.uk"]')
+                    expect(email).to_have_count(1)
+                    expect(email).to_have_text("enquiries@impactig.co.uk")
+                    check("enquires@impactig.co.uk" not in page.content(), "Retired enquiry address remains on the page")
                     expect(charity_footer).to_have_count(1)
                     expect(charity_footer.get_by_text(charity_pledge, exact=True)).to_be_visible()
                     charity_logo = charity_footer.get_by_role("img", name="Metro World Child", exact=True)
@@ -668,7 +672,7 @@ with sync_playwright() as pw:
             expect(consent).not_to_be_checked()
             email = page.get_by_role("link", name="Email my question", exact=True)
             link = urlparse(email.get_attribute("href"))
-            check(link.scheme == "mailto" and link.path == "enquires@impactig.co.uk", "Question is not addressed to the canonical enquiry mailbox")
+            check(link.scheme == "mailto" and link.path == "enquiries@impactig.co.uk", "Question is not addressed to the canonical enquiry mailbox")
             draft = parse_qs(link.query)
             check(sample in draft["body"][0] and "No, please reply privately only" in draft["body"][0], "Draft lost question or default private preference")
             check(draft["subject"] == ["Website FAQ question"], "Question lacks inbox subject")

@@ -96,9 +96,7 @@ export const siteDescription =
 /**
  * ⚠ THE GENERAL ADDRESS IS NOT WRITTEN HERE. `generalEnquiriesAddress` in
  * content/legal.ts is the one place it exists, beside the other two mailboxes
- * and the note explaining why it is spelt "enquires" with no second "i". Read
- * that note before touching it: correcting the spelling sends every general
- * enquiry on this site to a mailbox that does not exist.
+ * and the latest user instruction for the published address.
  *
  * The footers, the contact hero, the contact page's meta description and the
  * enquiry form's failure line all resolve to this field, because four
