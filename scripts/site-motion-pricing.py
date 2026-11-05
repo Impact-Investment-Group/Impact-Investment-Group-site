@@ -53,6 +53,8 @@ with sync_playwright() as pw:
             # Real delayed scrolling must still trigger an entrance after the page has settled.
             target = page.locator('[data-arrival="waiting"]').first
             expect(target).to_have_count(1)
+            target.evaluate("n=>n.dataset.motionTestTarget='true'")
+            target = page.locator('[data-motion-test-target="true"]')
             target.scroll_into_view_if_needed()
             expect(target).to_have_attribute('data-arrival', 'entered')
             page.wait_for_function("__arrivals.length > 0")
