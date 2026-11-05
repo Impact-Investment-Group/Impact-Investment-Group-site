@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as PartnerWithBrokerRouteImport } from './routes/partner-with-broker'
 import { Route as PartnerWithCareProviderRouteImport } from './routes/partner-with-care-provider'
@@ -25,6 +26,7 @@ import { Route as PartnerWithSocialWorkerRouteImport } from './routes/partner-wi
 import { Route as PartnerWithSupportProviderRouteImport } from './routes/partner-with-support-provider'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as PlatformRouteImport } from './routes/platform'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as TheProblemRouteImport } from './routes/the-problem'
@@ -45,6 +47,11 @@ const AboutRoute = AboutRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqsRoute = FaqsRouteImport.update({
+  id: '/faqs',
+  path: '/faqs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalRoute = LegalRouteImport.update({
@@ -115,6 +122,11 @@ const PlatformRoute = PlatformRouteImport.update({
   path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -150,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/faqs': typeof FaqsRoute
   '/legal': typeof LegalRoute
   '/partner-with-broker': typeof PartnerWithBrokerRoute
   '/partner-with-care-provider': typeof PartnerWithCareProviderRoute
@@ -163,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/partner-with-support-provider': typeof PartnerWithSupportProviderRoute
   '/partners': typeof PartnersRoute
   '/platform': typeof PlatformRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solutions': typeof SolutionsRoute
   '/the-problem': typeof TheProblemRoute
@@ -174,6 +188,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/faqs': typeof FaqsRoute
   '/legal': typeof LegalRoute
   '/partner-with-broker': typeof PartnerWithBrokerRoute
   '/partner-with-care-provider': typeof PartnerWithCareProviderRoute
@@ -187,6 +202,7 @@ export interface FileRoutesByTo {
   '/partner-with-support-provider': typeof PartnerWithSupportProviderRoute
   '/partners': typeof PartnersRoute
   '/platform': typeof PlatformRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solutions': typeof SolutionsRoute
   '/the-problem': typeof TheProblemRoute
@@ -199,6 +215,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/faqs': typeof FaqsRoute
   '/legal': typeof LegalRoute
   '/partner-with-broker': typeof PartnerWithBrokerRoute
   '/partner-with-care-provider': typeof PartnerWithCareProviderRoute
@@ -212,6 +229,7 @@ export interface FileRoutesById {
   '/partner-with-support-provider': typeof PartnerWithSupportProviderRoute
   '/partners': typeof PartnersRoute
   '/platform': typeof PlatformRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solutions': typeof SolutionsRoute
   '/the-problem': typeof TheProblemRoute
@@ -225,6 +243,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/faqs'
     | '/legal'
     | '/partner-with-broker'
     | '/partner-with-care-provider'
@@ -238,6 +257,7 @@ export interface FileRouteTypes {
     | '/partner-with-support-provider'
     | '/partners'
     | '/platform'
+    | '/pricing'
     | '/sitemap.xml'
     | '/solutions'
     | '/the-problem'
@@ -249,6 +269,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/faqs'
     | '/legal'
     | '/partner-with-broker'
     | '/partner-with-care-provider'
@@ -262,6 +283,7 @@ export interface FileRouteTypes {
     | '/partner-with-support-provider'
     | '/partners'
     | '/platform'
+    | '/pricing'
     | '/sitemap.xml'
     | '/solutions'
     | '/the-problem'
@@ -273,6 +295,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/faqs'
     | '/legal'
     | '/partner-with-broker'
     | '/partner-with-care-provider'
@@ -286,6 +309,7 @@ export interface FileRouteTypes {
     | '/partner-with-support-provider'
     | '/partners'
     | '/platform'
+    | '/pricing'
     | '/sitemap.xml'
     | '/solutions'
     | '/the-problem'
@@ -298,6 +322,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
+  FaqsRoute: typeof FaqsRoute
   LegalRoute: typeof LegalRoute
   PartnerWithBrokerRoute: typeof PartnerWithBrokerRoute
   PartnerWithCareProviderRoute: typeof PartnerWithCareProviderRoute
@@ -311,6 +336,7 @@ export interface RootRouteChildren {
   PartnerWithSupportProviderRoute: typeof PartnerWithSupportProviderRoute
   PartnersRoute: typeof PartnersRoute
   PlatformRoute: typeof PlatformRoute
+  PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SolutionsRoute: typeof SolutionsRoute
   TheProblemRoute: typeof TheProblemRoute
@@ -340,6 +366,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faqs': {
+      id: '/faqs'
+      path: '/faqs'
+      fullPath: '/faqs'
+      preLoaderRoute: typeof FaqsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal': {
@@ -433,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -482,6 +522,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
+  FaqsRoute: FaqsRoute,
   LegalRoute: LegalRoute,
   PartnerWithBrokerRoute: PartnerWithBrokerRoute,
   PartnerWithCareProviderRoute: PartnerWithCareProviderRoute,
@@ -495,6 +536,7 @@ const rootRouteChildren: RootRouteChildren = {
   PartnerWithSupportProviderRoute: PartnerWithSupportProviderRoute,
   PartnersRoute: PartnersRoute,
   PlatformRoute: PlatformRoute,
+  PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SolutionsRoute: SolutionsRoute,
   TheProblemRoute: TheProblemRoute,

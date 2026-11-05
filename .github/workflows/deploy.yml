@@ -105,6 +105,9 @@ jobs:
       - name: Check Firefox and WebKit scrolling
         run: python scripts/site-scroll-smoke.py
 
+      - name: Check pricing and lightweight motion
+        run: python scripts/site-motion-pricing.py
+
       - name: Check every page and interactive journeys
         id: browser_checks
         run: python scripts/wave909-experience.py

@@ -39,6 +39,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { ImageFade } from "@/components/image-fade";
+import { SiteMotion } from "@/components/site-motion";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { PageOutline, ReadingProgress } from "@/components/page-outline";
 import { siteDescription } from "@/content/site";
@@ -203,6 +204,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ImageFade />
+      <SiteMotion />
       <div className="flex min-h-screen flex-col bg-page">
         <a
           href="#main"

@@ -112,6 +112,7 @@ PAGES = [
     ("/", "home"),
     ("/about", "about"),
     ("/platform", "platform"),
+    ("/pricing", "pricing"),
     ("/the-problem", "the-problem"),
     ("/solutions", "solutions"),
     ("/partners", "partners"),

@@ -284,7 +284,7 @@ export function SiteHeader() {
               ref={navRef}
               data-magic={magic ? "on" : undefined}
               onMouseLeave={() => pointMagicAt(null)}
-              className="nav-magic relative flex h-full items-center gap-7"
+              className="nav-magic relative flex h-full items-center gap-4 2xl:gap-6"
             >
               {primaryNav.map((item) => (
                 <React.Fragment key={item.to}>

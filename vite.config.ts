@@ -92,6 +92,7 @@ export default defineConfig({
             { path: "/about", prerender: { enabled: true } },
             { path: "/contact", prerender: { enabled: true } },
             { path: "/faqs", prerender: { enabled: true } },
+            { path: "/pricing", prerender: { enabled: true } },
             // The company-information page the footer's `Legal` link opens.
             // Listed explicitly rather than left to `crawlLinks`: it is a
             // legal disclosure, and it has to exist as static HTML whether or

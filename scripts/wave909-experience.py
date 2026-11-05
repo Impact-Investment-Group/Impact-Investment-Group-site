@@ -20,7 +20,7 @@ roles = [re.search(r'id:\s*"([a-z0-9-]+)"', block).group(1)
          for block in re.findall(r'\{([^{}]+)\}', roles_block)
          if 'href:' not in block and re.search(r'id:\s*"([a-z0-9-]+)"', block)]
 partners = ["/" + p.stem for p in sorted((ROOT / "src/routes").glob("partner-with-*.tsx"))]
-paths = ["/", "/about", "/platform", "/the-problem", "/solutions", "/partners", "/contact", "/faqs", "/register", "/legal"]
+paths = ["/", "/about", "/platform", "/pricing", "/the-problem", "/solutions", "/partners", "/contact", "/faqs", "/register", "/legal"]
 paths += partners + ["/register/" + role for role in roles] + ["/this-route-does-not-exist"]
 
 

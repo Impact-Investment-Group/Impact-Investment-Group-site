@@ -80,6 +80,12 @@ with sync_playwright() as pw:
             page.evaluate("scrollTo({top:700,behavior:'instant'})")
             page.wait_for_function("scrollY >= 650")
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+            page.goto(base + "/pricing", wait_until="networkidle")
+            expect(page.locator("[data-pricing-status]")).to_have_text("Coming soon")
+            row = page.locator('details[data-pricing-point="included"]')
+            row.locator("summary").click()
+            expect(row.locator("p")).to_be_visible()
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
             assert not errors, errors
             report["checks"].append({"engine":engine,"width":width,"status":"pass"})
         except Exception as error:

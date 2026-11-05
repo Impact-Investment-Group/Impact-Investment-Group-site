@@ -15,6 +15,7 @@ export interface NavItem {
 export const primaryNav: NavItem[] = [
   { label: "About Us", to: "/about" },
   { label: "Our Services", to: "/platform" },
+  { label: "Pricing", to: "/pricing" },
   { label: "The Problem", to: "/the-problem" },
   { label: "The Solution", to: "/solutions" },
   { label: "Partners", to: "/partners" },
@@ -114,6 +115,7 @@ export const footerSiteLinks: NavItem[] = [
   { label: "FAQs", to: "/faqs" },
   { label: "About Us", to: "/about" },
   { label: "Our Services", to: "/platform" },
+  { label: "Pricing", to: "/pricing" },
   { label: "The Problem", to: "/the-problem" },
   { label: "The Solution", to: "/solutions" },
   { label: "Partners", to: "/partners" },
