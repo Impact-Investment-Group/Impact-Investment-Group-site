@@ -47,7 +47,13 @@ with sync_playwright() as pw:
             page.emulate_media(reduced_motion="no-preference")
             expect(page.locator("[data-property-map]")).to_have_attribute("data-motion", "running")
             page.locator("[data-property-map]").screenshot(path=str(OUT / f"map-{engine}-{width}.png"), animations="disabled")
-            page.get_by_role("button", name="Back to top", exact=True).click()
+            if width == 390:
+                # The existing mobile design omits this floating control so it
+                # cannot cover text. Return using the browser's scroll API.
+                expect(page.get_by_role("button", name="Back to top", exact=True)).to_have_count(0)
+                page.evaluate("scrollTo({top:0,behavior:'smooth'})")
+            else:
+                page.get_by_role("button", name="Back to top", exact=True).click()
             page.wait_for_function("scrollY < 2")
             expect(page.locator("[data-property-map]")).to_have_attribute("data-motion", "paused")
             if width == 390:
