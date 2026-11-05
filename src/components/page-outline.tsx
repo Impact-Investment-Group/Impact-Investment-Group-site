@@ -73,27 +73,50 @@ function Outline({ links }: { links: SectionLink[] }) {
 
   useEffect(() => {
     let frame = 0;
+    let positions: Array<{ id: string; top: number }> = [];
+    let boundary = 150;
+    let lastActive = "";
     const update = () => {
       frame = 0;
-      const boundary =
-        document.querySelector(".page-outline")?.getBoundingClientRect().bottom ?? 150;
+      const position = window.scrollY + boundary + 80;
       let current = links[0].id;
-      for (const link of links) {
-        const heading = document.getElementById(link.id);
-        if (heading && heading.getBoundingClientRect().top <= boundary + 80) current = link.id;
+      for (const heading of positions) {
+        if (heading.top <= position) current = heading.id;
       }
-      setActive(current);
+      if (current !== lastActive) {
+        lastActive = current;
+        setActive(current);
+      }
+    };
+    // Geometry changes with layout, not with the document's scroll position.
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      const rail = list.current?.closest<HTMLElement>(".page-outline");
+      boundary = rail ? (parseFloat(getComputedStyle(rail).top) || 0) + rail.offsetHeight : 150;
+      const y = window.scrollY;
+      positions = links.flatMap((link) => {
+        const heading = document.getElementById(link.id);
+        return heading ? [{ id: link.id, top: heading.getBoundingClientRect().top + y }] : [];
+      });
+      update();
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
-    update();
+    const observer = new ResizeObserver(measure);
+    observer.observe(document.body);
+    const rail = list.current?.closest(".page-outline");
+    if (rail) observer.observe(rail);
+    measure();
+    document.addEventListener("animationend", measure);
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    window.addEventListener("resize", measure);
     return () => {
+      observer.disconnect();
+      document.removeEventListener("animationend", measure);
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", measure);
     };
   }, [links]);
 
@@ -162,25 +185,29 @@ export function ReadingProgress() {
   const bar = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let frame = 0;
+    let end = 1;
     const update = () => {
       frame = 0;
-      const end = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
       const progress = Math.max(0, Math.min(1, window.scrollY / end));
       if (bar.current) bar.current.style.transform = `scaleX(${progress})`;
+    };
+    const measure = () => {
+      end = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      schedule();
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
-    const observer = new ResizeObserver(schedule);
+    const observer = new ResizeObserver(measure);
     observer.observe(document.body);
-    update();
+    measure();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    window.addEventListener("resize", measure);
     return () => {
       observer.disconnect();
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", measure);
     };
   }, [pathname]);
   return <div ref={bar} className="reading-progress" aria-hidden="true" />;

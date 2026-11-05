@@ -60,7 +60,7 @@ jobs:
           bun install --frozen-lockfile
           bun run build
           node scripts/pages-postbuild.mjs dist/client
-          python scripts/site-performance.py --site . --output ../performance/candidate
+          python scripts/site-performance.py --site . --output ../performance/candidate --assert-optimised
       - name: Summarise comparison
         run: python candidate/scripts/site-performance.py --compare performance
       - uses: actions/upload-artifact@v4

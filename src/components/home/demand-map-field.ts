@@ -1,27 +1,9 @@
-import { geoMercator, geoPath } from "d3-geo";
+import { geoMercator } from "d3-geo";
 import type { GeoProjection } from "d3-geo";
 
-import { commissioningAuthorities } from "@/content/demand";
-import englandLad from "@/data/england-lad.json";
 import ukOutline from "@/data/uk-outline.json";
 
-/**
- * Geometry for the Live UK Demand map.
- *
- * Two layers, deliberately:
- *
- *   Visual      — the whole UK as a field of dots, built from a simplified
- *                 Natural Earth outline (src/data/uk-outline.json). Scotland,
- *                 Wales, Northern Ireland and the Isle of Man render as
- *                 landmass so the map reads as the UK, not England alone.
- *   Interactive — the 2013 English local-authority districts, unchanged. Only
- *                 these are selectable, because they are the only geography we
- *                 hold commissioning data for.
- *
- * Everything here is pure and framework-free so it can be measured in isolation
- * and memoised once per page load rather than recomputed on hover or resize.
- */
-
+/** UK coastline dots for the regional property map. No district membership is needed. */
 export const WIDTH = 620;
 export const HEIGHT = 760;
 /** Grid pitch in viewBox units. ~3.5 gives ≈5.6% blue coverage, as sampled. */
@@ -43,7 +25,6 @@ interface Feature {
 }
 
 const UK = ukOutline as unknown as { type: "FeatureCollection"; features: Feature[] };
-const ENGLAND = englandLad as unknown as { type: "FeatureCollection"; features: Feature[] };
 
 /** One projection for every layer — the dots and the hit targets must agree. */
 export const projection: GeoProjection = geoMercator().fitExtent(
@@ -53,8 +34,6 @@ export const projection: GeoProjection = geoMercator().fitExtent(
   ],
   UK as never,
 );
-
-export const pathFor = geoPath(projection);
 
 function toPixelPolygons(features: Feature[]): PixelPolygon[] {
   const polygons: PixelPolygon[] = [];
@@ -112,21 +91,17 @@ function inPolygon(x: number, y: number, polygon: PixelPolygon): boolean {
   return true;
 }
 
-/**
- * One dot per entry, stride 4: x, y, edge closeness (0–1) and the index of the
- * commissioning authority it falls inside, or -1. A flat Float32Array rather
- * than objects — this is read once per frame by the canvas painter.
- */
+/** Each dot stores x, y and coastline closeness in a compact typed array. */
 export interface DotField {
   data: Float32Array;
   count: number;
 }
 
-const STRIDE = 4;
+export const DOT_STRIDE = 3;
 
 let cachedField: DotField | null = null;
 
-/** Built once per page load. Roughly 7,000 dots and ~60ms of work. */
+/** Cache the coastline so revisiting a map never rebuilds it. */
 export function buildDotField(): DotField {
   if (cachedField) return cachedField;
 
@@ -152,23 +127,7 @@ export function buildDotField(): DotField {
     }
   }
 
-  // Authority membership, so demand can drive brightness. Only the eighteen
-  // commissioning authorities are tested — the other 308 districts carry no
-  // data and would only cost time.
-  const districtToAuthority = new Map<string, number>();
-  commissioningAuthorities.forEach((authority, index) => {
-    for (const district of authority.districts) districtToAuthority.set(district, index);
-  });
-  const authorityPolygons: { polygon: PixelPolygon; authority: number }[] = [];
-  for (const feature of ENGLAND.features) {
-    const authority = districtToAuthority.get(feature.properties["LAD13NM"] ?? "");
-    if (authority === undefined) continue;
-    for (const polygon of toPixelPolygons([feature])) {
-      authorityPolygons.push({ polygon, authority });
-    }
-  }
-
-  const data = new Float32Array(cols * rows * STRIDE);
+  const data = new Float32Array(cols * rows * DOT_STRIDE);
   let count = 0;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -192,28 +151,19 @@ export function buildDotField(): DotField {
         }
       }
 
-      let authority = -1;
-      for (const entry of authorityPolygons) {
-        if (inPolygon(x, y, entry.polygon)) {
-          authority = entry.authority;
-          break;
-        }
-      }
-
-      const offset = count * STRIDE;
+      const offset = count * DOT_STRIDE;
       data[offset] = x;
       data[offset + 1] = y;
       data[offset + 2] = edge;
-      data[offset + 3] = authority;
       count++;
     }
   }
 
-  cachedField = { data: data.subarray(0, count * STRIDE), count };
+  cachedField = { data: data.subarray(0, count * DOT_STRIDE), count };
   return cachedField;
 }
 
-/** Projected centroid of an authority, in viewBox units. */
+/** Regional label position in map viewBox units. */
 export interface Hub {
   id: string;
   name: string;
@@ -222,45 +172,6 @@ export interface Hub {
   /** 0–1, from homes sourced. Drives hub radius. */
   weight: number;
   intensity: number;
-}
-
-let cachedHubs: Hub[] | null = null;
-
-export function buildHubs(): Hub[] {
-  if (cachedHubs) return cachedHubs;
-
-  const featureByDistrict = new Map(
-    ENGLAND.features.map((feature) => [feature.properties["LAD13NM"], feature]),
-  );
-  const maxHomes = Math.max(...commissioningAuthorities.map((a) => a.homesSourced));
-
-  const hubs: Hub[] = [];
-  for (const authority of commissioningAuthorities) {
-    const geometries = authority.districts
-      .map((district) => featureByDistrict.get(district)?.geometry)
-      .filter(Boolean);
-    if (geometries.length === 0) continue;
-
-    const centroid = pathFor.centroid({
-      type: "GeometryCollection",
-      geometries,
-    } as never);
-    if (!Number.isFinite(centroid[0]) || !Number.isFinite(centroid[1])) continue;
-
-    hubs.push({
-      id: authority.id,
-      name: authority.name,
-      // Rounded: sub-pixel drift between the server and client renders would
-      // otherwise trip a hydration mismatch on the transforms.
-      x: Math.round(centroid[0] * 100) / 100,
-      y: Math.round(centroid[1] * 100) / 100,
-      weight: Math.sqrt(authority.homesSourced / maxHomes),
-      intensity: authority.intensity,
-    });
-  }
-
-  cachedHubs = hubs;
-  return hubs;
 }
 
 /**
@@ -290,14 +201,3 @@ export function buildLinks(hubs: Hub[]): { a: Hub; b: Hub }[] {
   }
   return links;
 }
-
-/**
- * The wide sweeps crossing the map in the mock-up. Deliberately drawn outside
- * the landmass — they are atmosphere, not data, so they never imply a route.
- */
-export const SWEEPS: string[] = [
-  `M ${-40} ${560} Q ${WIDTH / 2} ${240} ${WIDTH + 40} ${470}`,
-  `M ${-30} ${330} Q ${WIDTH / 2 + 60} ${620} ${WIDTH + 30} ${250}`,
-  `M ${120} ${-40} Q ${WIDTH + 120} ${HEIGHT / 2} ${180} ${HEIGHT + 40}`,
-  `M ${WIDTH + 30} ${90} Q ${-120} ${HEIGHT / 2 + 60} ${WIDTH - 120} ${HEIGHT + 30}`,
-];

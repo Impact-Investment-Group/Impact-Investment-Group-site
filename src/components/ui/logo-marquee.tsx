@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { LogoCredit } from "@/content/trust";
 import { intrinsic } from "@/lib/responsive-image";
+import { useVisibleMotion } from "@/hooks/use-visible-motion";
 
 /**
  * A continuous logo lane, restyled from the production site's
@@ -37,9 +38,14 @@ export function LogoMarquee({
   // Duplicated once so the translate loops seamlessly. Keys carry the index
   // because every logo appears twice.
   const lane = [...items, ...items];
+  const { ref, playing } = useVisibleMotion<HTMLDivElement>();
 
   return (
-    <div className={cn("logo-marquee", className)}>
+    <div
+      ref={ref}
+      data-motion={playing ? "running" : "paused"}
+      className={cn("logo-marquee", className)}
+    >
       <div className="logo-marquee__track" aria-hidden="true">
         {lane.map((item, i) => (
           <span

@@ -38,7 +38,6 @@ import interVariable from "@fontsource-variable/inter/files/inter-latin-wght-nor
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { SmoothScroll } from "@/components/smooth-scroll";
 import { ImageFade } from "@/components/image-fade";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { PageOutline, ReadingProgress } from "@/components/page-outline";
@@ -203,7 +202,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SmoothScroll />
       <ImageFade />
       <div className="flex min-h-screen flex-col bg-page">
         <a

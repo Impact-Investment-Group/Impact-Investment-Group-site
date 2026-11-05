@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import threading
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--site", type=Path)
@@ -108,6 +108,12 @@ with sync_playwright() as pw:
                 row["map_hash"] = hashlib.sha256(canvas.evaluate("n => n.toDataURL()").encode()).hexdigest()
                 page.locator("[data-region-picker]").select_option("London")
                 assert "231" in page.locator("[data-property-map]").inner_text()
+                if args.assert_optimised:
+                    expect(page.locator("[data-property-map]")).to_have_attribute("data-motion", "running")
+                    page.emulate_media(reduced_motion="reduce")
+                    expect(page.locator("[data-property-map]")).to_have_attribute("data-motion", "paused")
+                    page.emulate_media(reduced_motion="no-preference")
+                    expect(page.locator("[data-property-map]")).to_have_attribute("data-motion", "running")
             page.evaluate("scrollTo({top:0,behavior:'instant'})")
             page.wait_for_timeout(400)
             row["offscreen_running_animations"] = page.evaluate("""() => document.getAnimations().filter(a => {
@@ -125,6 +131,18 @@ with sync_playwright() as pw:
                 assert row["idle_raf_per_second"] < 5, "Continuous idle animation loop remains"
                 assert not row["initial"]["lenis"], "Wheel scrolling is still intercepted"
                 assert row["offscreen_running_animations"] == 0, "Offscreen decorative animation remains active"
+                if width == 390:
+                    assert page.locator("header").evaluate("n => getComputedStyle(n).backdropFilter") == "none"
+                # An unfinished image removed during navigation must release its listeners.
+                page.evaluate("""() => {
+                  const image = new Image(); Object.defineProperty(image, 'complete', {get:()=>false});
+                  image.style.cssText='position:fixed;left:-100px;width:1px;height:1px';
+                  image.id='performance-pending-image'; window.__pendingImage=image; document.body.append(image);
+                }""")
+                expect(page.locator("#performance-pending-image")).to_have_attribute("data-img", "pending")
+                page.evaluate("__pendingImage.remove()")
+                page.wait_for_function("__pendingImage.dataset.img === 'in'")
+                page.evaluate("delete window.__pendingImage")
             report["pages"].append(row)
             print(json.dumps(row), flush=True)
             context.close()

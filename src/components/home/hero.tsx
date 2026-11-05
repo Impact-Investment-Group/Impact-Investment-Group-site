@@ -69,28 +69,43 @@ export function HomeHero() {
   React.useEffect(() => {
     const band = bandRef.current;
     if (!band) return;
+    let frame = 0;
+    let offsets: number[] = [];
+    let previous = -1;
     const read = () => {
-      const first = band.firstElementChild as HTMLElement | null;
-      if (!first) return;
+      frame = 0;
       let nearest = 0;
       let distance = Infinity;
-      Array.from(band.children).forEach((child, index) => {
-        const delta = Math.abs(
-          (child as HTMLElement).offsetLeft - first.offsetLeft - band.scrollLeft,
-        );
+      const left = band.scrollLeft;
+      offsets.forEach((offset, index) => {
+        const delta = Math.abs(offset - left);
         if (delta < distance) {
           distance = delta;
           nearest = index;
         }
       });
-      setActivePanel(nearest);
+      if (nearest !== previous) {
+        previous = nearest;
+        setActivePanel(nearest);
+      }
     };
-    band.addEventListener("scroll", read, { passive: true });
-    const observer = new ResizeObserver(read);
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(read);
+    };
+    const measure = () => {
+      const first = band.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      const start = first.offsetLeft;
+      offsets = Array.from(band.children, (child) => (child as HTMLElement).offsetLeft - start);
+      schedule();
+    };
+    band.addEventListener("scroll", schedule, { passive: true });
+    const observer = new ResizeObserver(measure);
     observer.observe(band);
-    read();
+    measure();
     return () => {
-      band.removeEventListener("scroll", read);
+      cancelAnimationFrame(frame);
+      band.removeEventListener("scroll", schedule);
       observer.disconnect();
     };
   }, []);
@@ -167,6 +182,7 @@ export function HomeHero() {
                 srcSet={variantSrcSet(panel.src)}
                 loading="eager"
                 fetchPriority="high"
+                decoding="async"
                 alt={panel.alt}
                 width={panel.width}
                 height={panel.height}

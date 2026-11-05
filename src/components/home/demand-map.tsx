@@ -8,9 +8,11 @@ import {
   type PublicPropertyStock,
 } from "@/lib/public-property-stock";
 import { cn } from "@/lib/utils";
+import { useVisibleMotion } from "@/hooks/use-visible-motion";
 import {
   buildDotField,
   buildLinks,
+  DOT_STRIDE,
   HEIGHT,
   projection,
   WIDTH,
@@ -141,6 +143,7 @@ export function DemandMap({
   const [activeName, setActiveName] = React.useState("North West");
   const [field, setField] = React.useState<DotField | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const { ref: mapRef, playing } = useVisibleMotion<HTMLDivElement>();
   const dotPaths = React.useRef<Path2D[] | null>(null);
   const pickerId = React.useId();
   const haloId = `${pickerId}-halo`;
@@ -181,10 +184,11 @@ export function DemandMap({
     };
     const idle = (window as unknown as { requestIdleCallback?: (cb: () => void) => number })
       .requestIdleCallback;
-    if (idle) idle(build);
-    else window.setTimeout(build, 0);
+    const handle = idle ? idle(build) : window.setTimeout(build, 0);
     return () => {
       cancelled = true;
+      if (idle) window.cancelIdleCallback(handle);
+      else window.clearTimeout(handle);
     };
   }, []);
 
@@ -210,7 +214,7 @@ export function DemandMap({
     if (!dotPaths.current) {
       const paths = Array.from({ length: BUCKETS }, () => new Path2D());
       for (let i = 0; i < field.count; i++) {
-        const offset = i * 4;
+        const offset = i * DOT_STRIDE;
         addDot(
           paths,
           field.data[offset]!,
@@ -253,6 +257,8 @@ export function DemandMap({
 
   return (
     <div
+      ref={mapRef}
+      data-motion={playing ? "running" : "paused"}
       data-property-map=""
       className={cn(
         overlay || below

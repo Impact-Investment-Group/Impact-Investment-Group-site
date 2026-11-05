@@ -728,6 +728,13 @@
   animation: hub-pulse 3200ms var(--ease-out-soft) infinite;
 }
 
+/* Keep the design's motion without painting unseen or background-tab loops. */
+[data-motion="paused"] .demand-hub,
+[data-motion="paused"] .map-skeleton,
+.logo-marquee[data-motion="paused"] .logo-marquee__track {
+  animation-play-state: paused;
+}
+
 /*
  * ⚠️ `.demand-map-ground` WAS REMOVED, along with the pale sweeps in the SVG.
  *

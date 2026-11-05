@@ -255,12 +255,9 @@ export function SiteHeader() {
       {/*
        * WAVE 412: A LIGHT HEADER.
        *
-       * White at 92% with a blur behind it, so the page reads through the bar
-       * as it scrolls rather than hiding under a navy slab. The 8% that is not
-       * white is what makes the blur visible at all; at 100% there is nothing
-       * to see through. `supports-[backdrop-filter]` keeps the bar opaque on
-       * browsers that cannot blur, where 92% white over moving content is
-       * simply muddy.
+       * Desktop keeps the translucent header. Below the desktop navigation
+       * breakpoint the same light bar is opaque, avoiding a backdrop repaint
+       * on every phone or tablet scroll frame.
        *
        * The rule underneath is permanent. It is the only thing separating a
        * white bar from a white page, so it cannot be a scroll state.
@@ -268,8 +265,8 @@ export function SiteHeader() {
       <header
         data-condensed={condensed ? "true" : "false"}
         className={cn(
-          "site-header sticky top-0 z-50 border-b border-rule bg-header",
-          "supports-[backdrop-filter]:backdrop-blur-md",
+          "site-header sticky top-0 z-50 border-b border-rule bg-page xl:bg-header",
+          "xl:supports-[backdrop-filter]:backdrop-blur-md",
           condensed && "shadow-[var(--shadow-card)]",
         )}
       >

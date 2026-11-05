@@ -59,7 +59,7 @@ export function ImageFade() {
   React.useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const cleanups: Array<() => void> = [];
+    const cleanups = new Map<HTMLImageElement, () => void>();
 
     const watch = (image: HTMLImageElement) => {
       if (image.dataset["img"]) return;
@@ -71,10 +71,11 @@ export function ImageFade() {
         image.dataset["img"] = "in";
         image.removeEventListener("load", done);
         image.removeEventListener("error", done);
+        cleanups.delete(image);
       };
       image.addEventListener("load", done);
       image.addEventListener("error", done);
-      cleanups.push(done);
+      cleanups.set(image, done);
     };
 
     const sweep = (root: ParentNode) => {
@@ -88,6 +89,11 @@ export function ImageFade() {
     // page after this one have never been seen by the sweep above.
     const observer = new MutationObserver((records) => {
       for (const record of records) {
+        for (const node of record.removedNodes) {
+          if (!(node instanceof Element)) continue;
+          if (node instanceof HTMLImageElement) cleanups.get(node)?.();
+          node.querySelectorAll("img").forEach((image) => cleanups.get(image)?.());
+        }
         for (const node of record.addedNodes) {
           if (node.nodeType === Node.ELEMENT_NODE) sweep(node as Element);
         }
@@ -97,7 +103,7 @@ export function ImageFade() {
 
     return () => {
       observer.disconnect();
-      for (const done of cleanups) done();
+      for (const done of cleanups.values()) done();
     };
   }, []);
 
