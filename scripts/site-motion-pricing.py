@@ -37,6 +37,7 @@ with sync_playwright() as pw:
         try:
             page.goto(base + "/", wait_until="networkidle")
             page.wait_for_timeout(1400)
+            page.locator('header.site-header').screenshot(path=str(OUT / f"logo-header-{width}.png"))
             before = page.evaluate("__frames")
             page.wait_for_timeout(700)
             assert page.evaluate("__frames") - before < 4, "Idle frame loop returned"

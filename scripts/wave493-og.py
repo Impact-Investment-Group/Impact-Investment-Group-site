@@ -1,24 +1,8 @@
-"""Wave 493: the link card carries the one-line lockup.
+"""Generate the homepage share card from the current supplied logo.
 
-    python scripts/wave493-og.py            # write public/images/brand/og-default.png
-    python scripts/wave493-og.py --check    # assert the file on disk is what this writes
-
-`og-default.png` is the picture WhatsApp, LinkedIn and X draw for a shared
-link to the site (`src/routes/index.tsx`). Until wave 493 it was the ring and
-house alone on white, and the site had no script that made it: wave 443
-recoloured it by hand. It is now MADE, from the committed on-light lockup
-(`public/images/brand/logo-lockup.webp`, 2006 by 310), so the card and the
-bar show the same artwork and the next change to the artwork is one command.
-
-THE CANVAS. 1200 by 630 on the page's own white, which is what the old card
-used and what the lockup's navy and orange are drawn for. The lockup is
-scaled as one piece, never squeezed, to LOCKUP_WIDTH and centred. 960px wide
-is 148px tall: 120px either side, which keeps the words clear of the rounded
-corners and the edge crops the three apps put on a large card. Nothing else is
-drawn: no words that are not in the artwork.
-
-UNDER 300 KB, because WhatsApp ignores a larger file (the note beside the meta
-tag). The script refuses to write one that is not.
+The proportional logo is centred at 960px wide on the existing 1200 by 630
+white canvas. No text or artwork is added. Preserve the existing 300 KiB
+output budget. Run without --check to regenerate the published PNG.
 """
 
 import argparse
@@ -29,8 +13,8 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "public" / "images" / "brand" / "logo-lockup.webp"
-TARGET = ROOT / "public" / "images" / "brand" / "og-default.png"
+SOURCE = ROOT / "public" / "images" / "brand" / "logo-lockup-20261105.webp"
+TARGET = ROOT / "public" / "images" / "brand" / "og-default-20261105.png"
 
 CANVAS = (1200, 630)
 GROUND = (255, 255, 255)

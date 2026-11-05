@@ -109,6 +109,8 @@ with sync_playwright() as pw:
                 page.wait_for_function("Array.from(document.images).every(img => img.complete)")
                 broken = page.locator("img").evaluate_all("nodes => nodes.filter(n => !n.naturalWidth).map(n => n.src)")
                 check(not broken, f"Broken images: {broken}")
+                if path == "/":
+                    page.locator("footer img[src*='logo-lockup']").screenshot(path=str(OUT / f"logo-footer-{width}.png"), animations="disabled")
                 if path == "/about":
                     roster = page.get_by_role("list", name="Leadership team", exact=True)
                     members = roster.locator(":scope > li")
@@ -357,6 +359,7 @@ with sync_playwright() as pw:
             trigger = page.locator('header button[aria-controls="site-drawer"]')
             trigger.click()
             expect(page.locator("#site-drawer")).to_be_visible()
+            page.locator("#site-drawer").screenshot(path=str(OUT / f"logo-menu-{width}.png"), animations="disabled")
             page.keyboard.press("Escape")
             expect(trigger).to_be_focused()
 
