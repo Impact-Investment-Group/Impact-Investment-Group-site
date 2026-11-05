@@ -140,7 +140,7 @@ export interface Director {
 export const team: Director[] = [
   {
     name: "Israel Silgram",
-    portrait: "/images/team/israel-silgram-v2.webp",
+    portrait: "/images/team/israel-silgram.webp",
     role: "Impact Director",
     initials: "IS",
     icon: "HandHeart",
@@ -165,6 +165,8 @@ export const team: Director[] = [
      *    adult services, across commercial businesses and charities."
      */
     bio: "A social entrepreneur with 30+ years building and scaling care businesses across children's and adult services — and the reason this platform is built around people, not stock.",
+    /** The existing 4:5 crop remains available for the tall card. */
+    portraitLead: "/images/team/israel-silgram-lead.webp",
   },
   {
     name: "Maria Avallone",
@@ -192,7 +194,7 @@ export const team: Director[] = [
   },
   {
     name: "Callum Saxon",
-    portrait: "/images/team/callum-saxon.webp",
+    portrait: "/images/team/callum-saxon-v2.webp",
     role: "Chief Technology Officer",
     initials: "CS",
     icon: "BrainCircuit",

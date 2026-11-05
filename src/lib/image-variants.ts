@@ -339,12 +339,17 @@ export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; he
     width: 360,
     height: 360,
   },
-  "/images/team/callum-saxon.webp": {
+  "/images/team/callum-saxon-v2.webp": {
     steps: [],
     width: 440,
     height: 440,
   },
-  "/images/team/israel-silgram-v2.webp": {
+  "/images/team/israel-silgram-lead.webp": {
+    steps: [400, 640],
+    width: 880,
+    height: 1100,
+  },
+  "/images/team/israel-silgram.webp": {
     steps: [],
     width: 440,
     height: 440,
