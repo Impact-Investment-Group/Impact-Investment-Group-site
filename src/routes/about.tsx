@@ -99,7 +99,7 @@ function AboutPage() {
           <h2 className="mt-12 font-heading text-2xl font-semibold text-ink">{teamTitle}</h2>
           <ul
             aria-label="Leadership team"
-            className="mt-6 grid gap-x-7 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+            className="mt-6 grid gap-x-7 gap-y-8 sm:grid-cols-2 lg:grid-cols-3"
           >
             {team.map((member) => (
               <li key={member.name}>

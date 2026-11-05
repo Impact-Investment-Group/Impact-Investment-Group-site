@@ -109,6 +109,31 @@ with sync_playwright() as pw:
                 page.wait_for_function("Array.from(document.images).every(img => img.complete)")
                 broken = page.locator("img").evaluate_all("nodes => nodes.filter(n => !n.naturalWidth).map(n => n.src)")
                 check(not broken, f"Broken images: {broken}")
+                if path == "/about":
+                    roster = page.get_by_role("list", name="Leadership team", exact=True)
+                    members = roster.locator(":scope > li")
+                    expect(members).to_have_count(6)
+                    expect(roster.get_by_role("heading", level=3)).to_have_text([
+                        "Israel Silgram", "Maria Avallone", "Laurie Hale", "Josh Howard", "Callum Saxon", "Tommy Lam"
+                    ])
+                    supplied = [
+                        (0, "Israel Silgram", "Impact Director", "israel-silgram-v2", []),
+                        (2, "Laurie Hale", "Housing Manager", "laurie-hale", ["20+ years in the property sector"]),
+                        (3, "Josh Howard", "Partnership Manager", "josh-howard", ["15+ years experience in strategic partnership management and contract growth"]),
+                        (5, "Tommy Lam", "Software Engineer & AI Specialist", "tommy-lam", ["Software engineering · AI & LLMs", "4 years professional experience"]),
+                    ]
+                    for index, name, role, portrait, credentials in supplied:
+                        member = members.nth(index)
+                        expect(member.get_by_text(role, exact=True)).to_be_visible()
+                        expect(member.get_by_role("img", name=name + ", " + role, exact=True)).to_have_attribute("src", "/images/team/" + portrait + ".webp")
+                        for credential in credentials:
+                            expect(member.get_by_text(credential, exact=True)).to_be_visible()
+                    text = page.locator("main").inner_text()
+                    check(all(retired not in text for retired in ["Jonathan", "Shahab", "$100m"]), "Retired team member or fundraising claim remains")
+                    rows = [round(member.bounding_box()["y"]) for member in members.all()]
+                    check(len(set(rows)) == (6 if width == 390 else 2), "Team layout has an unexpected number of rows")
+                    roster.screenshot(path=str(OUT / f"team-{width}.png"), animations="disabled", style=charity_capture_style)
+                    row["team"] = "Six supplied profiles, current portraits and balanced rows"
                 if path == "/platform":
                     page.locator("#platform-guides").scroll_into_view_if_needed()
                     page.evaluate("async () => { await Promise.all([...document.images].map(img => img.decode().catch(() => {}))); scrollTo({top:0,behavior:'instant'}); }")

@@ -99,6 +99,11 @@ export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; he
     width: 288,
     height: 288,
   },
+  "/images/charity/metro-world-child-80.png": {
+    steps: [],
+    width: 80,
+    height: 80,
+  },
   "/images/ecosystem-band.jpg": {
     steps: [400, 640, 960, 1440],
     width: 1920,
@@ -339,30 +344,30 @@ export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; he
     width: 440,
     height: 440,
   },
-  "/images/team/israel-silgram-lead.webp": {
-    steps: [400, 640],
-    width: 880,
-    height: 1100,
-  },
-  "/images/team/israel-silgram.webp": {
+  "/images/team/israel-silgram-v2.webp": {
     steps: [],
     width: 440,
     height: 440,
   },
-  "/images/team/jonathan-elton.webp": {
+  "/images/team/josh-howard.webp": {
     steps: [],
     width: 440,
-    height: 440,
+    height: 380,
+  },
+  "/images/team/laurie-hale.webp": {
+    steps: [],
+    width: 440,
+    height: 570,
   },
   "/images/team/maria-avallone.webp": {
     steps: [],
     width: 440,
     height: 440,
   },
-  "/images/team/shahab-jamali.webp": {
+  "/images/team/tommy-lam.webp": {
     steps: [],
     width: 440,
-    height: 440,
+    height: 464,
   },
   "/images/why-estate-aerial.webp": {
     steps: [400, 640, 960, 1440],

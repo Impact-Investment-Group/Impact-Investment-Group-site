@@ -1,4 +1,4 @@
-import { BrainCircuit, HandCoins, HandHeart, House, Sparkles, UserRound } from "lucide-react";
+import { BrainCircuit, HandHeart, Handshake, House, Sparkles, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -25,8 +25,8 @@ import { SIZES_PORTRAIT, variantSrcSet } from "@/lib/responsive-image";
  */
 const DIRECTOR_ICONS: Record<string, LucideIcon> = {
   BrainCircuit,
-  HandCoins,
   HandHeart,
+  Handshake,
   House,
   Sparkles,
   UserRound,
@@ -76,7 +76,7 @@ const icon = (name?: string): LucideIcon => (name && DIRECTOR_ICONS[name]) || Us
  *   "row"       horizontal: square photo left, name / role / credential right.
  *               Two of these side by side fit the height of one "portrait",
  *               which is the whole reason the About section now balances.
- *   "vertical"  compact, equal-height profile used by the five-column team
+ *   "vertical"  compact, equal-height profile used by the responsive team
  *               line-up. It deliberately omits the longer biography so every
  *               leader holds the same visual hierarchy.
  *   "lead"      the older full-width bar. Kept — /about no longer uses it, but

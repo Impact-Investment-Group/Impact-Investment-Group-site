@@ -1,0 +1,9 @@
+# Wave 1009: supplied team update
+
+The About page now presents six people in a responsive grid: Israel Silgram, Maria Avallone, Laurie Hale, Josh Howard, Callum Saxon and Tommy Lam. Jonathan and Shahab have been removed, including their public portrait files. Laurie, Josh and Tommy use the roles, experience and photographs supplied by Israel on 5 November 2026.
+
+Israel's supplied monochrome portrait received the requested very subtle maturity edit using built-in imagegen, preserving identity, hairstyle, expression, clothing and photographic treatment. The new version has its own URL to avoid serving a cached older portrait. The other new photos received only size and WebP optimisation; Maria and Callum are unchanged. New portraits are 440 pixels wide and total 80,818 bytes. Original attachments, generated master, edit prompt, previous assets and hashes are retained in the local wave artifact folder.
+
+The collective skills summary now uses Josh's supplied partnership experience in place of the fundraising statement attributed to Jonathan. All other biographies, the page structure and the existing card styling are preserved. Desktop has two rows of three; tablet has three rows of two; phones have one column.
+
+Verification runs through the existing GitHub Actions release workflow. The About page checks cover six profiles, exact supplied roles and experience, new portrait paths, loaded images, removal of retired names and the fundraising statement, mobile/desktop row balance and focused team screenshots. Existing page, interaction, accessibility, motion, pricing, scrolling and contrast gates remain in place. No local build, test or browser capture was run. Final Actions and published-site evidence is recorded in the Context Library and the local wave artifact folder after deployment.

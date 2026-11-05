@@ -136,36 +136,11 @@ export interface Director {
   accent?: "teal" | "orange";
 }
 
-/*
- * THE TEAM.
- *
- * Names, roles and credential lines are the client's, transcribed from the
- * existing production site. Two deliberate changes, both easy to reverse:
- *
- *  1. Honorifics dropped — "Miss Maria Avallone" became "Maria Avallone".
- *     "Miss" states a woman's marital status where the men's titles state
- *     nothing, which reads dated on an investor-facing page. "Dr" is kept: it
- *     is a professional qualification, not a courtesy title.
- *  2. "$100 million in raises" is kept exactly as supplied, but it is a DOLLAR
- *     figure on a UK site quoting UK charitable fundraising. Worth confirming
- *     with Jonathan whether it should read £ — it is the only currency on the
- *     page and a reader will notice.
- *
- * PORTRAITS. Supplied as 4096 × 4096 PNGs, already cut to a circle on a
- * transparent ground and already black and white. Each was trimmed to its alpha
- * bounds — otherwise the transparent margin would shrink the face inside the
- * ring — squared, resized to 400px and saved as WebP with its alpha intact.
- * 11.8 MB of PNG became 62 KB. The initials fallback in DirectorCard stays in
- * place for anyone added later without a photograph.
- *
- * Israel leads: his card is full width above the other four, at a larger size,
- * with the only orange accent on the page. That is the "big dog" treatment,
- * done with hierarchy rather than by shrinking anyone else.
- */
+/** Names, roles, experience and portraits supplied by Israel. Updated 5 November 2026. */
 export const team: Director[] = [
   {
     name: "Israel Silgram",
-    portrait: "/images/team/israel-silgram.webp",
+    portrait: "/images/team/israel-silgram-v2.webp",
     role: "Impact Director",
     initials: "IS",
     icon: "HandHeart",
@@ -190,8 +165,6 @@ export const team: Director[] = [
      *    adult services, across commercial businesses and charities."
      */
     bio: "A social entrepreneur with 30+ years building and scaling care businesses across children's and adult services — and the reason this platform is built around people, not stock.",
-    /** The 4:5 crop, for the tall card. `portrait` stays the round avatar. */
-    portraitLead: "/images/team/israel-silgram-lead.webp",
   },
   {
     name: "Maria Avallone",
@@ -202,12 +175,20 @@ export const team: Director[] = [
     credentials: ["Children's and adult services", "20+ years managing social-impact businesses"],
   },
   {
-    name: "Dr Jonathan Elton",
-    portrait: "/images/team/jonathan-elton.webp",
-    role: "Chief Investment Officer",
-    initials: "JE",
-    icon: "HandCoins",
-    credentials: ["Charitable capital raising", "$100m+ raised"],
+    name: "Laurie Hale",
+    portrait: "/images/team/laurie-hale.webp",
+    role: "Housing Manager",
+    initials: "LH",
+    icon: "House",
+    credentials: ["20+ years in the property sector"],
+  },
+  {
+    name: "Josh Howard",
+    portrait: "/images/team/josh-howard.webp",
+    role: "Partnership Manager",
+    initials: "JH",
+    icon: "Handshake",
+    credentials: ["15+ years experience in strategic partnership management and contract growth"],
   },
   {
     name: "Callum Saxon",
@@ -222,10 +203,10 @@ export const team: Director[] = [
     ],
   },
   {
-    name: "Shahab Jamali",
-    portrait: "/images/team/shahab-jamali.webp",
+    name: "Tommy Lam",
+    portrait: "/images/team/tommy-lam.webp",
     role: "Software Engineer & AI Specialist",
-    initials: "SJ",
+    initials: "TL",
     icon: "Sparkles",
     credentials: ["Software engineering · AI & LLMs", "4 years professional experience"],
   },
@@ -254,8 +235,8 @@ export const leadershipCapability = {
       body: "Supported housing, asset management and children's and adult services.",
     },
     {
-      title: "Investment experience",
-      body: "$100m+ raised for charitable and impact-focused work.",
+      title: "Partnerships & growth",
+      body: "15+ years experience in strategic partnership management and contract growth.",
     },
     {
       title: "Operational leadership",
