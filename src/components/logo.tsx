@@ -2,13 +2,13 @@ import { variantSrcSet } from "@/lib/responsive-image";
 import { cn } from "@/lib/utils";
 
 /**
- * The live header, mobile drawer and footer use the user's supplied logo of
- * 5 November 2026. Its artwork and colours are unchanged; excess transparent
+ * The live header, mobile drawer and footer use the user's revised logo of
+ * 5 November 2026: teal Impact, navy Investment and orange Group. Excess transparent
  * outer space is trimmed for the existing header dimensions. Responsive
  * lossless WebP copies preserve alpha and use a versioned filename.
  *
- * The light logo is 2170 by 341, approximately 6.36:1. Existing heights give
- * a 216px phone/drawer logo, 280px tablet/wide-desktop logo and 229px logo
+ * The light logo is 2012 by 332, approximately 6.06:1. Existing heights give
+ * a 206px phone/drawer logo, 267px tablet/wide-desktop logo and 218px logo
  * between 1280 and 1439px. The footer scales down to its column. The sizes
  * hints deliberately round these widths up to the existing small bounds.
  *
@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 
 const LOCKUP = {
   "on-navy": "/images/brand/logo-lockup-reverse.webp",
-  "on-cream": "/images/brand/logo-lockup-20261105.webp",
+  "on-cream": "/images/brand/logo-lockup-20261105-v2.webp",
 } as const;
 
 const MARK = {
@@ -76,8 +76,8 @@ export function Logo({
         fetchPriority="high"
         alt=""
         aria-hidden="true"
-        width={variant === "on-cream" ? 2170 : 2006}
-        height={variant === "on-cream" ? 341 : 310}
+        width={variant === "on-cream" ? 2012 : 2006}
+        height={variant === "on-cream" ? 332 : 310}
         className={SIZE[size].className}
       />
       <span className="sr-only">{LOGO_HOME_NAME}</span>

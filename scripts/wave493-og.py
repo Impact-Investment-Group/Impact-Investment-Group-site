@@ -13,8 +13,8 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "public" / "images" / "brand" / "logo-lockup-20261105.webp"
-TARGET = ROOT / "public" / "images" / "brand" / "og-default-20261105.png"
+SOURCE = ROOT / "public" / "images" / "brand" / "logo-lockup-20261105-v2.webp"
+TARGET = ROOT / "public" / "images" / "brand" / "og-default-20261105-v2.png"
 
 CANVAS = (1200, 630)
 GROUND = (255, 255, 255)

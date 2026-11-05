@@ -127,7 +127,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.png?v=20261105", type: "image/png" },
+      { rel: "icon", href: "/favicon.png?v=20261105-2", type: "image/png" },
       ...[barlow800, barlow700, interVariable].map((href) => ({
         rel: "preload",
         as: "font",
