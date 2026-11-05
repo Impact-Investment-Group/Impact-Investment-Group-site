@@ -108,7 +108,7 @@ export function DirectorCard({
             loading="lazy"
             width={440}
             height={440}
-            className="size-20 rounded-full object-cover sm:size-24"
+            className="size-20 rounded-full object-cover grayscale sm:size-24"
             srcSet={variantSrcSet(director.portrait)}
             sizes={SIZES_PORTRAIT}
           />
@@ -162,7 +162,7 @@ export function DirectorCard({
             alt={`${director.name}, ${director.role}`}
             width={440}
             height={440}
-            className="size-[208px] rounded-full object-cover ring-4 ring-white"
+            className="size-[208px] rounded-full object-cover grayscale ring-4 ring-white"
             srcSet={variantSrcSet(director.portrait)}
             sizes={SIZES_PORTRAIT}
           />
@@ -227,7 +227,7 @@ export function DirectorCard({
             loading="lazy"
             width={440}
             height={440}
-            className="size-[60px] shrink-0 rounded-full object-cover"
+            className="size-[60px] shrink-0 rounded-full object-cover grayscale"
             srcSet={variantSrcSet(director.portrait)}
             sizes={SIZES_PORTRAIT}
           />
@@ -284,7 +284,7 @@ export function DirectorCard({
           width={224}
           height={224}
           className={cn(
-            "shrink-0 rounded-full object-cover ring-2",
+            "shrink-0 rounded-full object-cover grayscale ring-2",
             lead ? "size-20" : "size-14",
             ring,
           )}
