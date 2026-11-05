@@ -79,7 +79,7 @@ export function FeeCalculator({ taxLabel }: Props) {
                 : "£5,000 minimum lease facilitation fee. Rent is calculated using 52 weeks per year."}</span>
             </div>
           </div>
-          <noscript><p>Enable JavaScript to change the estimate. The service charges, formulas and worked example remain available below.</p></noscript>
+          <p className="pricing-calculator__fallback" data-calculator-fallback>Enable JavaScript to change the estimate. The service charges, formulas and worked example remain available on this page.</p>
         </div>
         <div className="pricing-receipt" data-fee-receipt aria-live="polite" aria-atomic="true">
           <p className="pricing-eyebrow">Your estimate</p>

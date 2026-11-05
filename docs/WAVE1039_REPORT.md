@@ -1,5 +1,7 @@
 # Wave 1039: transparent property service pricing
 
+The first Actions run passed Firefox/WebKit and all four responsive calculator journeys, but found the no-JavaScript help text empty inside noscript. The fix renders that message as ordinary markup and hides it only while the fieldset is enabled. The same test now requires the message visible without JavaScript and hidden after hydration; final release proof is recorded after the corrected run.
+
 The pricing page replaces Coming soon with the owner's Silver, Gold and Platinum service charges. Silver offers sourcing or lease facilitation separately, each from £5,000. Gold combines them from £10,000. Platinum adds full pre-acquisition project management, including contractor coordination, from £12,500. No monthly subscription, discount, popularity claim or project-management surcharge is invented. Calls to action open the existing investor enquiry route without submitting anything.
 
 The owner confirmed that VAT is not applicable, the sourcing minimum is £5,000 per individual property, and the public lease facilitation rate is 5%. Only those public terms are included in the website. Each package and estimate carries the tax treatment; the introduction expands Value Added Tax on first use. The 5-year minimum calculator term follows the existing public lease-service wording. Rental inputs and the Blackpool example are illustrative, not verified current market rent data.

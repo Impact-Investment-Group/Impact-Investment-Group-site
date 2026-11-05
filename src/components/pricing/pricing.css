@@ -383,6 +383,8 @@
 .pricing-calculator__switch button { flex: 1; min-width: 0; min-height: 46px; border: 1px solid transparent; border-radius: 11px; padding: 8px 12px; color: var(--color-ink-muted); font-size: 15px; font-weight: 600; line-height: 1.4; cursor: pointer; }
 .pricing-calculator__switch button[aria-pressed="true"] { border-color: var(--color-rule); background: var(--color-page); color: var(--color-teal-600); box-shadow: var(--shadow-card); }
 .pricing-calculator fieldset { display: grid; gap: 20px; min-width: 0; margin: 0; border: 0; padding: 0; }
+.pricing-calculator__fallback { margin: 20px 0 0; color: var(--color-ink-muted); font-size: 14px; line-height: 1.7; }
+.pricing-calculator fieldset:not(:disabled) ~ .pricing-calculator__fallback { display: none; }
 .pricing-field { min-width: 0; }
 .pricing-field label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; line-height: 1.5; }
 .pricing-field input { width: 100%; min-width: 0; min-height: 50px; border: 1px solid var(--color-ink-soft); border-radius: 12px; padding: 10px 14px; background: var(--color-page); color: var(--color-ink); font-size: 18px; line-height: 1.5; font-variant-numeric: tabular-nums; }

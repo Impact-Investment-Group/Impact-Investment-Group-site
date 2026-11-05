@@ -35,6 +35,7 @@ def check_service_fees(page, full=False):
     result = page.locator('[data-estimated-fee]')
     bedrooms = page.get_by_label('Bedrooms in one property', exact=True)
     expect(bedrooms).to_be_enabled()
+    expect(page.locator('[data-calculator-fallback]')).to_be_hidden()
     expect(result).to_have_text('£5,000.00')
     if full:
         for value, expected in [('1', '£5,000.00'), ('2', '£5,000.00'), ('3', '£5,000.00'), ('4', '£6,666.67'), ('5', '£8,333.33'), ('6', '£10,000.00')]:
@@ -174,7 +175,8 @@ with sync_playwright() as pw:
         expect(page.locator('[data-package]')).to_have_count(3)
         expect(page.locator('[data-estimated-fee]')).to_have_text('£5,000.00')
         expect(page.get_by_label('Bedrooms in one property', exact=True)).to_be_disabled()
-        expect(page.locator('noscript')).to_contain_text('Enable JavaScript')
+        expect(page.locator('[data-calculator-fallback]')).to_contain_text('Enable JavaScript')
+        expect(page.locator('[data-calculator-fallback]')).to_be_visible()
         expect(page.locator('[data-worked-example]')).to_contain_text('£14,359.80')
         for name in ('included', 'additional'):
             row = page.locator(f'details[data-pricing-point="{name}"]')
@@ -183,6 +185,7 @@ with sync_playwright() as pw:
         report['checks'].append({'javascript':False, 'status':'pass'})
     except Exception as error:
         report['failures'].append({'javascript':False, 'error':str(error)})
+        page.screenshot(path=str(OUT / 'failure-no-javascript.png'), full_page=True)
     browser.close()
 server.shutdown()
 (OUT / 'report.json').write_text(json.dumps(report, indent=2))
