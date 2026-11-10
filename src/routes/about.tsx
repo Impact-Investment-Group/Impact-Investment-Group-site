@@ -1,3 +1,4 @@
+import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, ArrowUpRight, ShieldAlert } from "lucide-react";
 import { DirectorCard } from "@/components/about/director-card";
@@ -64,12 +65,6 @@ function Emphasise({ text, terms }: { text: string; terms: string[] }) {
   );
 }
 
-const CAST = [
-  "/images/ai-team/petra-point.webp",
-  "/images/ai-team/peter-present.webp",
-  "/images/ai-team/pippa-present.webp",
-] as const;
-
 function Summary({ lines }: { lines: Seg[][] }) {
   return (
     <div className="space-y-4 text-base leading-relaxed text-ink-muted">
@@ -124,17 +119,7 @@ function AboutPage() {
                 </strong>
                 {leadershipCapability.experienceLabel}
               </p>
-              <img
-                src="/images/ai-team/collective-capability-team.png"
-                alt=""
-                aria-hidden="true"
-                width={935}
-                height={559}
-                loading="lazy"
-                className="mt-5 hidden w-40 object-contain lg:block"
-                srcSet={variantSrcSet("/images/ai-team/collective-capability-team.png")}
-                sizes="160px"
-              />
+              <BuddyCharacter form="support" className="mt-5 hidden w-40 lg:block" />
             </div>
             <dl className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
               {leadershipCapability.impacts.map((impact) => (
@@ -219,10 +204,10 @@ function AboutPage() {
             {whatWeDo.title}
           </h2>
           <ol className="mt-8 border-t border-rule">
-            {accountableChain.map((step, index) => (
+            {accountableChain.map((step) => (
               <li
                 key={step.id}
-                className="grid items-center gap-4 border-b border-rule py-7 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_64px] sm:gap-8"
+                className="grid items-center gap-4 border-b border-rule py-7 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] sm:gap-8"
               >
                 <h3 className="max-w-[22ch] font-heading text-xl font-semibold text-ink">
                   {step.name}
@@ -233,15 +218,6 @@ function AboutPage() {
                     {step.detail}
                   </p>
                 </div>
-                <img
-                  src={CAST[index]}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  width={281}
-                  height={560}
-                  className="hidden h-28 w-full object-contain sm:block"
-                />
               </li>
             ))}
           </ol>

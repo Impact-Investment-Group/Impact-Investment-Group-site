@@ -1,3 +1,4 @@
+import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Info, LifeBuoy, ZoomIn } from "lucide-react";
@@ -377,11 +378,7 @@ const rolePresentations: Record<string, RolePresentation> = {
   },
 };
 
-const roleGuideImages = [
-  "/images/ai-team/petra.webp",
-  "/images/ai-team/peter.webp",
-  "/images/ai-team/pippa.webp",
-] as const;
+const roleGuideForms = ["property", "investment", "support"] as const;
 
 function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
   const presentation = rolePresentations[profile.id] ?? rolePresentations["investor"]!;
@@ -398,22 +395,11 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
             {profile.whoTheyAre}
           </p>
           <figure className="partner-craft-guides">
-            <div className="partner-craft-guides__art">
-              {roleGuideImages.map((image, index) => (
-                <img
-                  key={image}
-                  src={image}
-                  srcSet={variantSrcSet(image)}
-                  sizes="200px"
-                  width={intrinsic(image)?.width}
-                  height={intrinsic(image)?.height}
-                  loading="lazy"
-                  alt={
-                    ["Orange property guide", "Blue investment guide", "Green impact guide"][index]
-                  }
-                />
-              ))}
-            </div>
+            <BuddyCharacter
+              form={profile.id === "investor" || profile.id === "broker" ? "investment" : profile.stage === "property" ? "property" : "support"}
+              action="explain"
+              className="mx-auto w-48 sm:w-56"
+            />
             <figcaption>{presentation.guideLabels.join(" · ")}</figcaption>
           </figure>
         </div>
@@ -520,15 +506,7 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
                 </p>
               </div>
               <div className="partner-craft-journey__guide" aria-hidden="true">
-                <img
-                  src={roleGuideImages[activeStep]}
-                  srcSet={variantSrcSet(roleGuideImages[activeStep]!)}
-                  sizes="170px"
-                  width={170}
-                  height={230}
-                  alt=""
-                  loading="lazy"
-                />
+                <BuddyCharacter form={roleGuideForms[activeStep] ?? "property"} action="explain" className="w-40 sm:w-44" />
               </div>
             </div>
             <div className="partner-craft-journey__controls">

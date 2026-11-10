@@ -1,10 +1,10 @@
+import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { RolePicker } from "@/components/register/role-picker";
 import { PreReleaseBadge } from "@/components/ui/pre-release-badge";
 import { Reveal } from "@/components/ui/reveal";
 import { pickerContent } from "@/content/register";
-import { SIZES_CARD_ILLUSTRATION, variantSrcSet } from "@/lib/responsive-image";
 
 /**
  * /register, the picker.
@@ -51,17 +51,7 @@ function RegisterPickerPage() {
           <p className="measure mt-5 text-base leading-relaxed text-ink-muted">
             {pickerContent.lede}
           </p>
-          <img
-            src="/images/ai-team/trio-wave.webp"
-            srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
-            sizes={SIZES_CARD_ILLUSTRATION}
-            width={934}
-            height={558}
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            className="registration-directory__characters"
-          />
+          <BuddyCharacter form="property" action="wave" className="registration-directory__characters" />
           <p className="registration-directory__note mt-6 text-sm leading-relaxed text-ink-muted">
             {pickerContent.footnote}
           </p>

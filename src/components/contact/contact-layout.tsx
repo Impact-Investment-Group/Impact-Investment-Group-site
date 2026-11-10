@@ -1,3 +1,4 @@
+import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import {
   CalendarDays,
   Check,
@@ -18,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { faqEyebrow, faqHeading } from "@/content/faq";
 import { publishedFaq as faq } from "@/content/published-faq";
 import { contactDetails, crisisLines, crisisNote } from "@/content/site";
-import { SIZES_CARD_ILLUSTRATION, variantSrcSet } from "@/lib/responsive-image";
 import "./contact-experience.css";
 
 const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
@@ -55,17 +55,7 @@ export function ContactLayout({
               {contactHero.title}
             </h1>
           </div>
-          <img
-            src="/images/ai-team/trio-wave.webp"
-            loading="lazy"
-            alt=""
-            aria-hidden="true"
-            width={934}
-            height={558}
-            className="contact-intro__characters"
-            srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
-            sizes={SIZES_CARD_ILLUSTRATION}
-          />
+          <BuddyCharacter form="support" action="wave" className="contact-intro__characters" />
         </div>
       </section>
 

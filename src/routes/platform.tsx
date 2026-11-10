@@ -1,6 +1,7 @@
+import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, Heart, KeyRound, PoundSterling } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   aiTeamNote,
@@ -43,12 +44,6 @@ export const Route = createFileRoute("/platform")({
     links: [{ rel: "canonical", href: "/platform" }],
   }),
 });
-
-const GUIDE_ART = {
-  petra: "/images/ai-team/petra-point.webp",
-  peter: "/images/ai-team/peter-present.webp",
-  pippa: "/images/ai-team/pippa-present.webp",
-} as const;
 
 function Section({
   id,
@@ -138,99 +133,54 @@ function ServiceJourney() {
 function ToolExplorer() {
   const [active, setActive] = React.useState(0);
   const tabs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const selected = workflow[active]!;
   const choose = (index: number) => {
     setActive(index);
     tabs.current[index]?.focus();
   };
   return (
     <>
-      <div
-        role="tablist"
-        aria-label="Explore the platform tools"
-        className="friendly-tool-tabs mt-8 grid grid-cols-3"
-      >
-        {workflow.map((step, index) => (
-          <button
-            key={step.id}
-            type="button"
-            role="tab"
-            id={"tool-tab-" + step.id}
-            ref={(node) => {
-              tabs.current[index] = node;
-            }}
-            aria-selected={active === index}
-            aria-controls={"tool-panel-" + step.id}
-            tabIndex={active === index ? 0 : -1}
-            onClick={() => setActive(index)}
-            onKeyDown={(event) => {
-              const next =
-                event.key === "ArrowRight"
-                  ? (index + 1) % workflow.length
-                  : event.key === "ArrowLeft"
-                    ? (index - 1 + workflow.length) % workflow.length
-                    : event.key === "Home"
-                      ? 0
-                      : event.key === "End"
-                        ? workflow.length - 1
-                        : null;
-              if (next !== null) {
-                event.preventDefault();
-                choose(next);
-              }
-            }}
-            className={cn(
-              "friendly-tool-tab min-h-16 px-2 py-4 text-left text-sm font-semibold sm:px-5 sm:text-base",
-              active === index ? "text-teal-600" : "text-ink-muted hover:text-ink",
-            )}
-          >
-            <img
-              src={step.portrait}
-              alt=""
-              aria-hidden="true"
-              width={120}
-              height={120}
-              loading="lazy"
-              className="friendly-tool-avatar"
-            />
-            {step.chip}
-          </button>
-        ))}
+      <div role="tablist" aria-label="Explore the platform tools" className="friendly-tool-tabs mt-8 grid grid-cols-3">
+        {workflow.map((step, index) => {
+          const Glyph = step.id === "property" ? KeyRound : step.id === "investment" ? PoundSterling : Heart;
+          return (
+            <button
+              key={step.id}
+              type="button"
+              role="tab"
+              id={"tool-tab-" + step.id}
+              ref={(node) => { tabs.current[index] = node; }}
+              aria-selected={active === index}
+              aria-controls="tool-panel"
+              tabIndex={active === index ? 0 : -1}
+              onClick={() => setActive(index)}
+              onKeyDown={(event) => {
+                const next = event.key === "ArrowRight" ? (index + 1) % workflow.length
+                  : event.key === "ArrowLeft" ? (index - 1 + workflow.length) % workflow.length
+                  : event.key === "Home" ? 0
+                  : event.key === "End" ? workflow.length - 1 : null;
+                if (next !== null) { event.preventDefault(); choose(next); }
+              }}
+              className={cn("friendly-tool-tab min-h-16 gap-3 px-2 py-4 text-left text-sm font-semibold sm:px-5 sm:text-base", active === index ? "text-teal-600" : "text-ink-muted hover:text-ink")}
+            >
+              <Glyph className="size-6 shrink-0" aria-hidden="true" />
+              {step.chip}
+            </button>
+          );
+        })}
       </div>
-      {workflow.map((step, index) => (
-        <div
-          key={step.id}
-          id={"tool-panel-" + step.id}
-          role="tabpanel"
-          aria-labelledby={"tool-tab-" + step.id}
-          hidden={active !== index}
-          tabIndex={0}
-          className="friendly-tool-panel"
-        >
-          <div className="friendly-tool-scene">
-            <div className="friendly-tool-speech max-w-[64ch]">
-              <h3 className="font-heading text-[clamp(2rem,4vw,3rem)] font-semibold leading-tight text-ink">
-                {step.claim}
-              </h3>
-              <p className="mt-4 text-lg leading-relaxed text-ink-muted">{step.body}</p>
-              <a
-                href="#services-preview"
-                className="mt-6 inline-flex min-h-11 items-center gap-2 font-semibold text-teal-600 underline decoration-rule underline-offset-4 hover:decoration-teal-600"
-              >
-                View the platform preview <ArrowRight aria-hidden="true" className="size-4" />
-              </a>
-            </div>
-            <img
-              src={GUIDE_ART[step.id as keyof typeof GUIDE_ART]}
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              width={347}
-              height={560}
-              className="friendly-tool-guide"
-            />
+      <div id="tool-panel" role="tabpanel" aria-labelledby={"tool-tab-" + selected.id} tabIndex={0} className="friendly-tool-panel">
+        <div className="friendly-tool-scene">
+          <div className="friendly-tool-speech max-w-[64ch]" aria-live="polite" aria-atomic="true">
+            <h3 className="font-heading text-[clamp(2rem,4vw,3rem)] font-semibold leading-tight text-ink">{selected.claim}</h3>
+            <p className="mt-4 text-lg leading-relaxed text-ink-muted">{selected.body}</p>
+            <a href="#services-preview" className="mt-6 inline-flex min-h-11 items-center gap-2 font-semibold text-teal-600 underline decoration-rule underline-offset-4 hover:decoration-teal-600">
+              View the platform preview <ArrowRight aria-hidden="true" className="size-4" />
+            </a>
           </div>
+          <BuddyCharacter form={selected.id} action="explain" animated className="friendly-tool-guide" />
         </div>
-      ))}
+      </div>
       <div className="friendly-tool-note mt-6 grid gap-4 text-sm leading-relaxed text-ink-muted sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <p>{workflowFooter}</p>
         <p>{aiTeamNote}</p>
@@ -319,17 +269,7 @@ function ServicesPage() {
               >
                 See how the platform works for you.
               </h1>
-              <div className="friendly-hero-guides" aria-hidden="true">
-                {workflow.map((guide) => (
-                  <img
-                    key={guide.id}
-                    src={GUIDE_ART[guide.id as keyof typeof GUIDE_ART]}
-                    alt=""
-                    width={180}
-                    height={290}
-                  />
-                ))}
-              </div>
+              <BuddyCharacter form="property" action="wave" className="mt-6 w-48 sm:w-56" />
             </div>
             <div className="lg:pt-8">
               <p className="text-xl font-medium leading-relaxed text-ink">

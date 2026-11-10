@@ -332,27 +332,27 @@ export function SiteHeader() {
                           sideOffset={0}
                           onMouseEnter={openPartnersMenu}
                           onMouseLeave={schedulePartnersMenuClose}
-                          className="partners-menu w-[660px] rounded-none border-x border-b border-t-2 border-x-rule border-b-rule border-t-orange-500 bg-page p-0 text-ink shadow-[var(--shadow-card-hover)]"
+                          className="partners-menu w-[720px] rounded-none border-x border-b border-t-2 border-x-rule border-b-rule border-t-orange-500 bg-page p-0 text-ink shadow-[var(--shadow-card-hover)]"
                         >
                           <div className="flex items-center justify-between border-b border-rule px-5 py-3.5">
-                            <p className="text-[10px] max-lg:text-[12px] font-semibold uppercase tracking-[0.16em] text-teal-600">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-600">
                               Partners
                             </p>
-                            <span className="font-mono text-[9px] max-lg:text-[12px] uppercase tracking-[0.08em] text-ink-soft">
+                            <span className="font-mono text-xs uppercase tracking-[0.08em] text-ink-soft">
                               10 partner pathways
                             </span>
                           </div>
 
                           <div className="grid grid-cols-[250px_1fr]">
                             <div className="flex min-h-[360px] flex-col bg-orange-600 p-6 text-white">
-                              <p className="font-mono text-[9px] max-lg:text-[12px] font-semibold uppercase tracking-[0.13em]">
+                              <p className="font-mono text-xs font-semibold uppercase tracking-[0.13em]">
                                 One network
                               </p>
                               <div className="mt-auto">
                                 <p className="font-heading text-[34px] font-extrabold leading-none">
                                   Find where you fit.
                                 </p>
-                                <p className="mt-3 max-w-[25ch] text-[12px] max-lg:text-[15px] font-medium leading-relaxed">
+                                <p className="mt-3 max-w-[25ch] text-sm font-medium leading-relaxed">
                                   Explore each partner pathway or start with the full ecosystem.
                                 </p>
                                 <DropdownMenuItem
@@ -388,12 +388,12 @@ export function SiteHeader() {
                                   <Link
                                     to={partner.path}
                                     className={cn(
-                                      "group relative flex min-h-14 w-full items-center gap-2.5 px-3 py-2 text-[12px] font-semibold leading-tight text-ink-muted transition-colors hover:bg-page-alt hover:text-ink",
+                                      "group relative flex min-h-14 w-full items-center gap-2.5 px-3 py-2 text-sm font-semibold leading-tight text-ink-muted transition-colors hover:bg-page-alt hover:text-ink",
                                       pathname === partner.path &&
                                         "bg-page-alt text-ink before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:bg-orange-500",
                                     )}
                                   >
-                                    <span className="w-5 shrink-0 font-mono text-[9px] max-lg:text-[12px] text-orange-700">
+                                    <span className="w-5 shrink-0 font-mono text-xs text-orange-700">
                                       {String(index + 1).padStart(2, "0")}
                                     </span>
                                     <span>{partner.label}</span>
@@ -608,7 +608,7 @@ export function SiteHeader() {
                             <li>
                               <Link
                                 to="/partners"
-                                className="flex min-h-10 items-center gap-3 rounded-none px-2 text-[15px] font-semibold text-ink hover:bg-page-alt"
+                                className="flex min-h-11 items-center gap-3 rounded-none px-2 text-[15px] font-semibold text-ink hover:bg-page-alt"
                               >
                                 <NetworkMark />
                                 Explore the ecosystem
@@ -618,9 +618,9 @@ export function SiteHeader() {
                               <li key={partner.id}>
                                 <Link
                                   to={partner.path}
-                                  className="flex min-h-10 items-center gap-3 rounded-none px-2 text-[15px] font-semibold text-ink-muted hover:bg-page-alt hover:text-ink"
+                                  className="flex min-h-11 items-center gap-3 rounded-none px-2 text-[15px] font-semibold text-ink-muted hover:bg-page-alt hover:text-ink"
                                 >
-                                  <span className="font-mono text-[10px] max-lg:text-[12px] text-orange-700">
+                                  <span className="font-mono text-xs text-orange-700">
                                     {String(partnerIndex + 1).padStart(2, "0")}
                                   </span>
                                   {partner.label}
@@ -691,7 +691,7 @@ function NetworkMark() {
   return (
     <span
       aria-hidden="true"
-      className="grid size-5 place-items-center border border-teal-600/45 text-[10px] max-lg:text-[12px] text-teal-600"
+      className="grid size-5 place-items-center border border-teal-600/45 text-xs text-teal-600"
     >
       10
     </span>
