@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const topics = [
   { id: "property", label: "Property", icon: Home, title: "Finding the right starting point.", description: "Ask how property sourcing works, who we work with and where to go next.", action: "explain" },
-  { id: "investment", label: "Costs", icon: PoundSterling, title: "Making the details clearer.", description: "Explore our service packages, published fees and the steps involved. Buddy provides information, not financial advice.", action: "think" },
+  { id: "investment", label: "Costs", icon: PoundSterling, title: "Making the details clearer.", description: "Pricing is coming soon. Contact our team to discuss your requirements and the steps involved. Buddy provides information, not financial advice.", action: "think" },
   { id: "support", label: "Care & support", icon: Heart, title: "Keeping people at the centre.", description: "Understand how housing, care and support organisations connect, and find the right route to our team.", action: "reassure" },
 ] as const;
 

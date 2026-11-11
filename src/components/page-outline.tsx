@@ -26,12 +26,6 @@ const sections: Record<string, SectionLink[]> = {
     { id: "layers-heading", label: "How it connects" },
     { id: "product-heading", label: "The platform" },
   ],
-  "/pricing": [
-    { id: "pricing-heading", label: "Pricing" },
-    { id: "pricing-packages-heading", label: "Support packages" },
-    { id: "fee-calculator-heading", label: "Service calculator" },
-    { id: "pricing-next-heading", label: "Next steps" },
-  ],
   "/faqs": [
     { id: "faq-search", label: "Search answers" },
     { id: "ask-question-heading", label: "Ask a question" },

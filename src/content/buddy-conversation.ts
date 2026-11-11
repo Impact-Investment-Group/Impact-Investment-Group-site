@@ -13,11 +13,11 @@ export const buddyTopics = [
   {
     id: "investment" as const, label: "Costs & investment", short: "Investment", number: "02",
     heading: "Understand the figures. See the whole process.",
-    body: "Explore property sourcing and lease-facilitation services, with clear service charges and an agreed scope before you commit.",
-    detail: "Use our pricing page to compare packages and estimate service fees. The team confirms the arrangements for your property.",
-    steps: ["Choose the service you need", "Explore the costs", "Agree the scope with our team"],
-    link: "/pricing" as const, linkLabel: "Explore pricing & fees",
-    prompt: "Can you explain the property sourcing and lease-facilitation services and their fees?",
+    body: "Pricing is coming soon. Contact our team to discuss property sourcing, lease facilitation and your requirements.",
+    detail: "Our team can explain the process and discuss the arrangements for your property.",
+    steps: ["Choose the service you need", "Discuss your requirements", "Agree the scope with our team"],
+    link: "/pricing" as const, linkLabel: "Pricing: coming soon",
+    prompt: "Pricing is coming soon. How can I discuss my requirements with your team?",
     symbol: "£", action: "explain" as const,
   },
   {

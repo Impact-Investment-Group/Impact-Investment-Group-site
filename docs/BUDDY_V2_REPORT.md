@@ -43,14 +43,19 @@ tokens and shared type conventions. The relevant reference principles remain
 in use: readable measures and leading, balanced headings, explicit selected
 states, 44px controls, stable reserved geometry, progressive disclosure,
 safe-area spacing, bounded motion and honest empty/error states. Existing
-font shaping, tabular numbers and approved colours are retained. Pricing and
-FAQ section navigation and more readable partner menus are included.
+font shaping, tabular numbers and approved colours are retained. FAQ section
+navigation and more readable partner menus are included.
+
+At the user's further request, Pricing is restored to its exact previous
+Coming soon page from `cffe94d`. Published packages, amounts and the fee
+calculator are removed. Buddy's cost guidance now points to the team and
+the coming-soon page rather than promising published prices.
 
 Conversation copy loads with the chat. Registration questionnaires now load
 with their route instead of the homepage; registration copy, metadata and
-account forms are preserved. The complete initial JavaScript graph, including
-Buddy's engine, measures 752,868 bytes against the unchanged 780,000-byte
-budget. The page-idleness check uses Buddy's actual Minimize control before
+account forms are preserved. The initial JavaScript graph, including
+Buddy's engine, retains the unchanged 780,000-byte budget.
+The page-idleness check uses Buddy's actual Minimize control before
 applying its unchanged frame budget; active animation has separate checks.
 
 Metro's exact 10% pledge, registration link and existing programme descriptions

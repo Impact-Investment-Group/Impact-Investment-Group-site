@@ -114,7 +114,7 @@ export const aiTeam = {
   lead: "Buddy represents property, investment and care. Ask about our public services, explore the published information and find the right route to our team. AI availability is shown in the assistant.",
   specialists: [
     { id: "property", name: "Buddy: homes and property", role: "The key", icon: "search", body: "Explore how we source suitable property and connect it with housing needs." },
-    { id: "investment", name: "Buddy: costs and investment", role: "The pound sign", icon: "calculator", body: "Find the published service packages, fees and information about the process." },
+    { id: "investment", name: "Buddy: costs and investment", role: "The pound sign", icon: "calculator", body: "Pricing is coming soon. Contact our team to discuss your requirements and the process." },
     { id: "support", name: "Buddy: care and support", role: "The heart", icon: "heart-handshake", body: "Understand how housing, care and support organisations connect through the group." },
   ] satisfies Specialist[],
   flow: [

@@ -610,8 +610,8 @@ def readiness_gate(page, fixtures):
     expect(chat.get_by_role("link", name="Explore our services", exact=True)).to_have_attribute("href", "/platform")
     expect(chat.get_by_role("link", name="Contact our team", exact=True)).to_have_attribute("href", "/contact")
     chat.get_by_role("group", name="Conversation topic").get_by_role("button", name="Investment", exact=True).click()
-    expect(chat.get_by_role("link", name="Explore pricing & fees", exact=True)).to_have_attribute("href", "/pricing")
-    starter = chat.get_by_role("button", name="Can you explain the property sourcing and lease-facilitation services and their fees?", exact=True)
+    expect(chat.get_by_role("link", name="Pricing: coming soon", exact=True)).to_have_attribute("href", "/pricing")
+    starter = chat.get_by_role("button", name="Pricing is coming soon. How can I discuss my requirements with your team?", exact=True)
     expect(starter).to_have_count(0)
     # Failure and truthy-but-not-true responses must not unlock the composer.
     for response in [{"status": 404}, {"status": 503}, {"body": {"configured": "true"}}, {"body": {}}]:
