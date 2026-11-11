@@ -158,6 +158,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
     if (readiness === "ready" && text && text.length <= 1000 && !busy) void ask({ message: text, history: turns.slice(-6), topic });
   };
   const clearConversation = () => {
+    cancel(false);
     setTurns([]); setRetry(null); setError(""); setDraft("");
     (readiness === "ready" ? input.current : dialog.current)?.focus();
   };

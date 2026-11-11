@@ -54,6 +54,13 @@ shared budget must be operational before live answers can be claimed. The
 backend wave report records settings, rate limits, telemetry scrubbing,
 deadline behaviour and the concurrent wave 1207 dependency.
 
+Before enabling questions, the panel checks `/public/buddy/status` with a
+six-second timeout and requires `configured: true`. A missing or unavailable
+service shows related pages and a connection retry, with no question sent.
+History can be cleared while offline. Readiness is checked again on opening;
+cancelled or stale responses cannot enable the composer. This addition follows
+the live API returning 404 while its final CI is blocked by GitHub billing.
+
 ## Verification status
 
 All builds, tests and executable audits run in GitHub CI, per the project rule.
@@ -72,3 +79,4 @@ The exact CI-generated Pages artifact was served unchanged for manual browser
 review. Desktop key/pound forms, 390px menu-to-chat handoff, reopening and focus
 return to the menu trigger were verified. Temporary viewport overrides were
 reset. Public deployment and live AI availability remain separate checks.
+The subsequent readiness cases require a fresh CI result before publication.
