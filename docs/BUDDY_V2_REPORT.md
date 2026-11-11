@@ -89,3 +89,33 @@ The boolean does not identify which provider, Redis or reply-guard dependency
 is still unavailable. A configured service and a successful checked live
 answer remain necessary before claiming that AI chat is operational.
 Browser AI tests use fixtures.
+
+## Follow-up: one conversation, automatic forms
+
+The website no longer asks visitors to select a chat topic. It retains one
+conversation and uses the validated model response's topic to change Buddy
+between the key, pound sign and heart. The existing v2 canvas stays mounted
+during transformations, and the talking gesture continues after the form
+change. Invalid or missing response topics keep the last valid form.
+Internal chat links use client-side navigation; Services showcase actions
+cannot cancel or retarget an existing conversation or its pending reply.
+
+The backend uses the platform's configured assistant provider and credentials.
+One structured Gemma response supplies both the answer and topic, with no
+second classification call. The public response still requires the existing
+reply guard. On 11 November the user confirmed Jev has not been set up; a
+read-only Render key inventory also showed its configuration is absent. No
+guard requirement or global provider setting was changed. The public endpoint
+therefore remains unavailable until Jev is configured and its canaries pass.
+
+The production static build passes. The strict TypeScript check still reports
+pre-existing repository errors, with no diagnostics in changed Buddy files.
+The follow-up browser suite uses explicit model fixtures to verify all three
+forms, retained history, post-transformation talking, retries, cancellation,
+navigation, invalid topics, keyboard access and reduced motion. All 26 Buddy
+checks and all other release gates passed for `00c9400` in
+[run 43023428372](https://github.com/Impact-Investment-Group/Impact-Investment-Group-site/actions/runs/43023428372).
+GitHub Pages deployment succeeded. Live browser verification confirmed the
+single chat, removal of its manual topic controls, the updated Services
+explanation and the honest unavailable connection state. Model fixtures are
+not live AI proof.
