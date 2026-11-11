@@ -25,19 +25,27 @@ server = http.server.ThreadingHTTPServer(
 threading.Thread(target=server.serve_forever, daemon=True).start()
 BASE = f"http://127.0.0.1:{server.server_address[1]}"
 REPORT = {"checks": [], "failures": [], "ai_mode": "mocked local responses only"}
-CORS = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Methods": "POST, OPTIONS"}
+CORS = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS"}
 INIT = """(() => {
   window.__buddyFrames = 0;
   const raf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = callback => raf(time => { window.__buddyFrames++; callback(time); });
   window.__buddyFetchOptions = [];
   window.__buddyIgnoreAbort = false;
+  window.__buddyStatusOptions = [];
+  window.__buddyStatusAborted = 0;
+  window.__buddyIgnoreStatusAbort = false;
   const fetch = window.fetch.bind(window);
   window.fetch = (url, options) => {
     if (String(url).endsWith('/public/buddy')) {
       window.__buddyFetchOptions.push({credentials: options?.credentials, hasSignal: options?.signal instanceof AbortSignal});
       // This fixture simulates a transport completing after cancellation.
       if (window.__buddyIgnoreAbort) options = {...options, signal: undefined};
+    }
+    if (String(url).endsWith('/public/buddy/status')) {
+      window.__buddyStatusOptions.push({method: options?.method, credentials: options?.credentials, cache: options?.cache, hasSignal: options?.signal instanceof AbortSignal});
+      options?.signal?.addEventListener('abort', () => window.__buddyStatusAborted++);
+      if (window.__buddyIgnoreStatusAbort) options = {...options, signal: undefined};
     }
     return fetch(url, options);
   };
@@ -49,6 +57,9 @@ class Fixtures:
         self.queue = []
         self.requests = []
         self.pending = []
+        self.status_queue = []
+        self.status_requests = []
+        self.pending_status = []
         self.unexpected_posts = []
         self.fail_atlas = fail_atlas
 
@@ -61,6 +72,18 @@ class Fixtures:
     def handle(self, route):
         request = route.request
         path = urlparse(request.url).path
+        if path == "/public/buddy/status":
+            if request.method == "OPTIONS":
+                route.fulfill(status=204, headers=CORS)
+                return
+            assert request.method == "GET", f"Unexpected readiness method: {request.method}"
+            self.status_requests.append(request.url)
+            response = self.status_queue.pop(0) if self.status_queue else {"body": {"configured": True}}
+            if response.get("pending"):
+                self.pending_status.append(route)
+            else:
+                self.fulfill(route, response)
+            return
         if path == "/public/buddy":
             if request.method == "OPTIONS":
                 route.fulfill(status=204, headers=CORS)
@@ -103,6 +126,7 @@ def chat_open(page):
     page.locator("[data-buddy-launcher]").click()
     chat = page.locator("[data-buddy-chat]")
     expect(chat).to_be_visible()
+    expect(chat).to_have_attribute("data-buddy-readiness", "ready")
     expect(chat.get_by_label("Your question for Buddy", exact=True)).to_be_focused()
     return chat
 
@@ -295,6 +319,112 @@ def cancellation_and_focus(page, fixtures):
     no_overflow(page)
 
 
+def take_pending_status(page, fixtures):
+    for _ in range(100):
+        if fixtures.pending_status:
+            return fixtures.pending_status.pop(0)
+        page.wait_for_timeout(50)
+    raise AssertionError("The readiness request never reached its fixture")
+
+
+def readiness_gate(page, fixtures):
+    visit(page)
+    assert not fixtures.status_requests, "The page checked AI availability before Buddy was opened"
+    fixtures.status_queue.append({"pending": True})
+    page.locator("[data-buddy-launcher]").click()
+    chat = page.locator("[data-buddy-chat]")
+    expect(chat).to_have_attribute("data-buddy-readiness", "loading")
+    expect(chat.get_by_role("status")).to_contain_text("Checking whether Buddy's AI chat is available")
+    expect(chat.locator("#buddy-question")).to_be_disabled()
+    expect(chat.locator('button[type="submit"]')).to_be_disabled()
+    expect(chat.locator("form")).to_be_hidden()
+    expect(chat.get_by_role("button", name="Check connection", exact=True)).to_be_disabled()
+    expect(chat.locator("[data-buddy-turn]")).to_have_count(0)
+    assert not fixtures.requests, "Checking readiness submitted a question"
+    fixtures.fulfill(take_pending_status(page, fixtures), {"body": {"configured": False}})
+    expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
+    expect(chat.get_by_role("status")).to_contain_text("AI chat is unavailable right now")
+    expect(chat.get_by_role("link", name="Explore our services", exact=True)).to_have_attribute("href", "/platform")
+    expect(chat.get_by_role("link", name="Contact our team", exact=True)).to_have_attribute("href", "/contact")
+    chat.get_by_role("group", name="Conversation topic").get_by_role("button", name="Investment", exact=True).click()
+    expect(chat.get_by_role("link", name="Explore pricing & fees", exact=True)).to_have_attribute("href", "/pricing")
+    starter = chat.get_by_role("button", name="Can you explain the property sourcing and lease-facilitation services and their fees?", exact=True)
+    expect(starter).to_have_count(0)
+    # Failure and truthy-but-not-true responses must not unlock the composer.
+    for response in [{"status": 503}, {"body": {"configured": "true"}}, {"body": {}}]:
+        fixtures.status_queue.append(response)
+        chat.get_by_role("button", name="Check connection", exact=True).click()
+        expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
+        expect(chat.locator("#buddy-question")).to_be_disabled()
+        expect(chat.locator("form")).to_be_hidden()
+        expect(chat.locator("[data-buddy-turn]")).to_have_count(0)
+        assert not fixtures.requests, "Unavailable AI received a question"
+    assert page.evaluate("window.__buddyStatusOptions.every(o => o.method === 'GET' && o.credentials === 'omit' && o.cache === 'no-store' && o.hasSignal)"), "Readiness check cached a result, sent credentials or lacked cancellation"
+    chat.get_by_role("button", name="Check connection", exact=True).click()
+    expect(chat).to_have_attribute("data-buddy-readiness", "ready")
+    expect(chat.get_by_label("Your question for Buddy", exact=True)).to_be_focused()
+    expect(starter).to_be_visible()
+    fixtures.answer("Fixture answer after readiness recovered.")
+    send(chat, "Explain the service after recovery.")
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text("Fixture answer after readiness recovered.")
+    # A later outage must still allow clearing history and must block a retained draft.
+    chat.get_by_label("Your question for Buddy", exact=True).fill("Retained draft must not be sent while unavailable.")
+    page.keyboard.press("Escape")
+    fixtures.status_queue.append({"body": {"configured": False}})
+    page.locator("[data-buddy-launcher]").click()
+    expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
+    expect(chat.locator("#buddy-question")).to_be_disabled()
+    chat.locator("form").dispatch_event("submit")
+    page.wait_for_timeout(100)
+    assert len(fixtures.requests) == 1, "A retained draft bypassed the readiness gate"
+    chat.get_by_role("button", name="New conversation", exact=True).click()
+    expect(chat.locator("[data-buddy-turn]")).to_have_count(0)
+    expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
+    if page.viewport_size["width"] == 390:
+        page.set_viewport_size({"width": 390, "height": 500})
+    retry_box = chat.get_by_role("button", name="Check connection", exact=True).bounding_box()
+    assert retry_box["y"] >= 0 and retry_box["y"] + retry_box["height"] <= page.viewport_size["height"] + 1, "Unavailable-state retry is clipped"
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Unavailable Buddy overflows horizontally"
+    chat.screenshot(path=str(OUT / f"chat-unavailable-{page.viewport_size['width']}.png"), animations="disabled")
+
+
+def readiness_cancel_timeout(page, fixtures):
+    visit(page)
+    page.evaluate("window.__buddyIgnoreStatusAbort = true")
+    fixtures.status_queue.append({"pending": True})
+    page.locator("[data-buddy-launcher]").click()
+    chat = page.locator("[data-buddy-chat]")
+    expect(chat).to_have_attribute("data-buddy-readiness", "loading")
+    late_closed = take_pending_status(page, fixtures)
+    page.keyboard.press("Escape")
+    expect(chat).to_have_count(0)
+    expect(page.locator("[data-buddy-launcher]")).to_be_focused()
+    fixtures.status_queue.append({"body": {"configured": False}})
+    page.locator("[data-buddy-launcher]").click()
+    expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
+    fixtures.fulfill(late_closed, {"body": {"configured": True}})
+    page.wait_for_timeout(150)
+    expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
+    assert page.evaluate("window.__buddyStatusAborted >= 1"), "Closing did not abort the readiness request"
+    fixtures.status_queue.append({"pending": True})
+    chat.get_by_role("button", name="Check connection", exact=True).click()
+    expect(chat).to_have_attribute("data-buddy-readiness", "loading")
+    late_timeout = take_pending_status(page, fixtures)
+    aborted_before_timeout = page.evaluate("window.__buddyStatusAborted")
+    expect(chat).to_have_attribute("data-buddy-readiness", "unavailable", timeout=8000)
+    assert page.evaluate("window.__buddyStatusAborted") > aborted_before_timeout, "Readiness timeout did not abort its request"
+    fixtures.fulfill(late_timeout, {"body": {"configured": True}})
+    page.wait_for_timeout(150)
+    expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
+    expect(chat.locator("#buddy-question")).to_be_disabled()
+    assert not fixtures.requests, "A stale or timed-out check unlocked AI questions"
+    chat.get_by_role("button", name="Check connection", exact=True).click()
+    expect(chat).to_have_attribute("data-buddy-readiness", "ready")
+    expect(chat.get_by_label("Your question for Buddy", exact=True)).to_be_focused()
+    assert len(fixtures.status_requests) == 4, fixtures.status_requests
+    no_overflow(page)
+
+
 def reduced_motion(page, fixtures):
     visit(page)
     explorer = page.locator("[data-buddy-explorer]")
@@ -351,6 +481,8 @@ try:
             ("fetch-history-sources", real_fetch_contract, {}),
             ("retry-and-ai-proof", retry_and_refusal, {}),
             ("cancel-late-response-focus", cancellation_and_focus, {}),
+            ("readiness-gate-recovery", readiness_gate, {"reduced": True}),
+            ("readiness-cancel-timeout", readiness_cancel_timeout, {"reduced": True}),
             ("reduced-motion", reduced_motion, {"reduced": True}),
             ("artwork-fallback", missing_artwork, {"fail_atlas": True, "reduced": True}),
             ("short-viewport", short_viewport, {"reduced": True}),
@@ -368,7 +500,9 @@ try:
                     assert not errors, errors
                     assert not fixtures.unexpected_posts, fixtures.unexpected_posts
                     assert not fixtures.queue, "A scheduled fixture was never requested"
-                    REPORT["checks"].append({"name": name, "width": width, "status": "pass", "mocked_requests": len(fixtures.requests)})
+                    assert not fixtures.status_queue, "A scheduled readiness fixture was never requested"
+                    assert not fixtures.pending_status, "A pending readiness fixture was not handled"
+                    REPORT["checks"].append({"name": name, "width": width, "status": "pass", "mocked_requests": len(fixtures.requests), "mocked_readiness_checks": len(fixtures.status_requests)})
                 except Exception as error:
                     REPORT["failures"].append({"name": name, "width": width, "error": str(error), "browser_errors": errors})
                     page.screenshot(path=str(OUT / f"failure-{name}-{width}.png"), full_page=True)
