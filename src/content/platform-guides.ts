@@ -22,6 +22,50 @@ export interface PlatformGuideScreenshot {
   caption: string;
 }
 
+export interface PlatformGuideScreenshotCrop {
+  /** Reviewed workspace bounds in the unchanged 1300 × 820 capture. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label: string;
+  alt: string;
+}
+
+/** The same source-faithful detail is used in the preview and enlarged viewer. */
+export const platformGuideScreenshotCrops: Partial<Record<string, PlatformGuideScreenshotCrop>> = {
+  investor: {
+    x: 40, y: 74, width: 1220, height: 530,
+    label: "Home Finder workspace detail",
+    alt: "The Investor Home Finder search and filter form, shown with demonstration data",
+  },
+  resident: {
+    x: 40, y: 238, width: 1220, height: 446,
+    label: "Property-match workspace detail",
+    alt: "The Resident matches workspace with a demonstration property and its details",
+  },
+  "care-provider": {
+    x: 40, y: 96, width: 1220, height: 553,
+    label: "Property-requirements workspace detail",
+    alt: "The Care Provider requirements form showing area, property type, use, bedrooms, garden and parking options",
+  },
+  "housing-association": {
+    x: 36, y: 520, width: 918, height: 244,
+    label: "Property-results detail",
+    alt: "Property-results detail from the Housing Association workspace with demonstration property cards",
+  },
+  "local-authority": {
+    x: 36, y: 520, width: 918, height: 244,
+    label: "Property-results detail",
+    alt: "Property-results detail from the Local Authority workspace with demonstration property cards",
+  },
+  "housing-provider": {
+    x: 36, y: 520, width: 918, height: 244,
+    label: "Property-results detail",
+    alt: "Property-results detail from the Housing Provider workspace with demonstration property cards",
+  },
+};
+
 export interface PlatformGuide {
   id: string;
   label: string;

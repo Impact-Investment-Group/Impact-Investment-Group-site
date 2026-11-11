@@ -12,7 +12,7 @@ export interface CapabilityLink {
 
 export const capabilityLinks: CapabilityLink[] = [
   { id: "what-we-do", label: "What we do for you" },
-  { id: "ai-team", label: "Your AI investment team" },
+  { id: "ai-team", label: "Buddy, your AI guide" },
   { id: "data-layers", label: "The data layers" },
   { id: "demand-heat-maps", label: "Demand heat maps" },
   { id: "property-intelligence", label: "Property intelligence" },
@@ -109,40 +109,21 @@ export interface Specialist {
 }
 
 export const aiTeam = {
-  eyebrow: "Your AI investment team",
-  title: "Not a chatbot \u2014 a team that does the work.",
-  lead: "Three specialists run the analysis behind every deal \u2014 Petra finds the right homes, Peter prices them, and Pippa scores their impact, with every figure traceable to a named public dataset. And you can talk to them directly inside the platform.",
+  eyebrow: "Meet Buddy",
+  title: "One guide, three familiar forms.",
+  lead: "Buddy represents property, investment and care. Ask about our public services, explore the published information and find the right route to our team. AI availability is shown in the assistant.",
   specialists: [
-    {
-      id: "petra",
-      name: "Petra",
-      role: "Finds the deals",
-      icon: "search",
-      body: "Scans the whole market for the best-fit opportunities \u2014 strong equity, the right type, high verified tenant demand \u2014 and flags red flags and oversupply before you commit.",
-    },
-    {
-      id: "peter",
-      name: "Peter",
-      role: "Runs the numbers",
-      icon: "calculator",
-      body: "Valuation and comparables, net yield, a single sourced all-in cost estimate, financing, stress tests and 10-year projections \u2014 with the downside shown via a financing stress test.",
-    },
-    {
-      id: "pippa",
-      name: "Pippa",
-      role: "Scores the impact",
-      icon: "heart-handshake",
-      body: "Puts a number on the good: lives housed, social impact and impact-per-pound \u2014 so you can choose the home that changes the most lives, not just the balance sheet.",
-    },
+    { id: "property", name: "Buddy: homes and property", role: "The key", icon: "search", body: "Explore how we source suitable property and connect it with housing needs." },
+    { id: "investment", name: "Buddy: costs and investment", role: "The pound sign", icon: "calculator", body: "Find the published service packages, fees and information about the process." },
+    { id: "support", name: "Buddy: care and support", role: "The heart", icon: "heart-handshake", body: "Understand how housing, care and support organisations connect through the group." },
   ] satisfies Specialist[],
   flow: [
-    { id: "finds", label: "Petra finds it", tone: "teal" as const },
-    { id: "prices", label: "Peter prices it", tone: "teal" as const },
-    { id: "proves", label: "Pippa proves it", tone: "orange" as const },
+    { id: "finds", label: "Homes and property", tone: "teal" as const },
+    { id: "prices", label: "Costs and investment", tone: "teal" as const },
+    { id: "proves", label: "Care and support", tone: "orange" as const },
   ],
-  workedExampleLabel: "Peter\u2019s analysis",
-  disclaimer:
-    "The team surfaces analysis to help you decide \u2014 it isn\u2019t financial, legal or tax advice, and a real human team is always on hand. Every figure is drawn from a named dataset or shown as a clearly-labelled estimate.",
+  workedExampleLabel: "Illustrative analysis",
+  disclaimer: "Buddy provides information, not financial, legal or tax advice. Check the linked information with our team before making a decision.",
 };
 
 /* 3c · Five data layers ---------------------------------------------------- */

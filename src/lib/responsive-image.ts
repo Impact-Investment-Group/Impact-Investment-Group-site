@@ -101,12 +101,7 @@ export const SIZES_THIRD_FROM_TABLET = "(min-width: 768px) 33vw, 100vw";
 /**
  * An illustration that sits inside a card rather than running to the gutters.
  *
- * Measured at 390: the AI-team trio renders 254px (65vw) and the capability
- * band 270px (69vw), and both were declaring 100vw. At two device pixels that
- * asked for 780px, which picked the 934px ORIGINAL for each: 144KB and 189KB
- * to draw a quarter-megapixel. A `sizes` that overstates costs the whole
- * difference, and it is the one part of a `srcset` that nothing checks for
- * you.
+ * Reserve a smaller image width for artwork inset within a responsive card.
  */
 export const SIZES_CARD_ILLUSTRATION = "(min-width: 768px) 50vw, 70vw";
 

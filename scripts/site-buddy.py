@@ -246,6 +246,19 @@ def floating_placement_and_minimise(page, fixtures):
             break
     assert outside_focused, "Non-modal Buddy trapped keyboard focus"
     expect(chat).to_be_visible()
+    close = chat.get_by_role("button", name="Close Buddy", exact=True)
+    close.focus()
+    page.keyboard.press("Tab")
+    expect(chat.get_by_role("group", name="Conversation topic").get_by_role("button", name="Property", exact=True)).to_be_focused()
+    close.focus()
+    page.keyboard.press("Shift+Tab")
+    assert page.evaluate("""(() => {
+      const active = document.activeElement;
+      return Boolean(active && active !== document.body &&
+        !active.closest('[data-buddy-chat]') &&
+        !active.hasAttribute('data-radix-focus-guard'));
+    })()"""), "Shift+Tab looped back into the non-modal chat"
+    expect(chat).to_be_visible()
     # Exercise a real page control while Buddy remains open. Scrolling the
     # existing mission tab near the top avoids the chat panel itself; a modal
     # backdrop or disabled body pointer events would still block the click.
@@ -254,6 +267,7 @@ def floating_placement_and_minimise(page, fixtures):
     mission_tab.click()
     expect(mission_tab).to_have_attribute("aria-selected", "true")
     expect(page.locator("#mission-panel-response")).to_be_visible()
+    expect(page.locator("main [data-buddy-form], main img[src*='/images/ai-team/']")).to_have_count(0)
     expect(chat).to_be_visible()
     assert not fixtures.requests, "Using the page while Buddy was open sent an AI question"
     page.keyboard.press("Escape")
@@ -303,7 +317,18 @@ def services_showcase_and_topics(page, fixtures):
     page.keyboard.press("Escape")
     expect(chat).to_have_count(0)
     expect(trigger).to_be_focused()
-    page.wait_for_timeout(5200)
+    # A complete form transition, gesture and settle blend can take longer
+    # than a single gesture. Wait for bounded stillness, then verify it lasts.
+    character.scroll_into_view_if_needed()
+    page.evaluate("window.__buddySettleSample = {draws: window.__buddyShowcaseDraws, at: performance.now()}")
+    page.wait_for_function("""() => {
+      const sample = window.__buddySettleSample;
+      if (sample.draws !== window.__buddyShowcaseDraws) {
+        sample.draws = window.__buddyShowcaseDraws;
+        sample.at = performance.now();
+      }
+      return performance.now() - sample.at >= 500;
+    }""", timeout=10000, polling=100)
     draws = page.evaluate("window.__buddyShowcaseDraws")
     page.wait_for_timeout(500)
     assert page.evaluate("window.__buddyShowcaseDraws") - draws < 4, "The services showcase retained an idle animation loop"
@@ -311,7 +336,9 @@ def services_showcase_and_topics(page, fixtures):
     # The showcase must stay confined to Services, including after navigation.
     for path in ("/", "/pricing/", "/partners/"):
         visit(page, path)
-        expect(page.locator("[data-buddy-showcase], main [data-buddy-form]")).to_have_count(0)
+        expect(page.locator("[data-buddy-showcase]")).to_have_count(0)
+        if path == "/":
+            expect(page.locator("main [data-buddy-form]")).to_have_count(0)
         assert_fixed_widget(page)
         no_overflow(page)
 
@@ -694,6 +721,8 @@ def missing_artwork(page, fixtures):
 
 
 try:
+    retired_artwork = ROOT / "dist/client/images/ai-team"
+    assert not retired_artwork.exists() or not any(retired_artwork.rglob("*")), "Retired mascot artwork is still published"
     atlas = (ROOT / "dist/client" / V2_ATLAS_PATH.lstrip("/")).read_bytes()
     assert len(atlas) == V2_ATLAS_SIZE, "Built Buddy atlas has the wrong version/size"
     assert hashlib.sha256(atlas).hexdigest() == V2_ATLAS_SHA256, "Built Buddy atlas differs from the supplied v2-refined package"

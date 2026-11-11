@@ -8,7 +8,14 @@ successfully. The live homepage was checked after deployment.
 
 This replacement keeps the homepage content structure, introduces Buddy only
 as a compact floating assistant, and places one larger Buddy example on Our
-Services. It also improves the homepage Metro World Child section at the
+Services. Following the user's further instruction, the legacy character
+illustrations on the other pages are replaced with Buddy's relevant forms,
+while the homepage keeps Buddy outside its page content. Legacy artwork and
+character names are removed from the rendered pages. Standalone legacy artwork
+is removed from the publishable assets. Six existing platform captures use
+workspace crops in both preview sizes to exclude old assistant banners and
+launchers while preserving the authentic interface pixels.
+It also improves the homepage Metro World Child section at the
 user's request. The About charity section and footer keep their existing
 presentation and exact pledge.
 
@@ -38,6 +45,13 @@ states, 44px controls, stable reserved geometry, progressive disclosure,
 safe-area spacing, bounded motion and honest empty/error states. Existing
 font shaping, tabular numbers and approved colours are retained. Pricing and
 FAQ section navigation and more readable partner menus are included.
+
+Conversation copy loads with the chat. Registration questionnaires now load
+with their route instead of the homepage; registration copy, metadata and
+account forms are preserved. The complete initial JavaScript graph, including
+Buddy's engine, measures 752,868 bytes against the unchanged 780,000-byte
+budget. The page-idleness check uses Buddy's actual Minimize control before
+applying its unchanged frame budget; active animation has separate checks.
 
 Metro's exact 10% pledge, registration link and existing programme descriptions
 are preserved. The homepage gives the approved logo visual priority with

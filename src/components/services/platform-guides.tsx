@@ -11,7 +11,7 @@ import {
   Monitor,
   X,
 } from "lucide-react";
-import { platformGuides, type PlatformGuide } from "@/content/platform-guides";
+import { platformGuides, platformGuideScreenshotCrops, type PlatformGuide } from "@/content/platform-guides";
 import "./platform-guides.css";
 
 const platformOrigin = "https://app.impactinvestmentgroup.co.uk";
@@ -77,9 +77,39 @@ function guideFromHash(hash: string) {
   return platformGuides.find((guide) => `#role-${guide.id}` === hash) ?? null;
 }
 
+function PlatformScreenshot({ screen, enlarged = false }: { screen: GuideScreen; enlarged?: boolean }) {
+  const crop = platformGuideScreenshotCrops[screen.key];
+  const bounds = crop ?? { x: 0, y: 0, width: 1300, height: 820 };
+  const style = {
+    aspectRatio: `${bounds.width} / ${bounds.height}`,
+    "--guide-detail-width": `${bounds.width}px`,
+    "--guide-image-width": `${1300 / bounds.width * 100}%`,
+    "--guide-image-left": `${-bounds.x / bounds.width * 100}%`,
+    "--guide-image-top": `${-bounds.y / bounds.height * 100}%`,
+  } as React.CSSProperties;
+
+  return (
+    <span
+      className={`platform-guides__screenshot${enlarged ? " platform-guides__screenshot--enlarged" : ""}`}
+      style={style}
+      data-platform-guide-crop={crop ? screen.key : undefined}
+    >
+      <img
+        src={`/images/platform-guides/${screen.key}.webp`}
+        alt={crop?.alt ?? screen.alt}
+        width={1300}
+        height={820}
+        loading={enlarged ? "eager" : "lazy"}
+        decoding="async"
+      />
+    </span>
+  );
+}
+
 function ScreenshotViewer({ guide, screen }: { guide: PlatformGuide; screen: GuideScreen }) {
   const [open, setOpen] = React.useState(false);
-  const src = `/images/platform-guides/${screen.key}.webp`;
+  const crop = platformGuideScreenshotCrops[screen.key];
+  const caption = crop ? `${crop.label}. ${guide.screenshot.caption}` : guide.screenshot.caption;
 
   React.useEffect(() => {
     setOpen(false);
@@ -93,7 +123,7 @@ function ScreenshotViewer({ guide, screen }: { guide: PlatformGuide; screen: Gui
             <Monitor size={17} aria-hidden="true" />
             {screen.label}
           </span>
-          <span className="platform-guides__preview-label">Interface preview</span>
+          <span className="platform-guides__preview-label">{crop ? "Workspace detail" : "Interface preview"}</span>
         </div>
         <DialogPrimitive.Trigger asChild>
           <button
@@ -102,21 +132,14 @@ function ScreenshotViewer({ guide, screen }: { guide: PlatformGuide; screen: Gui
             aria-label={`View larger ${guide.label} screenshot`}
             data-testid="platform-guide-screenshot"
           >
-            <img
-              src={src}
-              alt={screen.alt}
-              width={1300}
-              height={820}
-              loading="lazy"
-              decoding="async"
-            />
+            <PlatformScreenshot screen={screen} />
             <span className="platform-guides__enlarge">
               <Expand size={16} aria-hidden="true" />
               View larger
             </span>
           </button>
         </DialogPrimitive.Trigger>
-        <figcaption>{guide.screenshot.caption}</figcaption>
+        <figcaption>{caption}</figcaption>
       </figure>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="platform-guides__dialog-overlay" />
@@ -127,7 +150,7 @@ function ScreenshotViewer({ guide, screen }: { guide: PlatformGuide; screen: Gui
                 {guide.label}: {screen.label}
               </DialogPrimitive.Title>
               <DialogPrimitive.Description className="platform-guides__dialog-description">
-                {guide.screenshot.caption}
+                {caption}
               </DialogPrimitive.Description>
             </div>
             <DialogPrimitive.Close className="platform-guides__close" aria-label="Close screenshot">
@@ -140,7 +163,7 @@ function ScreenshotViewer({ guide, screen }: { guide: PlatformGuide; screen: Gui
             aria-label="Full-size platform screenshot"
             tabIndex={0}
           >
-            <img src={src} alt={screen.alt} width={1300} height={820} />
+            <PlatformScreenshot screen={screen} enlarged />
           </div>
           <p className="platform-guides__dialog-hint">Scroll to explore the full-size image.</p>
         </DialogPrimitive.Content>
@@ -162,7 +185,8 @@ export function PlatformGuides() {
       : [
           {
             key: guide.screenshot.key,
-            label: guide.kind === "partner" ? "Connected workspace" : "Workspace overview",
+            label: platformGuideScreenshotCrops[guide.screenshot.key]?.label
+              ?? (guide.kind === "partner" ? "Connected workspace" : "Workspace overview"),
             alt: guide.screenshot.alt,
           },
         ];

@@ -14,51 +14,6 @@
  */
 
 export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; height: number }> = {
-  "/images/ai-team/collective-capability-team.png": {
-    steps: [400, 640],
-    width: 934,
-    height: 558,
-  },
-  "/images/ai-team/peter-present.webp": {
-    steps: [],
-    width: 281,
-    height: 560,
-  },
-  "/images/ai-team/peter.webp": {
-    steps: [],
-    width: 272,
-    height: 520,
-  },
-  "/images/ai-team/petra-point.webp": {
-    steps: [],
-    width: 338,
-    height: 560,
-  },
-  "/images/ai-team/petra.webp": {
-    steps: [],
-    width: 347,
-    height: 520,
-  },
-  "/images/ai-team/pippa-point.webp": {
-    steps: [],
-    width: 345,
-    height: 560,
-  },
-  "/images/ai-team/pippa-present.webp": {
-    steps: [],
-    width: 271,
-    height: 560,
-  },
-  "/images/ai-team/pippa.webp": {
-    steps: [],
-    width: 313,
-    height: 520,
-  },
-  "/images/ai-team/trio-wave.webp": {
-    steps: [400, 640],
-    width: 934,
-    height: 558,
-  },
   "/images/brand/logo-lockup-20261105-v2.webp": {
     steps: [400, 640, 960, 1440],
     width: 2012,

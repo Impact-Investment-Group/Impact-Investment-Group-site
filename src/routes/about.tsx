@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, ArrowUpRight, ShieldAlert } from "lucide-react";
 import { DirectorCard } from "@/components/about/director-card";
+import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import { CharityImpact } from "@/components/charity/charity-impact";
 import {
   accountableChain,
@@ -64,11 +65,7 @@ function Emphasise({ text, terms }: { text: string; terms: string[] }) {
   );
 }
 
-const CAST = [
-  "/images/ai-team/petra-point.webp",
-  "/images/ai-team/peter-present.webp",
-  "/images/ai-team/pippa-present.webp",
-] as const;
+const chainBuddyForms = ["property", "investment", "support"] as const;
 
 function Summary({ lines }: { lines: Seg[][] }) {
   return (
@@ -124,17 +121,9 @@ function AboutPage() {
                 </strong>
                 {leadershipCapability.experienceLabel}
               </p>
-              <img
-                src="/images/ai-team/collective-capability-team.png"
-                alt=""
-                aria-hidden="true"
-                width={935}
-                height={559}
-                loading="lazy"
-                className="mt-5 hidden w-40 object-contain lg:block"
-                srcSet={variantSrcSet("/images/ai-team/collective-capability-team.png")}
-                sizes="160px"
-              />
+              <div className="mt-5 hidden h-24 w-40 items-center justify-center lg:flex">
+                <BuddyCharacter form="support" expression="warm" className="w-24" />
+              </div>
             </div>
             <dl className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
               {leadershipCapability.impacts.map((impact) => (
@@ -233,15 +222,9 @@ function AboutPage() {
                     {step.detail}
                   </p>
                 </div>
-                <img
-                  src={CAST[index]}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  width={281}
-                  height={560}
-                  className="hidden h-28 w-full object-contain sm:block"
-                />
+                <div className="hidden h-28 w-full items-center sm:flex">
+                  <BuddyCharacter form={chainBuddyForms[index] ?? "property"} expression="warm" />
+                </div>
               </li>
             ))}
           </ol>

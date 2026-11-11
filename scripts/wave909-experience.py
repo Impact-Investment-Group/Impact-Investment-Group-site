@@ -104,6 +104,8 @@ with sync_playwright() as pw:
                     expect(charity_footer.get_by_role("link", name="Read about our commitment", exact=True)).to_have_attribute("href", "/about#charity-impact")
                     row["charity_footer"] = "canonical pledge, original logo and commitment link"
                 check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Horizontal overflow")
+                check(not re.search(r"\b(?:Peter|Petra|Pippa)\b", page.locator("body").inner_text()), "A retired mascot name remains on the page")
+                expect(page.locator("img[src*='/images/ai-team/'], img[srcset*='/images/ai-team/']")).to_have_count(0)
                 # Visit lazy images and sections before taking the complete reading view.
                 page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(img => img.loading='eager')")
                 page.wait_for_function("Array.from(document.images).every(img => img.complete)")
@@ -143,9 +145,14 @@ with sync_playwright() as pw:
                     page.wait_for_timeout(100)
                 for figure in page.locator(".partner-craft-guides").all():
                     caption_top = figure.locator("figcaption").bounding_box()["y"]
-                    for guide in figure.locator("img").all():
+                    for guide in figure.locator("img, [data-buddy-form]").all():
                         box = guide.bounding_box()
                         check(box["y"] + box["height"] + 8 <= caption_top, "Guide artwork overlaps its caption")
+                for character in page.locator("main [data-buddy-form]:visible").all():
+                    character.scroll_into_view_if_needed()
+                    expect(character).to_have_attribute("data-buddy-version", "v2-refined")
+                    expect(character).to_have_attribute("data-buddy-status", "ready")
+                    check(character.locator("canvas").evaluate("n => n.width > 0 && n.height > 0"), "Replacement Buddy artwork has no canvas size")
                 for link in page.locator(".page-outline a").all():
                     check(page.locator(link.get_attribute("href")).count() == 1, "Missing or duplicate section target")
                 page.add_script_tag(path=str(ROOT / "node_modules/axe-core/axe.min.js"))
@@ -256,6 +263,8 @@ with sync_playwright() as pw:
             outline.get_by_role("link", name="Your role").click()
             expect(section).to_be_in_viewport()
             options = picker.locator("option").evaluate_all("nodes => nodes.map(n => ({id:n.value,label:n.textContent.trim()}))")
+            reviewed_crop_keys = {"investor", "resident", "care-provider", "local-authority", "housing-association", "housing-provider"}
+            captured_crops = set()
             for option in options:
                 picker.select_option(option["id"])
                 article = section.locator("article")
@@ -267,6 +276,19 @@ with sync_playwright() as pw:
                 expect(preview.locator("img")).to_be_visible()
                 page.wait_for_function("document.querySelector('[data-testid=platform-guide-screenshot] img').naturalWidth === 1300")
                 expect(article.locator("figcaption")).to_contain_text(re.compile("demonstration data", re.I))
+                image_key = Path(preview.locator("img").get_attribute("src")).stem
+                if image_key in reviewed_crop_keys and image_key not in captured_crops:
+                    frame = preview.locator("[data-platform-guide-crop]")
+                    expect(frame).to_have_attribute("data-platform-guide-crop", image_key)
+                    check(frame.evaluate("n => getComputedStyle(n).overflow") == "hidden", "Retired assistant overlay is not clipped in the preview")
+                    preview.click()
+                    detail = page.get_by_role("dialog").locator("[data-platform-guide-crop]")
+                    expect(detail).to_have_attribute("data-platform-guide-crop", image_key)
+                    check(detail.evaluate("n => getComputedStyle(n).overflow") == "hidden", "Enlarged preview exposes the retired assistant overlay")
+                    page.get_by_role("dialog").screenshot(path=str(OUT / f"platform-detail-{image_key}-{width}.png"), animations="disabled")
+                    page.keyboard.press("Escape")
+                    expect(preview).to_be_focused()
+                    captured_crops.add(image_key)
                 choices = section.get_by_role("navigation", name=option["label"] + " walkthrough steps").get_by_role("button")
                 first_title = page.locator("#platform-guide-step-title").inner_text()
                 rail = choices.first.locator("xpath=ancestor::nav")
@@ -283,6 +305,7 @@ with sync_playwright() as pw:
                     expect(section.get_by_role("link", name="Open this step in the platform", exact=True)).to_have_count(0)
                     expect(article.locator("figcaption")).to_contain_text("not a separate")
                 check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Role guide overflows")
+            check(captured_crops == reviewed_crop_keys, "Not every retired-assistant screenshot received a detail view")
             picker.select_option("management-agent")
             screens = section.get_by_role("group", name="Management Agent screens").get_by_role("button")
             expect(screens).to_have_count(6)

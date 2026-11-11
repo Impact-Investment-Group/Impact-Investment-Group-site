@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import { partnerProfiles, type PartnerProfile } from "@/content/partners";
 import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 import { PartnerEcosystem } from "./partner-ecosystem";
@@ -96,16 +97,13 @@ export function PartnersHub() {
             <span className="partner-craft-hero__seal" aria-hidden="true">
               <Network />
             </span>
-            <img
-              className="partner-craft-hero__companion"
-              src="/images/ai-team/trio-wave.webp"
-              srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
-              sizes="180px"
-              width={intrinsic("/images/ai-team/trio-wave.webp")?.width}
-              height={intrinsic("/images/ai-team/trio-wave.webp")?.height}
-              loading="eager"
-              alt=""
-            />
+            <div className="partner-craft-hero__companion">
+              <BuddyCharacter
+                form={stage === "need" || stage === "delivery" || stage === "outcome" ? "support" : "property"}
+                action={stage === "need" || stage === "delivery" || stage === "outcome" ? "reassure" : "wave"}
+                animated
+              />
+            </div>
           </figure>
           <div className="partner-craft-hero__support">
             <p className="partner-craft-hero__summary">

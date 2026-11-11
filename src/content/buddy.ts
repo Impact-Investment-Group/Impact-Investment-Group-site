@@ -7,8 +7,8 @@ export function isBuddyTopic(value: unknown): value is BuddyTopic {
 }
 
 export function buddyTopicForPath(pathname: string): BuddyTopic {
-  if (/^\/pricing(?:\/|$)/.test(pathname)) return "investment";
-  if (/^\/partner-with-(?:care-provider|support-provider|social-worker|resident)(?:\/|$)/.test(pathname)) return "support";
+  if (/^\/(?:pricing|partner-with-investor|register\/investor)(?:\/|$)/.test(pathname)) return "investment";
+  if (/^\/(?:partner-with-|register\/)(?:care-provider|support-provider|social-worker|resident)(?:\/|$)/.test(pathname)) return "support";
   return "property";
 }
 

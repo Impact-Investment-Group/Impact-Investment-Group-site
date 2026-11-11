@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useLocation } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, MessageCircle, RotateCcw, Send, X } from "lucide-react";
@@ -14,6 +14,39 @@ type Turn = { role: "user" | "assistant"; content: string; sources?: Source[] };
 type Question = { message: string; history: Turn[]; topic: BuddyTopic };
 type Readiness = "loading" | "ready" | "unavailable";
 const control = "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:cursor-not-allowed disabled:opacity-50";
+
+function tabbableElements(root: Document | HTMLElement): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>(
+    "a[href], area[href], button, input, select, textarea, iframe, object, embed, [contenteditable='true'], [tabindex]",
+  )).filter(element => element.tabIndex >= 0 && !element.matches(":disabled") &&
+    !element.closest("[hidden], [inert], [aria-hidden='true'], [aria-disabled='true'], [data-radix-focus-guard]") &&
+    element.getClientRects().length > 0 && window.getComputedStyle(element).visibility === "visible",
+  ).sort((a, b) => (a.tabIndex || Infinity) - (b.tabIndex || Infinity));
+}
+
+function leaveChatAtTabBoundary(event: KeyboardEvent<HTMLDivElement>) {
+  if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return;
+  const content = event.currentTarget;
+  const active = document.activeElement;
+  const inside = tabbableElements(content);
+  const edge = event.shiftKey ? inside[0] : inside[inside.length - 1];
+  if (active !== (edge ?? content)) return;
+  const all = tabbableElements(document);
+  const current = all.indexOf(active as HTMLElement);
+  const direction = event.shiftKey ? -1 : 1;
+  const start = current >= 0 ? current : event.shiftKey ? 0 : -1;
+  for (let offset = 1; offset <= all.length; offset += 1) {
+    const next = all[(start + direction * offset + all.length) % all.length];
+    if (next && !content.contains(next)) {
+      // Radix loops its FocusScope even with modal=false. Only override that
+      // edge; ordinary Tab within the chat and all other keys stay native.
+      event.preventDefault();
+      event.stopPropagation();
+      next.focus();
+      return;
+    }
+  }
+}
 
 function safeSources(value: unknown): Source[] {
   if (!Array.isArray(value)) return [];
@@ -228,7 +261,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   return <Dialog.Root open={open} onOpenChange={changeOpen} modal={false}>
     {!open && <BuddyWidget topic={topic} onOpen={() => changeOpen(true)} setTrigger={node => { launcher.current = node; }} />}
     <Dialog.Portal>
-      <Dialog.Content ref={dialog} data-buddy-chat data-buddy-readiness={readiness} onInteractOutside={event => event.preventDefault()} onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }} onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
+      <Dialog.Content ref={dialog} data-buddy-chat data-buddy-readiness={readiness} onKeyDownCapture={leaveChatAtTabBoundary} onInteractOutside={event => event.preventDefault()} onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }} onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
         className="fixed bottom-0 right-0 z-50 flex max-h-dvh w-full origin-bottom-right flex-col overflow-y-auto overscroll-contain rounded-t-3xl border border-rule bg-page text-ink shadow-2xl duration-200 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-4 motion-reduce:animate-none sm:bottom-5 sm:right-5 sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-md sm:rounded-3xl">
         <header className="flex shrink-0 items-center gap-3 border-b border-rule bg-secondary py-3 pl-4 pr-3 [@media(max-height:600px)]:py-2">
           <BuddyCharacter form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} animated={open} continuousIdle className="w-14 shrink-0 [@media(max-height:600px)]:w-12" />

@@ -232,16 +232,6 @@ export function MissionSolution() {
                 >
                   Explore the partner ecosystem <ArrowRight aria-hidden="true" className="size-4" />
                 </Link>
-                <img
-                  src="/images/ai-team/trio-wave.webp"
-                  srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
-                  sizes="150px"
-                  width={934}
-                  height={558}
-                  alt=""
-                  loading="lazy"
-                  className="w-32 shrink-0 sm:w-36"
-                />
               </li>
             </ol>
           </div>

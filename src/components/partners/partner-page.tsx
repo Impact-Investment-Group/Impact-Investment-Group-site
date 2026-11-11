@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Info, LifeBuoy, ZoomIn } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BuddyCharacter, type BuddyForm } from "@/components/buddy/buddy-character";
 import { Reveal } from "@/components/ui/reveal";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { PartnerProfile } from "@/content/partners";
@@ -377,11 +378,11 @@ const rolePresentations: Record<string, RolePresentation> = {
   },
 };
 
-const roleGuideImages = [
-  "/images/ai-team/petra.webp",
-  "/images/ai-team/peter.webp",
-  "/images/ai-team/pippa.webp",
-] as const;
+function partnerBuddyForm(profile: PartnerProfile): BuddyForm {
+  if (profile.id === "investor") return "investment";
+  if (profile.stage === "property" || profile.id === "housing-association") return "property";
+  return "support";
+}
 
 function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
   const presentation = rolePresentations[profile.id] ?? rolePresentations["investor"]!;
@@ -398,21 +399,9 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
             {profile.whoTheyAre}
           </p>
           <figure className="partner-craft-guides">
-            <div className="partner-craft-guides__art">
-              {roleGuideImages.map((image, index) => (
-                <img
-                  key={image}
-                  src={image}
-                  srcSet={variantSrcSet(image)}
-                  sizes="200px"
-                  width={intrinsic(image)?.width}
-                  height={intrinsic(image)?.height}
-                  loading="lazy"
-                  alt={
-                    ["Orange property guide", "Blue investment guide", "Green impact guide"][index]
-                  }
-                />
-              ))}
+            <div className="partner-craft-guides__art flex items-center justify-center">
+              <BuddyCharacter form={partnerBuddyForm(profile)} action="explain" expression="warm"
+                className="w-[250px] max-w-full [&_img]:size-full! [&_img]:left-0!" />
             </div>
             <figcaption>{presentation.guideLabels.join(" · ")}</figcaption>
           </figure>
@@ -520,15 +509,8 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
                 </p>
               </div>
               <div className="partner-craft-journey__guide" aria-hidden="true">
-                <img
-                  src={roleGuideImages[activeStep]}
-                  srcSet={variantSrcSet(roleGuideImages[activeStep]!)}
-                  sizes="170px"
-                  width={170}
-                  height={230}
-                  alt=""
-                  loading="lazy"
-                />
+                <BuddyCharacter form={partnerBuddyForm(profile)} action="explain" expression="warm"
+                  className="my-auto w-[140px] sm:w-[170px] [&_img]:size-full!" />
               </div>
             </div>
             <div className="partner-craft-journey__controls">

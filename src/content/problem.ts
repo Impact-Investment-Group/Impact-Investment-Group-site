@@ -41,8 +41,8 @@ export interface ProblemFigure {
   source: string;
 }
 
-/** Which character stands beside a section, if any. See the note on section 2. */
-export type ProblemCharacter = "petra-point" | "peter-present" | "pippa-point";
+/** Buddy's form beside a section, if any. See the note on section 2. */
+export type ProblemBuddyForm = "property" | "investment" | "support";
 
 export interface ProblemSection {
   id: string;
@@ -60,11 +60,11 @@ export interface ProblemSection {
    * Section 2 is deliberately `undefined` and must stay that way. It carries
    * "176,130 children living in temporary accommodation", and a cartoon
    * gesturing cheerfully at that number is indefensible — it is the kind of
-   * thing that gets screenshotted and quoted back at you. The characters
-   * explain the system and the funding. They do not present other people's
+   * thing that gets screenshotted and quoted back at you. Buddy can
+   * explain the system and the funding, without presenting other people's
    * hardship.
    */
-  character?: ProblemCharacter;
+  buddyForm?: ProblemBuddyForm;
   /** Cream band rather than navy. The page alternates. */
   light?: boolean;
 }
@@ -97,7 +97,7 @@ export const problemSections: ProblemSection[] = [
      */
     source:
       "gov.uk · Scottish Government · Welsh Government · NIHE. Recorded on different bases and not simply additive.",
-    character: "petra-point",
+    buddyForm: "property",
     light: true,
   },
   {
@@ -115,7 +115,6 @@ export const problemSections: ProblemSection[] = [
         value: "£102m",
       },
     ],
-    character: "peter-present",
   },
   {
     id: "opportunity",
@@ -128,7 +127,7 @@ export const problemSections: ProblemSection[] = [
       { label: "at social rent", value: "60%+" },
     ],
     source: "gov.uk — Social and Affordable Homes Programme 2026–2036",
-    character: "pippa-point",
+    buddyForm: "investment",
     light: true,
   },
 ];

@@ -63,33 +63,14 @@ export const steps = [
   },
 ];
 
-/**
- * ── FIND IT · PRICE IT · MATCH IT ─────────────────────────────────────────
- *
- * This section used to be SIX things: three tools in a row, and inside the
- * third one, three analysts. A reader met six items and had to work out how
- * they related to each other before any of it meant anything.
- *
- * Petra, Peter and Pippa already are find / price / match, so the two lists
- * collapsed into one. Three steps, three faces, and the tool each one works in
- * named on a chip beside it. Roughly 120 words became 45.
- *
- * ⚠️ THE CHIPS NAME A TOOL OR A PROPERTY, NOT A CLAIM ABOUT THE ANALYST.
- * Pippa's chip is "Impact score" and NOT "Demand Map" — the Demand Map is a
- * tool the visitor uses, not something she runs, and saying otherwise would
- * misdescribe the product. The Demand Map keeps its own line under the trio
- * (`workflowFooter`) for exactly that reason. If either is ever edited, keep
- * that separation.
- */
+/** The tools explain property, costs and housing need. */
 export const toolsEyebrow = "The platform, live";
 export const toolsHeading = "Find it. Price it. Match it.";
 export const toolsLead = "Connected tools for property, costs and housing need.";
 
 export interface WorkflowStep {
   id: string;
-  /** Character artwork in public/images/ai-team/. Cut out, shared baseline. */
-  portrait: string;
-  /** The headline. "<Name> <verbs> it." — keep the full stop. */
+  /** The tool headline. */
   claim: string;
   body: string;
   /** The tool or property this step happens in. Two or three words. */
@@ -99,8 +80,7 @@ export interface WorkflowStep {
 
 export const workflow: WorkflowStep[] = [
   {
-    id: "petra",
-    portrait: "/images/ai-team/petra.webp",
+    id: "property",
     claim: "Find suitable homes.",
     body: "Describe the home you need. Search the sourced market for properties that fit your brief.",
     chip: "Property Finder",
@@ -108,8 +88,7 @@ export const workflow: WorkflowStep[] = [
     // was: "Scans the sourced market for homes that fit your brief."
   },
   {
-    id: "peter",
-    portrait: "/images/ai-team/peter.webp",
+    id: "investment",
     claim: "Understand the figures.",
     body: "Compare property valuations and costs against named public data.",
     chip: "Every figure traceable",
@@ -117,8 +96,7 @@ export const workflow: WorkflowStep[] = [
     // was: "Runs the valuation and cost work on named public data."
   },
   {
-    id: "pippa",
-    portrait: "/images/ai-team/pippa.webp",
+    id: "support",
     claim: "Connect property and need.",
     body: "Explore the housing demand around a property and review its social impact in plain terms.",
     chip: "Impact score",
@@ -134,12 +112,12 @@ export const workflow: WorkflowStep[] = [
  * named on this page — it is the thing that shows where supported housing is
  * actually needed, and the honesty of it (public figures first, estimates
  * labelled, blanks left blank) is a selling point, not a footnote. It sits
- * under the trio rather than inside it.
+ * separately from the three tools.
  */
 export const workflowFooter =
   "The Demand Map helps you explore where supported housing is needed, town by town. Public figures come first, estimates are labelled and unknowns stay blank.";
 
-/** Not optional. The trio is analysis, and the page has to say so. */
+/** Not optional. The tools provide analysis, and the page has to say so. */
 export const aiTeamNote =
   "Analysis, not financial advice. Every figure is sourced or a labelled estimate.";
 

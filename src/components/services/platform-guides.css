@@ -243,12 +243,20 @@
   cursor: zoom-in;
   color: var(--color-teal-600);
 }
-.platform-guides__image-button img {
+.platform-guides__screenshot {
+  position: relative;
   display: block;
   width: 100%;
+  overflow: hidden;
+}
+.platform-guides__screenshot > img {
+  position: absolute;
+  top: var(--guide-image-top);
+  left: var(--guide-image-left);
+  display: block;
+  width: var(--guide-image-width);
+  max-width: none;
   height: auto;
-  aspect-ratio: 1300 / 820;
-  object-fit: contain;
 }
 .platform-guides__enlarge {
   position: absolute;
@@ -584,11 +592,10 @@
   border-radius: 12px;
   background: var(--color-page);
 }
-.platform-guides__dialog-viewport img {
-  display: block;
-  width: 1300px;
+.platform-guides__screenshot--enlarged {
+  margin-inline: auto;
+  width: var(--guide-detail-width);
   max-width: none;
-  height: 820px;
 }
 .platform-guides__dialog-hint {
   margin: 12px 0 0;
