@@ -62,5 +62,13 @@ explicit deterministic fixtures; they cannot establish live Gemma operation.
 
 Initial CI found the upfront chat import exceeded the homepage JavaScript
 budget. Loading chat on request restored compliance with the unchanged
-780,000-byte limit. Final CI, deployment and live-service evidence will be
-recorded here after those checks finish.
+780,000-byte limit. CI run `42930605564` passed on `97b9f1a`: 64 page/viewport
+checks, 47 interactions, 13 Buddy cases, four partner-ecosystem widths,
+Firefox/WebKit scrolling, pricing and motion, and rendered contrast checks.
+Homepage JavaScript measured 771,477 bytes. All 276 contrast nodes needing
+pixel verification were measured, with none unproven, across 32 visual shots.
+
+The exact CI-generated Pages artifact was served unchanged for manual browser
+review. Desktop key/pound forms, 390px menu-to-chat handoff, reopening and focus
+return to the menu trigger were verified. Temporary viewport overrides were
+reset. Public deployment and live AI availability remain separate checks.
