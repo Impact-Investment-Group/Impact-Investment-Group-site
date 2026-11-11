@@ -91,11 +91,6 @@ html:has(.page-outline) main [id] {
       ellipse at 90% 0%,
       color-mix(in oklab, var(--color-teal-500) 9%, transparent),
       transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 5% 100%,
-      color-mix(in oklab, var(--color-orange-500) 5%, transparent),
-      transparent 55%
     );
 }
 .page-intro::before {

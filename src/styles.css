@@ -139,7 +139,7 @@
   --brand-primary-ink: #BB441B;
   /* The fill under a white label (R541-1): white on it 4.60:1. */
   --brand-primary-fill: #CC4A22;
-  --brand-primary-soft: #FFF0EB;
+  --brand-primary-soft: var(--bg-bone);
   --brand-primary-light: #F07E56;
   --brand-primary-on-ink: #FFA181;
   --brand-teal: #258D8A;
@@ -148,13 +148,13 @@
   --brand-teal-on-ink: #70CECC;
   --brand-ink: #14366A;
   --brand-slate: #647289;
-  --bg-canvas: #FDFDFB;
-  /* Wave 882 (R-OP-1102-7): the band and the cream card are a bone white in
-     the page's family, no pink (red equal to green, blue a little below). The
-     card is one step deeper so it still separates from the band. */
-  --bg-tint: #F9F9F4;
-  --bg-cream: #F2F2EC;
-  --dv-track: #F3EAE0;
+  /* Bone-white reference supplied 11 November 2026: dominant sampled RGB
+     249, 248, 243. Surface roles share this ground; depth stays neutral. */
+  --bg-bone: #F9F8F3;
+  --bg-canvas: var(--bg-bone);
+  --bg-tint: var(--bg-bone);
+  --bg-cream: #F1F0EB;
+  --dv-track: var(--bg-cream);
 }
 
 @theme {
@@ -186,7 +186,8 @@
   --color-slate-muted: var(--brand-slate);
   --color-mist-bg: var(--bg-tint);
   --color-cream-card: var(--bg-cream);
-  --color-surface: var(--color-white);
+  --color-bone: var(--bg-bone);
+  --color-surface: var(--bg-bone);
   --color-slate: var(--brand-slate);
   --color-slate-ink: #4e5a6e;
   --color-destructive-on-light: #c92a2a;
@@ -198,7 +199,8 @@
   --color-ink-muted: var(--color-slate-ink);
   --color-ink-soft: var(--brand-slate);
   --color-rule: color-mix(in oklab, var(--brand-slate) 20%, transparent);
-  --color-tint-orange: color-mix(in oklab, var(--brand-primary) 12%, transparent);
+  /* Orange remains on glyphs and controls; their pale beds stay bone white. */
+  --color-tint-orange: var(--bg-cream);
   --color-tint-teal: color-mix(in oklab, var(--brand-teal-ink) 12%, transparent);
 
   /* Type */
@@ -257,11 +259,11 @@
  * Every value below is measured against the surface it lands on; the pairs
  * are in docs/WAVE412_REPORT.md. */
 :root {
-  --background: #ffffff;
+  --background: var(--bg-bone);
   --foreground: var(--brand-ink); /* 11.89:1 on white */
-  --card: #ffffff;
+  --card: var(--bg-bone);
   --card-foreground: var(--brand-ink);
-  --popover: #ffffff;
+  --popover: var(--bg-bone);
   --popover-foreground: var(--brand-ink);
   /* WAVE 412: follows --color-orange-600, not 500. On the dark site the
      primary fill was 500 with NAVY ink on it, because white on 500 is only
@@ -1480,13 +1482,13 @@ canvas[data-map="in"] {
 .group:hover .icon-tone-orange,
 .group:focus-visible .icon-tone-orange,
 .group:focus-within .icon-tone-orange {
-  background-color: color-mix(in oklab, var(--color-orange-500) 18%, transparent);
+  background-color: var(--bg-cream);
 }
 
 .group:hover .role-plate,
 .group:focus-visible .role-plate,
 .group:focus-within .role-plate {
-  background-color: color-mix(in oklab, var(--color-orange-500) 18%, transparent);
+  background-color: var(--bg-cream);
 }
 
 .role-plate {
@@ -1795,89 +1797,8 @@ canvas[data-map="in"] {
    and rule 5 of wave 412 is that a photograph on a light ground carries no
    scrim at all. Removed rather than inverted. */
 
-/* ---------------------------------------------------------------------------
- * THE HERO'S WARM GROUND
- *
- * The street behind the hero, at the strength Callum asked for on 19 Sep 2026
- * and warmed through the brand orange rather than left neutral:
- *
- *   "Can you add the faded hero image to the background of the hero section
- *    on the site, and instead of making it navy faded maybe make it faded
- *    through orange a little, but still keep the background itself white."
- *
- * Three layers, bottom to top: the photograph at .hero-ground-photo's
- * opacity, a WHITE scrim that keeps it off the type, and a low-alpha ORANGE
- * wash that warms what is left. The page under all three is still
- * `bg-page`, so the ground is white where nothing else reaches it.
- *
- * ── WHY THE WASH AND NOT A FILTER ────────────────────────────────────────
- *
- * The brief allowed either, and asked for the warmer ground at the lower
- * dark-pixel cost. Both were measured on the built page at 1280, 768 and 390
- * by docs/wave421/tune.py, which reads the mean of the hero's OWN ground
- * pixels off a screenshot with the three photographs and every glyph
- * excluded, and reports how much redder than bluer that mean is. Flat white
- * is 0. The site's cream is +17.
- *
- *   photograph at 0.18, sepia(0.72) hue-rotate(-12deg) saturate(1.35)
- *     mean (249.5, 248.7, 247.8)   warmth +1.7   raw 23.64%   ground 9.16%
- *   photograph at 0.18, orange wash over a lighter white scrim
- *     mean (247.4, 244.0, 242.3)   warmth +5.1   raw 23.64%   ground 9.16%
- *
- * THE WASH IS THREE TIMES THE WARMTH AT THE SAME DARK COST, to the hundredth
- * of a point at every width, and the reason is that a filter can only warm
- * the pixels the photograph actually paints. At a fifth of its own strength
- * the photograph paints almost nothing, so sepia had almost nothing to act
- * on; the wash warms the whole plane. The filter is not here.
- *
- * ── WHY 0.20 AND NOT 0.14 OR 0.24 ────────────────────────────────────────
- *
- * Chosen by looking at the rendered shot at 1280, 768 and 390, which is the
- * only way this number can be chosen: the warmth figures above move by four
- * tenths of a unit across the whole 0.14 to 0.24 range, because the wash
- * dominates the mean, so the mean cannot decide it. The shots can.
- *
- *   0.14  the ground is warm and the street is not in it. This is the fault
- *         Callum reported, in a warmer colour.
- *   0.16  the street is findable at 390 and not at 1280.
- *   0.20  the brick courses and window heads read as texture at 390, where
- *         the ground is most exposed, and as a haze at 1280, where the three
- *         photographs cover the middle of it. CHOSEN.
- *   0.24  it starts to read as a photograph behind the role tiles and
- *         competes with the three the hero exists to show.
- *
- * ── WHAT IT COSTS, MEASURED ──────────────────────────────────────────────
- *
- * Nothing that the instrument can separate from its own noise, and these are
- * the SHIPPED build's figures rather than the tuning harness's. Three runs of
- * `scripts/wave412-screenshots.py` at this head read a raw dark-pixel share of
- * 23.55%, 23.52% and 23.52% at 1280 and 16.57%, 16.58%, 16.57% at 390; the
- * base `e07b7f4`, read by the same script, gives 23.53% and 23.57% at 1280 and
- * 16.58% at 390. The page-ground share is 9.02% at its worst ACROSS THESE
- * THREE READINGS against 8.99% and 9.04% at the base, and it answers to a
- * flat 15% with no ratchet. A wider sample of seven readings, taken for the
- * ratchet and recorded at `RAW_CEILING` in scripts/wave412-screenshots.py,
- * has a worst of 9.20%; every figure here names the sample it came from
- * (421b, rel421 MINOR 2).
- *
- * It costs nothing because EVERY PIXEL THIS ADDS IS A LIGHT PIXEL: a 20%
- * photograph under a 62% white scrim cannot cross the 0.2 relative luminance
- * the wave 412 gate counts as dark. See section 3 of docs/WAVE421_REPORT.md.
- *
- * ⚠ THE TWO TABLES IN THE COMMENT ABOVE ARE THE TUNING HARNESS'S, taken with
- * `docs/wave421/tune.py` at a photograph opacity of 0.18 and `sizes="100vw"`.
- * They are kept because they are the comparison that CHOSE the wash over the
- * filter, and both candidates were measured the same way on the same build.
- * They are not readings of what shipped; the paragraph above is.
- *
- * ⚠ THE TYPE OVER THIS IS MEASURED OFF THE PIXELS, NOT OFF THE TABLE IN
- * CLAUDE.md. Nothing here sits on flat white any more, so no row of that
- * table describes it. `scripts/wave421-hero-and-footer.py` composites each
- * glyph's own colour onto the modal ground inside its own box and asserts the
- * floor its size and weight answer to, and it reads the WORST ground pixel in
- * the box as well as the modal one. Re-run it rather than reasoning about it
- * if any number in this block moves.
- * ------------------------------------------------------------------------- */
+/* The supplied street photograph remains visible behind a bone-white scrim.
+   The former orange wash is removed so the hero shares the reference surface. */
 .hero-ground-photo {
   opacity: 0.2;
 }
@@ -1909,12 +1830,6 @@ canvas[data-map="in"] {
 
 .hero-ground {
   background-image:
-    linear-gradient(
-      to bottom,
-      color-mix(in oklab, var(--color-tint-orange) 23%, transparent) 0%,
-      color-mix(in oklab, var(--color-tint-orange) 50%, transparent) 38%,
-      color-mix(in oklab, var(--color-tint-orange) 30%, transparent) 100%
-    ),
     linear-gradient(
       to bottom,
       color-mix(in oklab, var(--color-page) 82%, transparent) 0%,

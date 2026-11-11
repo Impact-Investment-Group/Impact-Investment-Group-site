@@ -1,17 +1,14 @@
 .charity-home {
   scroll-margin-top: 140px;
-  background: linear-gradient(135deg,
-    color-mix(in oklab, var(--color-orange-600) 5%, var(--color-page)) 0%,
-    var(--color-page-alt) 62%,
-    color-mix(in oklab, var(--color-orange-600) 3%, var(--color-page)) 100%);
+  background: var(--color-page);
 }
 .charity-home-story {
   animation: charity-story-arrive 220ms ease-out both;
 }
 .charity-home-logo-halo {
   background: radial-gradient(ellipse,
-    color-mix(in oklab, var(--color-orange-600) 9%, var(--color-page)) 0%,
-    color-mix(in oklab, var(--color-orange-600) 4%, var(--color-page)) 48%,
+    var(--color-cream-card) 0%,
+    var(--color-page) 48%,
     transparent 72%);
 }
 .charity-home-logo-cutout {
@@ -195,7 +192,7 @@
 }
 .charity-impact__choices button[aria-pressed="true"] {
   border-color: var(--color-orange-600);
-  background: color-mix(in srgb, var(--color-orange-600) 7%, var(--color-white));
+  background: var(--color-cream-card);
   box-shadow: 0 3px 0 var(--color-orange-600);
 }
 .charity-impact__choices button:hover {

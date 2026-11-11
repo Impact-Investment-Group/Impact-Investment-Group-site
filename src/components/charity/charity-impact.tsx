@@ -74,7 +74,7 @@ function BouncyCharityLogo() {
   return <div ref={stage} data-charity-logo className="relative mx-auto flex h-52 w-64 items-center justify-center sm:h-64 sm:w-80">
     <span aria-hidden="true" className="charity-home-logo-halo absolute inset-0 rounded-full" />
     <svg aria-hidden="true" viewBox="0 0 320 256" className="pointer-events-none absolute inset-0 size-full" fill="none">
-      <path d="M57 146C40 102 70 56 113 39C158 22 198 31 238 61C273 88 277 137 255 175C234 211 190 232 144 221C101 211 72 187 57 146Z" className="fill-orange-600/[.055]" />
+      <path d="M57 146C40 102 70 56 113 39C158 22 198 31 238 61C273 88 277 137 255 175C234 211 190 232 144 221C101 211 72 187 57 146Z" className="fill-cream-card" />
       <path d="M79 123C80 76 117 49 164 51C211 53 247 86 245 133C242 178 213 208 166 206C115 204 77 172 79 123Z" className="fill-page/65" />
       <path d="M77 191C100 219 129 230 161 227M227 43C248 54 263 71 271 91" className="stroke-orange-600/15" strokeWidth="1.5" strokeLinecap="round" />
       <g className="stroke-orange-600/30" strokeWidth="2.5" strokeLinecap="round">
@@ -110,7 +110,7 @@ export function CharityImpact({ variant = "default" }: { variant?: "default" | "
               {charity.work.map((item, index) => {
                 const Icon = icons[index] ?? HeartHandshake;
                 return <button key={item.id} type="button" aria-pressed={active === index} aria-controls="charity-work-detail" onClick={() => setActive(index)}
-                  className={"group relative flex min-h-16 w-full items-center gap-4 border-b border-orange-600/15 px-3 py-3 text-left text-base font-semibold transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 " + (active === index ? "bg-orange-600/[.06] text-ink" : "text-ink-muted hover:bg-orange-600/[.03] hover:text-ink")}>
+                  className={"group relative flex min-h-16 w-full items-center gap-4 border-b border-orange-600/15 px-3 py-3 text-left text-base font-semibold transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 " + (active === index ? "bg-cream-card text-ink" : "text-ink-muted hover:bg-cream-card/60 hover:text-ink")}>
                   <span aria-hidden="true" className={"absolute inset-y-3 left-0 w-0.5 origin-center bg-orange-600 transition-transform duration-200 ease-out motion-reduce:transition-none " + (active === index ? "scale-y-100" : "scale-y-0")} />
                   <Icon className="size-5 shrink-0 text-orange-700" strokeWidth={1.6} aria-hidden="true" />
                   <span className="flex-1">{item.label}</span>

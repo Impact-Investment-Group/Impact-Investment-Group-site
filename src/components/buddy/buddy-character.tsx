@@ -13,12 +13,14 @@ export interface BuddyCharacterProps {
   animated?: boolean;
   /** Continue the supplied calm breathing and blink after a bounded gesture. */
   continuousIdle?: boolean;
+  /** Launcher only: alternate short supplied gestures with breathing pauses. */
+  playfulIdle?: boolean;
   /** An intentional repeat of the same gesture, for example a fresh greeting. */
   replayKey?: string | number;
   className?: string;
 }
 
-type Options = Required<Pick<BuddyCharacterProps, "form" | "action" | "expression" | "animated" | "continuousIdle">>;
+type Options = Required<Pick<BuddyCharacterProps, "form" | "action" | "expression" | "animated" | "continuousIdle" | "playfulIdle">>;
 type Engine = typeof import("./buddy-engine.js");
 type FormChange = { from: number; to: number; elapsed: number; action: number };
 
@@ -38,6 +40,18 @@ const blendSeconds = 0.45;
 const gestureSeconds: Record<BuddyAction, number> = {
   idle: 0, wave: 2.2, listen: 4.5, think: 4.5, talk: 3.2, explain: 3.2, reassure: 2.8, approve: 1.8,
 };
+// The supplied v2 rig's Idle, Celebrate, Nod, Wave and Thank you poses.
+// Each gesture is brief; pauses keep the invitation readable beside page content.
+const idleSequence = [
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 9, seconds: 2.4, expression: 6 },
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 8, seconds: 1.8, expression: 2 },
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 1, seconds: 2.2, expression: 2 },
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 21, seconds: 2.4, expression: 7 },
+] as const;
 export const BUDDY_FORM_CHANGE_MS = 2100;
 const transitionSeconds = BUDDY_FORM_CHANGE_MS / 1000;
 let atlasPromise: Promise<HTMLImageElement> | undefined;
@@ -65,12 +79,13 @@ export function BuddyCharacter({
   expression = "automatic",
   animated = false,
   continuousIdle = false,
+  playfulIdle = false,
   replayKey,
   className,
 }: BuddyCharacterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const optionsRef = useRef<Options>({ form, action, expression, animated, continuousIdle });
+  const optionsRef = useRef<Options>({ form, action, expression, animated, continuousIdle, playfulIdle });
   const updateRef = useRef<((options: Options, replay: boolean) => void) | null>(null);
   const replayRef = useRef(replayKey);
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
@@ -101,6 +116,7 @@ export function BuddyCharacter({
     let lastNow = 0;
     let resting = currentAction === 0;
     let completed = false;
+    let idleStep = -1;
 
     function stop() {
       if (frame !== undefined) window.cancelAnimationFrame(frame);
@@ -117,7 +133,7 @@ export function BuddyCharacter({
 
     function currentPose() {
       if (!engine) return undefined;
-      const next = engine.pose(currentForm, currentAction, elapsed, 0, currentExpression);
+      const next = engine.pose(currentForm, currentAction, elapsed, options.playfulIdle ? 1 : 0, currentExpression);
       return blendingFrom && blendElapsed < blendSeconds
         ? engine.blend(blendingFrom, next, engine.ease(blendElapsed / blendSeconds))
         : next;
@@ -162,6 +178,7 @@ export function BuddyCharacter({
       blendingFrom = undefined;
       blendElapsed = blendSeconds;
       change = undefined;
+      idleStep = -1;
       resting = currentAction === 0;
       completed = true;
       draw();
@@ -176,6 +193,14 @@ export function BuddyCharacter({
       gestureElapsed = 0;
       resting = nextAction === 0;
       completed = false;
+      idleStep = -1;
+    }
+
+    function advanceIdleStep(index: number) {
+      const next = index % idleSequence.length;
+      const step = idleSequence[next]!;
+      setAction(step.action, step.expression);
+      idleStep = next;
     }
 
     function beginFormChange(to: number) {
@@ -203,11 +228,14 @@ export function BuddyCharacter({
         gestureElapsed += delta;
         blendElapsed += delta;
         if (blendingFrom && blendElapsed >= blendSeconds) blendingFrom = undefined;
-        if (!resting && gestureElapsed >= gestureSeconds[options.action]) {
+        if (idleStep >= 0) {
+          if (gestureElapsed >= idleSequence[idleStep]!.seconds) advanceIdleStep(idleStep + 1);
+        } else if (!resting && gestureElapsed >= gestureSeconds[options.action]) {
           // Finish the gesture where it was drawn, then ease into a calm rest.
           setAction(0, restingExpression(), lastPose);
-        } else if (resting && !blendingFrom && !options.continuousIdle) {
-          completed = true;
+        } else if (resting && !blendingFrom) {
+          if (options.continuousIdle && options.playfulIdle) advanceIdleStep(0);
+          else if (!options.continuousIdle) completed = true;
         }
       }
       draw();
@@ -232,7 +260,8 @@ export function BuddyCharacter({
       if (!engine || !rig) return;
       if (!next.animated || reducedMotion.matches) { showStill(); return; }
       const formChanged = next.form !== previous.form;
-      const gestureChanged = next.action !== previous.action || next.expression !== previous.expression || replay;
+      const gestureChanged = next.action !== previous.action || next.expression !== previous.expression
+        || next.playfulIdle !== previous.playfulIdle || next.continuousIdle !== previous.continuousIdle || replay;
       if (formChanged) {
         const target = formIndices[next.form];
         if (change) {
@@ -312,12 +341,12 @@ export function BuddyCharacter({
   }, []);
 
   useEffect(() => {
-    const options = { form, action, expression, animated, continuousIdle };
+    const options = { form, action, expression, animated, continuousIdle, playfulIdle };
     const replay = replayRef.current !== replayKey;
     replayRef.current = replayKey;
     optionsRef.current = options;
     updateRef.current?.(options, replay);
-  }, [form, action, expression, animated, continuousIdle, replayKey]);
+  }, [form, action, expression, animated, continuousIdle, playfulIdle, replayKey]);
 
   return (
     <div ref={containerRef} aria-hidden="true" data-buddy-form={form} data-buddy-version="v2-refined" data-buddy-artwork="v2" data-buddy-status={status}

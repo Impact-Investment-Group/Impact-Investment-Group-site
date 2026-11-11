@@ -31,8 +31,8 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
       Buddy
     </button> : <div className="relative">
       <button ref={node => { trigger.current = node; setTrigger?.(node); }} type="button" data-buddy-launcher aria-label={buddyLauncherLabel} aria-haspopup="dialog" aria-busy={loading} disabled={loading} onClick={onOpen}
-        className="pointer-events-auto flex min-h-11 w-20 flex-col items-center rounded-2xl bg-transparent p-0 text-ink transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 motion-reduce:transform-none sm:w-[104px]">
-        <BuddyCharacter form={topic} action={loading ? "listen" : "wave"} expression="warm" animated continuousIdle className="w-full" />
+        className="pointer-events-auto flex min-h-11 w-28 flex-col items-center rounded-2xl bg-transparent p-0 text-ink transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 motion-reduce:transform-none sm:w-32 [@media(max-height:500px)]:w-24">
+        <BuddyCharacter form={topic} action={loading ? "listen" : "wave"} expression="warm" animated continuousIdle playfulIdle={!loading} className="w-full" />
         <span className="-mt-1 whitespace-nowrap rounded-full border border-rule bg-page/95 px-3 py-1 text-xs font-semibold leading-5 shadow-sm">{loading ? "Opening..." : buddyLauncherLabel}</span>
       </button>
       <button type="button" aria-label="Minimize Buddy" title="Minimize Buddy" onClick={() => { movedFocus.current = true; setMinimized(true); }}
