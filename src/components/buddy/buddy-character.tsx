@@ -38,7 +38,8 @@ const blendSeconds = 0.45;
 const gestureSeconds: Record<BuddyAction, number> = {
   idle: 0, wave: 2.2, listen: 4.5, think: 4.5, talk: 3.2, explain: 3.2, reassure: 2.8, approve: 1.8,
 };
-const transitionSeconds = 2.1;
+export const BUDDY_FORM_CHANGE_MS = 2100;
+const transitionSeconds = BUDDY_FORM_CHANGE_MS / 1000;
 let atlasPromise: Promise<HTMLImageElement> | undefined;
 
 function loadAtlas(): Promise<HTMLImageElement> {

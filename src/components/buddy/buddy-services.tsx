@@ -23,7 +23,7 @@ export function BuddyServices() {
         <div>
           <p className="text-sm font-semibold text-teal-600">Meet Buddy</p>
           <h2 id="buddy-services-heading" className="mt-2 font-heading text-3xl font-semibold leading-tight text-ink">A familiar face. Help when you need it.</h2>
-          <p className="mt-3 max-w-[64ch] leading-relaxed text-ink-muted">Buddy is our AI assistant for questions about our public services. One character, with a different form for each area of our work.</p>
+          <p className="mt-3 max-w-[64ch] leading-relaxed text-ink-muted">Buddy is our AI assistant for questions about our public services. One conversation: a key for property, a £ sign for investment and a heart for care and support. Buddy changes form as your conversation moves between them.</p>
           <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Explore Buddy's forms">
             {topics.map(({ id, label, icon: Icon }) => (
               <button key={id} type="button" aria-pressed={form === id} onClick={() => setForm(id)} className={cn("inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600", form === id ? "border-teal-600 bg-secondary text-teal-600" : "border-rule bg-page text-ink hover:border-teal-600")}>

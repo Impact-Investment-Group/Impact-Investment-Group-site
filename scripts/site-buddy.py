@@ -147,6 +147,8 @@ def chat_open(page):
     expect(page.locator("[data-buddy-widget]:visible")).to_have_count(0)
     expect(page.locator("[data-buddy-launcher]:visible")).to_have_count(0)
     expect(chat).to_have_attribute("data-buddy-readiness", "ready")
+    expect(chat.get_by_role("group", name="Conversation topic")).to_have_count(0)
+    expect(chat.get_by_role("log", name="Conversation with Buddy")).to_have_count(1)
     expect(chat.get_by_label("Your question for Buddy", exact=True)).to_be_focused()
     return chat
 
@@ -249,7 +251,7 @@ def floating_placement_and_minimise(page, fixtures):
     close = chat.get_by_role("button", name="Close Buddy", exact=True)
     close.focus()
     page.keyboard.press("Tab")
-    expect(chat.get_by_role("group", name="Conversation topic").get_by_role("button", name="Property", exact=True)).to_be_focused()
+    expect(chat.get_by_role("button", name="How does Impact Investment Group source and connect suitable properties?", exact=True)).to_be_focused()
     close.focus()
     page.keyboard.press("Shift+Tab")
     assert page.evaluate("""(() => {
@@ -326,7 +328,8 @@ def services_showcase_and_topics(page, fixtures):
     trigger.click()
     chat = page.locator("[data-buddy-chat]")
     expect(chat).to_have_attribute("data-buddy-readiness", "ready")
-    expect(chat.get_by_role("group", name="Conversation topic").get_by_role("button", name="Support", exact=True)).to_have_attribute("aria-pressed", "true")
+    expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", "support")
+    expect(chat.get_by_role("group", name="Conversation topic")).to_have_count(0)
     expect(page.locator("[data-buddy-widget]:visible")).to_have_count(0)
     assert not fixtures.requests, "The services showcase sent a question without a user action"
     page.keyboard.press("Escape")
@@ -361,44 +364,73 @@ def services_showcase_and_topics(page, fixtures):
 def real_fetch_contract(page, fixtures):
     visit(page)
     chat = chat_open(page)
-    topics = chat.get_by_role("group", name="Conversation topic")
-    topics.get_by_role("button", name="Investment", exact=True).click()
+    character = chat.locator('[data-buddy-form]')
+    canvas = assert_canvas_artwork(character)
+    expect(character).to_have_attribute('data-buddy-form', 'property')
+    page.evaluate("window.__chatBuddyCanvas = document.querySelector('[data-buddy-chat] canvas')")
+    first_pixels = canvas.evaluate("n => n.toDataURL()")
+    first_box = character.bounding_box()
     fixtures.queue.append({"pending": True})
     first_question = "What does the sourcing service include?"
-    send(chat, first_question)
+    chat.get_by_label("Your question for Buddy", exact=True).fill(first_question)
+    expect(chat).to_have_attribute('data-buddy-activity', 'listen')
+    chat.get_by_role("button", name="Send", exact=True).click()
+    expect(chat).to_have_attribute('data-buddy-activity', 'think')
     expect(chat.get_by_role("status")).to_contain_text("Buddy is thinking")
     expect(chat.locator('[data-buddy-turn="user"]')).to_have_count(1)
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(0)
     expect(chat.get_by_role("button", name="Send", exact=True)).to_be_disabled()
-    expect(topics.get_by_role("button", name="Property", exact=True)).to_be_disabled()
     first_pending = take_pending_reply(page, fixtures)
-    assert fixtures.requests == [{"message": first_question, "history": [], "topic": "investment"}], fixtures.requests
+    assert fixtures.requests == [{"message": first_question, "history": [], "topic": "property"}], fixtures.requests
     first_reply = "Fixture answer: a sourcing service has an agreed scope."
-    fixtures.fulfill(first_pending, {"body": {"used_ai": True, "reply": first_reply, "sources": [
+    fixtures.fulfill(first_pending, {"body": {"used_ai": True, "reply": first_reply, "topic": "investment", "sources": [
         {"title": "Our pricing", "url": "https://www.impactinvestmentgroup.co.uk/pricing"},
         {"title": "Untrusted", "url": "https://untrusted.example/offer"},
         {"title": "Unsafe", "url": "javascript:alert(1)"},
     ]}})
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text(first_reply)
+    expect(character).to_have_attribute('data-buddy-form', 'investment')
+    expect(chat).to_have_attribute('data-buddy-activity', 'talk')
     expect(chat.get_by_role("link", name="Our pricing", exact=True)).to_have_attribute("href", "https://www.impactinvestmentgroup.co.uk/pricing")
     expect(chat.get_by_role("link", name="Untrusted", exact=True)).to_have_count(0)
     expect(chat.get_by_role("link", name="Unsafe", exact=True)).to_have_count(0)
     expect(chat.get_by_role("status")).to_have_count(0)
+    # The 2.1-second morph completes before the accepted answer's speaking
+    # gesture settles. Talk must still be active after the new form arrives.
+    page.wait_for_timeout(2400)
+    expect(chat).to_have_attribute('data-buddy-activity', 'talk')
+    expect(chat).to_have_attribute('data-buddy-activity', 'idle', timeout=5000)
+    page.wait_for_timeout(600)
+    assert canvas.evaluate("n => n.toDataURL()") != first_pixels, "Accepted conversation topic did not change Buddy's artwork"
+    assert page.evaluate("window.__chatBuddyCanvas === document.querySelector('[data-buddy-chat] canvas')"), "Topic inference replaced Buddy's canvas"
+    assert abs(character.bounding_box()['height'] - first_box['height']) < 1, "Inferred form changed the reserved character stage"
     second_reply = 'Fixture follow-up: <img src=x onerror="alert(1)"> is plain text.'
-    fixtures.answer(second_reply)
-    send(chat, "How is the fee calculated?")
+    fixtures.answer(second_reply, topic='support')
+    send(chat, "How does care and support connect to this?")
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(2)
     expect(chat.locator('[data-buddy-turn="assistant"]').last).to_contain_text(second_reply)
     expect(chat.locator('[data-buddy-turn="assistant"] img')).to_have_count(0)
-    assert fixtures.requests[-1] == {"message": "How is the fee calculated?", "topic": "investment", "history": [
+    expect(character).to_have_attribute('data-buddy-form', 'support')
+    assert fixtures.requests[-1] == {"message": "How does care and support connect to this?", "topic": "investment", "history": [
         {"role": "user", "content": first_question}, {"role": "assistant", "content": first_reply},
     ]}, fixtures.requests[-1]
+    third_reply = 'Fixture answer returning to suitable homes.'
+    fixtures.answer(third_reply, topic='property')
+    send(chat, "And how do you find the right property?")
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(3)
+    expect(character).to_have_attribute('data-buddy-form', 'property')
+    assert fixtures.requests[-1]['topic'] == 'support', fixtures.requests[-1]
+    assert fixtures.requests[-1]['history'] == [
+        {"role": "user", "content": first_question}, {"role": "assistant", "content": first_reply},
+        {"role": "user", "content": "How does care and support connect to this?"}, {"role": "assistant", "content": second_reply},
+    ], "The automatic form change lost earlier conversation turns"
+    assert page.evaluate("window.__chatBuddyCanvas === document.querySelector('[data-buddy-chat] canvas')"), "Rapid accepted topic changes replaced Buddy's canvas"
     assert page.evaluate("window.__buddyFetchOptions.every(o => o.credentials === 'omit' && o.hasSignal)"), "Public chat sent ambient credentials or omitted cancellation"
     # Keep enough real exchanges to exercise the six-turn request limit.
     for index in range(4):
         fixtures.answer(f"Fixture additional answer {index}.")
         send(chat, f"Explain public service step {index}.")
-        expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(index + 3)
+        expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(index + 4)
     assert len(fixtures.requests[-1]["history"]) == 6, fixtures.requests[-1]
     assert fixtures.requests[-1]["history"][0]["content"] == "Explain public service step 0."
     chat.get_by_role("button", name="New conversation", exact=True).click()
@@ -412,8 +444,29 @@ def real_fetch_contract(page, fixtures):
     chat.screenshot(path=str(OUT / f"chat-{page.viewport_size['width']}.png"), animations="disabled")
 
 
-def retry_and_refusal(page, fixtures):
+def invalid_response_topics(page, fixtures):
     visit(page)
+    chat = chat_open(page)
+    character = chat.locator('[data-buddy-form]')
+    fixtures.answer('Fixture accepted support answer.', topic='support')
+    send(chat, 'Explain care and support.')
+    expect(character).to_have_attribute('data-buddy-form', 'support')
+    for index, extra in enumerate([{}, {'topic': None}, {'topic': 'unknown'}, {'topic': 'Investment'}, {'topic': 1}, {'topic': ['property']}, {'topic': {'id': 'investment'}}]):
+        reply = f'Fixture valid answer with invalid or missing topic {index}.'
+        fixtures.answer(reply, **extra)
+        send(chat, f'Please explain the next point {index}.')
+        expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(index + 2)
+        expect(chat.locator('[data-buddy-turn="assistant"]').last).to_contain_text(reply)
+        expect(character).to_have_attribute('data-buddy-form', 'support')
+        expect(chat.get_by_role('alert')).to_have_count(0)
+        assert fixtures.requests[-1]['topic'] == 'support', 'An invalid response topic replaced the previous valid form'
+        assert fixtures.requests[-1]['history'], 'An invalid topic cleared conversation history'
+    expect(chat.get_by_role('log', name='Conversation with Buddy')).to_have_count(1)
+    no_overflow(page)
+
+
+def retry_and_refusal(page, fixtures):
+    visit(page, "/platform/")
     chat = chat_open(page)
     fixtures.queue.append({"status": 503, "body": {"detail": "fixture unavailable"}})
     send(chat, "Explain the property process.")
@@ -435,38 +488,64 @@ def retry_and_refusal(page, fixtures):
         {"used_ai": True, "reply": "x" * 3001},
     ]:
         chat.get_by_role("button", name="New conversation", exact=True).click()
-        fixtures.queue.append({"body": invalid})
+        previous_form = chat.locator("[data-buddy-form]").get_attribute("data-buddy-form")
+        fixtures.queue.append({"body": {**invalid, "topic": "support"}})
         send(chat, "Explain the partner network.")
         expect(chat.get_by_role("alert")).to_contain_text("couldn't get an AI answer")
         expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(0)
         expect(chat.get_by_role("link", name="Contact our team", exact=True)).to_have_attribute("href", "/contact")
+        expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", previous_form)
     chat.get_by_role("button", name="New conversation", exact=True).click()
     fixtures.queue.append({"status": 429, "body": {"detail": "fixture limit"}})
     send(chat, "Explain supported housing.")
     expect(chat.get_by_role("alert")).to_contain_text("Buddy is busy")
 
-    # A retry belongs to its original question and topic. Switching to Costs
-    # must clear that affordance rather than resend a failed Property question.
+    # Services can reopen the same failed conversation without replacing the
+    # pending retry payload, changing its form or submitting another question.
     chat.get_by_role("button", name="New conversation", exact=True).click()
     fixtures.queue.append({"status": 503, "body": {"detail": "fixture property failure"}})
-    send(chat, "A property question that must not be retried under Costs.")
+    send(chat, "A property question to retry after browsing Services.")
     expect(chat.get_by_role("alert")).to_contain_text("couldn't get an AI answer")
     expect(chat.get_by_role("button", name="Try again", exact=True)).to_be_visible()
-    assert fixtures.requests[-1]["topic"] == "property"
-    before_switch = len(fixtures.requests)
-    costs = chat.get_by_role("group", name="Conversation topic").get_by_role("button", name="Investment", exact=True)
-    costs.click()
-    expect(costs).to_have_attribute("aria-pressed", "true")
-    expect(chat.get_by_role("alert")).to_have_count(0)
-    expect(chat.get_by_role("button", name="Try again", exact=True)).to_have_count(0)
-    page.wait_for_timeout(150)
-    assert len(fixtures.requests) == before_switch, "Changing topic reposted the failed Property question"
-    fixtures.answer("Fixture answer to the new Costs question.")
-    send(chat, "Where can I find the service fees?")
-    expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text("Fixture answer to the new Costs question.")
-    assert len(fixtures.requests) == before_switch + 1
-    assert fixtures.requests[-1]["topic"] == "investment"
-    assert fixtures.requests[-1]["message"] == "Where can I find the service fees?"
+    original_retry = fixtures.requests[-1]
+    before_open = len(fixtures.requests)
+    status_count = len(fixtures.status_requests)
+    chat.get_by_role('link', name='Contact our team', exact=True).click()
+    expect(page).to_have_url(re.compile(r'/contact/?$'))
+    expect(chat).to_be_visible()
+    expect(chat.get_by_role('button', name='Try again', exact=True)).to_be_visible()
+    expect(chat.locator('[data-buddy-turn="user"]')).to_have_count(1)
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(0)
+    assert len(fixtures.requests) == before_open, 'An internal error link reposted the failed question'
+    assert len(fixtures.status_requests) == status_count, 'An internal error link replaced the conversation'
+    page.locator('footer').get_by_role('link', name='Our Services', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(page).to_have_url(re.compile(r'/platform/?$'))
+    expect(chat.get_by_role('button', name='Try again', exact=True)).to_be_visible()
+    showcase = page.locator('[data-buddy-showcase]')
+    showcase.get_by_role('button', name='Care & support', exact=True).focus()
+    page.keyboard.press('Enter')
+    showcase.get_by_role('button', name='Open Buddy', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(chat.get_by_role('button', name='Try again', exact=True)).to_be_visible()
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'property')
+    assert len(fixtures.requests) == before_open, 'Opening Services reposted the failed question'
+    assert len(fixtures.status_requests) == status_count, 'Opening an existing failed chat restarted readiness'
+    fixtures.answer('Fixture retry answer after opening Services.', topic='investment')
+    chat.get_by_role('button', name='Try again', exact=True).click()
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
+    expect(chat.locator('[data-buddy-turn="user"]')).to_have_count(1)
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'investment')
+    assert fixtures.requests[-1] == original_retry, 'Reopening changed the question or duplicated retry history'
+    fixtures.answer('Fixture answer to the next care question.', topic='support')
+    send(chat, 'How does care connect with the property service?')
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(2)
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'support')
+    assert fixtures.requests[-1]['topic'] == 'investment'
+    assert fixtures.requests[-1]['history'] == [
+        {'role': 'user', 'content': original_retry['message']},
+        {'role': 'assistant', 'content': 'Fixture retry answer after opening Services.'},
+    ], 'A successful retry did not join the continuous conversation'
     no_overflow(page)
 
 
@@ -481,13 +560,14 @@ def cancellation_and_focus(page, fixtures):
     chat.get_by_role("button", name="Cancel request", exact=True).click()
     expect(chat.get_by_role("alert")).to_contain_text("Request cancelled")
     expect(chat.get_by_role("status")).to_have_count(0)
-    fixtures.answer("Fixture current answer.")
+    fixtures.answer("Fixture current answer.", topic="support")
     send(chat, "Second question after cancellation.")
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
-    fixtures.fulfill(late, {"body": {"used_ai": True, "reply": "Late cancelled answer must never appear."}})
+    fixtures.fulfill(late, {"body": {"used_ai": True, "reply": "Late cancelled answer must never appear.", "topic": "investment"}})
     page.wait_for_timeout(150)
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
     expect(chat).not_to_contain_text("Late cancelled answer")
+    expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", "support")
     fixtures.queue.append({"pending": True})
     send(chat, "Another pending question.")
     expect(chat.get_by_role("status")).to_be_visible()
@@ -495,11 +575,12 @@ def cancellation_and_focus(page, fixtures):
     page.keyboard.press("Escape")
     expect(chat).to_have_count(0)
     expect(page.locator("[data-buddy-launcher]")).to_be_focused()
-    fixtures.fulfill(late_close, {"body": {"used_ai": True, "reply": "Closed dialog answer must never appear."}})
+    fixtures.fulfill(late_close, {"body": {"used_ai": True, "reply": "Closed dialog answer must never appear.", "topic": "property"}})
     page.wait_for_timeout(150)
     chat = chat_open(page)
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
     expect(chat).not_to_contain_text("Closed dialog answer")
+    expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", "support")
     no_overflow(page)
 
 
@@ -519,74 +600,97 @@ def take_pending_reply(page, fixtures):
     raise AssertionError("The model request never reached its fixture")
 
 
-def nonmodal_navigation_and_topic_change(page, fixtures):
+def nonmodal_continuous_conversation(page, fixtures):
     visit(page, "/platform/")
-    page.evaluate("window.__buddyIgnoreAbort = true")
     chat = chat_open(page)
-    topics = chat.get_by_role("group", name="Conversation topic")
+    character = chat.locator('[data-buddy-form]')
     fixtures.queue.append({"pending": True})
-    send(chat, "Explain property sourcing while I browse the site.")
+    first_question = 'Explain property sourcing while I browse the site.'
+    send(chat, first_question)
     first_pending = take_pending_reply(page, fixtures)
     status_count = len(fixtures.status_requests)
 
-    # Reopening the existing topic from a real Services button is harmless.
-    page.locator("[data-buddy-showcase]").get_by_role("button", name="Open Buddy", exact=True).focus()
-    page.keyboard.press("Enter")
-    expect(chat.get_by_role("status")).to_contain_text("thinking")
-    expect(chat).to_have_attribute("data-buddy-readiness", "ready")
-    assert len(fixtures.status_requests) == status_count, "Same-topic opening restarted readiness during a reply"
-    assert page.evaluate("window.__buddyRequestAborted") == 0, "Same-topic opening cancelled the visitor's question"
+    # Reopening from Services must not restart or abort the active answer.
+    page.locator('[data-buddy-showcase]').get_by_role('button', name='Open Buddy', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(chat).to_have_attribute('data-buddy-activity', 'think')
+    expect(chat).to_have_attribute('data-buddy-readiness', 'ready')
+    assert len(fixtures.status_requests) == status_count, 'Reopening restarted readiness during a reply'
+    assert page.evaluate('window.__buddyRequestAborted') == 0, 'Reopening cancelled the visitor question'
 
-    # Follow the site's actual client-side navigation without remounting chat.
-    page.locator("footer").get_by_role("link", name="Pricing", exact=True).focus()
-    page.keyboard.press("Enter")
-    expect(page).to_have_url(re.compile(r"/pricing/?$"))
+    # The real client-side navigation keeps both the form and pending request.
+    page.locator('footer').get_by_role('link', name='Pricing', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(page).to_have_url(re.compile(r'/pricing/?$'))
     expect(chat).to_be_visible()
-    expect(topics.get_by_role("button", name="Property", exact=True)).to_have_attribute("aria-pressed", "true")
-    expect(chat.get_by_role("status")).to_contain_text("thinking")
-    assert len(fixtures.requests) == 1 and fixtures.requests[0]["topic"] == "property"
-    assert len(fixtures.status_requests) == status_count, "Browsing another page restarted the active conversation"
-    assert page.evaluate("window.__buddyRequestAborted") == 0, "Passive navigation cancelled the question"
-    fixtures.fulfill(first_pending, {"body": {"used_ai": True, "reply": "Fixture property answer preserved across navigation."}})
-    expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text("Fixture property answer preserved across navigation.")
-    expect(topics.get_by_role("button", name="Property", exact=True)).to_have_attribute("aria-pressed", "true")
+    expect(character).to_have_attribute('data-buddy-form', 'property')
+    expect(chat).to_have_attribute('data-buddy-activity', 'think')
+    assert len(fixtures.requests) == 1 and fixtures.requests[0]['topic'] == 'property'
+    assert len(fixtures.status_requests) == status_count, 'Navigation restarted the conversation'
+    assert page.evaluate('window.__buddyRequestAborted') == 0, 'Navigation cancelled the question'
+    first_reply = 'Fixture investment answer preserved across navigation.'
+    fixtures.fulfill(first_pending, {'body': {'used_ai': True, 'reply': first_reply, 'topic': 'investment'}})
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text(first_reply)
+    expect(character).to_have_attribute('data-buddy-form', 'investment')
 
-    fixtures.queue.append({"pending": True})
-    send(chat, "Another property question to supersede explicitly.")
-    superseded = take_pending_reply(page, fixtures)
-    page.locator("footer").get_by_role("link", name="Our Services", exact=True).focus()
-    page.keyboard.press("Enter")
-    expect(page).to_have_url(re.compile(r"/platform/?$"))
-    showcase = page.locator("[data-buddy-showcase]")
-    showcase.get_by_role("button", name="Care & support", exact=True).focus()
-    page.keyboard.press("Enter")
-    fixtures.status_queue.append({"pending": True})
-    showcase.get_by_role("button", name="Open Buddy", exact=True).focus()
-    page.keyboard.press("Enter")
-    expect(chat).to_have_attribute("data-buddy-readiness", "loading")
-    expect(topics.get_by_role("button", name="Support", exact=True)).to_have_attribute("aria-pressed", "true")
-    expect(chat.locator("#buddy-question")).to_be_disabled()
-    assert page.evaluate("window.__buddyRequestAborted") == 1, "Explicit topic change did not cancel the previous question"
-    assert len(fixtures.requests) == 2, "Changing topic submitted a question automatically"
-    fixtures.fulfill(take_pending_status(page, fixtures), {"body": {"configured": True}})
-    expect(chat).to_have_attribute("data-buddy-readiness", "ready")
-    expect(chat.get_by_role("alert")).to_contain_text("Request cancelled")
-    expect(chat.get_by_role("button", name="Try again", exact=True)).to_have_count(0)
-
-    fixtures.queue.append({"pending": True})
-    send(chat, "Explain care and support partnerships instead.")
-    current_pending = take_pending_reply(page, fixtures)
-    assert fixtures.requests[-1]["topic"] == "support"
-    fixtures.fulfill(superseded, {"body": {"used_ai": True, "reply": "Superseded property answer must never appear."}})
-    page.wait_for_timeout(150)
-    expect(chat).not_to_contain_text("Superseded property answer")
-    expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
-    expect(chat.get_by_role("status")).to_contain_text("thinking")
-    expect(chat.get_by_role("button", name="Send", exact=True)).to_be_disabled()
-    fixtures.fulfill(current_pending, {"body": {"used_ai": True, "reply": "Fixture current support answer."}})
+    fixtures.queue.append({'pending': True})
+    second_question = 'How do care and support connect to this?'
+    send(chat, second_question)
+    second_pending = take_pending_reply(page, fixtures)
+    page.locator('footer').get_by_role('link', name='Our Services', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(page).to_have_url(re.compile(r'/platform/?$'))
+    showcase = page.locator('[data-buddy-showcase]')
+    showcase.get_by_role('button', name='Care & support', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(showcase.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'support')
+    showcase.get_by_role('button', name='Open Buddy', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(chat).to_have_attribute('data-buddy-readiness', 'ready')
+    expect(chat).to_have_attribute('data-buddy-activity', 'think')
+    expect(character).to_have_attribute('data-buddy-form', 'investment')
+    expect(chat.get_by_role('button', name='Send', exact=True)).to_be_disabled()
+    assert page.evaluate('window.__buddyRequestAborted') == 0, 'Services changed context and cancelled a pending answer'
+    assert len(fixtures.requests) == 2, 'Services opening submitted an automatic question'
+    assert len(fixtures.status_requests) == status_count, 'Services context restarted readiness'
+    assert fixtures.requests[-1] == {'message': second_question, 'topic': 'investment', 'history': [
+        {'role': 'user', 'content': first_question}, {'role': 'assistant', 'content': first_reply},
+    ]}
+    second_reply = 'Fixture support answer continuing the same conversation.'
+    fixtures.fulfill(second_pending, {'body': {'used_ai': True, 'reply': second_reply, 'topic': 'support'}})
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(2)
-    expect(chat.locator('[data-buddy-turn="assistant"]').last).to_contain_text("Fixture current support answer.")
-    expect(topics.get_by_role("button", name="Support", exact=True)).to_have_attribute("aria-pressed", "true")
+    expect(character).to_have_attribute('data-buddy-form', 'support')
+    expect(chat.get_by_role('alert')).to_have_count(0)
+
+    # A different showcase form cannot overwrite the established conversation,
+    # whether the panel is already open or later reopened with a retained draft.
+    showcase.get_by_role('button', name='Costs', exact=True).focus()
+    page.keyboard.press('Enter')
+    trigger = showcase.get_by_role('button', name='Open Buddy', exact=True)
+    trigger.focus()
+    page.keyboard.press('Enter')
+    expect(character).to_have_attribute('data-buddy-form', 'support')
+    assert len(fixtures.requests) == 2 and len(fixtures.status_requests) == status_count
+    draft = 'And which property partners are involved?'
+    chat.get_by_label('Your question for Buddy', exact=True).fill(draft)
+    page.keyboard.press('Escape')
+    expect(chat).to_have_count(0)
+    expect(trigger).to_be_focused()
+    trigger.click()
+    expect(chat).to_have_attribute('data-buddy-readiness', 'ready')
+    expect(character).to_have_attribute('data-buddy-form', 'support')
+    expect(chat.locator('[data-buddy-turn]')).to_have_count(4)
+    expect(chat.get_by_label('Your question for Buddy', exact=True)).to_have_value(draft)
+    assert len(fixtures.requests) == 2, 'Reopening sent the retained draft automatically'
+    assert len(fixtures.status_requests) == status_count + 1, 'Reopening should check availability once'
+    fixtures.answer('Fixture property answer after reopening.', topic='property')
+    chat.get_by_role('button', name='Send', exact=True).click()
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(3)
+    expect(character).to_have_attribute('data-buddy-form', 'property')
+    assert fixtures.requests[-1] == {'message': draft, 'topic': 'support', 'history': [
+        {'role': 'user', 'content': first_question}, {'role': 'assistant', 'content': first_reply},
+        {'role': 'user', 'content': second_question}, {'role': 'assistant', 'content': second_reply},
+    ]}, 'Reopening did not retain the continuous cross-topic history'
     no_overflow(page)
 
 
@@ -609,8 +713,7 @@ def readiness_gate(page, fixtures):
     expect(chat.get_by_role("status")).to_contain_text("AI chat is unavailable right now")
     expect(chat.get_by_role("link", name="Explore our services", exact=True)).to_have_attribute("href", "/platform")
     expect(chat.get_by_role("link", name="Contact our team", exact=True)).to_have_attribute("href", "/contact")
-    chat.get_by_role("group", name="Conversation topic").get_by_role("button", name="Investment", exact=True).click()
-    expect(chat.get_by_role("link", name="Pricing: coming soon", exact=True)).to_have_attribute("href", "/pricing")
+    expect(chat.get_by_role("group", name="Conversation topic")).to_have_count(0)
     starter = chat.get_by_role("button", name="Pricing is coming soon. How can I discuss my requirements with your team?", exact=True)
     expect(starter).to_have_count(0)
     # Failure and truthy-but-not-true responses must not unlock the composer.
@@ -700,6 +803,15 @@ def reduced_motion(page, fixtures):
     draws = page.evaluate("window.__buddyDraws")
     page.wait_for_timeout(500)
     assert page.evaluate("window.__buddyDraws") - draws < 4, "Reduced motion retained a character animation loop"
+    chat = chat_open(page)
+    for topic in ("investment", "support"):
+        fixtures.answer(f"Fixture reduced-motion {topic} answer.", topic=topic)
+        send(chat, f"Explain the next {topic} point.")
+        expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", topic)
+        page.wait_for_timeout(250)
+        draws = page.evaluate("window.__buddyDraws")
+        page.wait_for_timeout(500)
+        assert page.evaluate("window.__buddyDraws") - draws < 4, "An inferred chat topic started a reduced-motion render loop"
     no_overflow(page)
 
 
@@ -748,9 +860,10 @@ try:
             ("floating-placement-minimise", floating_placement_and_minimise, {}),
             ("services-only-showcase-keyboard", services_showcase_and_topics, {}),
             ("fetch-history-sources", real_fetch_contract, {}),
+            ("invalid-response-topics", invalid_response_topics, {"reduced": True}),
             ("retry-and-ai-proof", retry_and_refusal, {}),
             ("cancel-late-response-focus", cancellation_and_focus, {}),
-            ("nonmodal-navigation-topic-pending", nonmodal_navigation_and_topic_change, {"reduced": True}),
+            ("nonmodal-continuous-conversation", nonmodal_continuous_conversation, {"reduced": True}),
             ("readiness-gate-recovery", readiness_gate, {"reduced": True}),
             ("readiness-cancel-timeout", readiness_cancel_timeout, {"reduced": True}),
             ("reduced-motion", reduced_motion, {"reduced": True}),

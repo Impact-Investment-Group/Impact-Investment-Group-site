@@ -44,7 +44,7 @@ export const buddyCopy = {
   connectionUnavailable: "Buddy's AI chat is unavailable right now. You can still explore our services or contact our team.",
   connectionRetry: "Check connection",
   welcome: "What would you like to understand?",
-  welcomeBody: "Ask about our property services, costs or how our partner network works.",
+  welcomeBody: "Ask about property, investment or care and support. It's all one conversation — Buddy changes form as you explore.",
   privacy: "Keep personal details out of this chat. Sending a question or choosing a suggestion sends your conversation to our AI service.",
   input: "Your question for Buddy",
   placeholder: "How does it work?",
