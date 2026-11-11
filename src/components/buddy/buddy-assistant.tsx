@@ -23,9 +23,9 @@ function safeSources(value: unknown): Source[] {
   });
 }
 
-export function BuddyAssistant() {
-  const [open, setOpen] = useState(false);
-  const [topic, setTopic] = useState<BuddyTopic>("property");
+export function BuddyAssistant({ initialTopic = "property", initialTrigger = null }: { initialTopic?: BuddyTopic; initialTrigger?: HTMLElement | null }) {
+  const [open, setOpen] = useState(true);
+  const [topic, setTopic] = useState<BuddyTopic>(initialTopic);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,7 +34,7 @@ export function BuddyAssistant() {
   const abort = useRef<AbortController | null>(null);
   const requestId = useRef(0);
   const launcher = useRef<HTMLButtonElement>(null);
-  const returnFocus = useRef<HTMLElement | null>(null);
+  const returnFocus = useRef<HTMLElement | null>(initialTrigger);
   const scroll = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const current = buddyTopics.find(item => item.id === topic)!;
@@ -86,7 +86,7 @@ export function BuddyAssistant() {
       });
       if (!response.ok) throw new Error(response.status === 429 ? "limited" : "unavailable");
       const result = await response.json();
-      if (result.used_ai !== true || typeof result.reply !== "string" || !result.reply.trim() || result.reply.length > 12000) throw new Error("unavailable");
+      if (result.used_ai !== true || typeof result.reply !== "string" || !result.reply.trim() || result.reply.length > 3000) throw new Error("unavailable");
       if (id !== requestId.current) return;
       setTurns(previous => [...previous, { role: "assistant", content: result.reply.trim(), sources: safeSources(result.sources) }]);
       setRetry(null);

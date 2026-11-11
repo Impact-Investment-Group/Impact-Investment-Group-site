@@ -41,7 +41,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { ImageFade } from "@/components/image-fade";
 import { SiteMotion } from "@/components/site-motion";
 import { BackToTop } from "@/components/ui/back-to-top";
-import { BuddyAssistant } from "@/components/buddy/buddy-assistant";
+import { BuddyLauncher } from "@/components/buddy/buddy-launcher";
 import { PageOutline, ReadingProgress } from "@/components/page-outline";
 import { siteDescription } from "@/content/site";
 
@@ -223,7 +223,7 @@ function RootComponent() {
         <SiteFooter />
       </div>
       <BackToTop />
-      <BuddyAssistant />
+      <BuddyLauncher />
     </QueryClientProvider>
   );
 }

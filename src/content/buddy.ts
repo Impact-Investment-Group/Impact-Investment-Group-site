@@ -56,7 +56,7 @@ export const buddyCopy = {
   close: "Close Buddy",
   clear: "New conversation",
   boundary: "AI answers can be mistaken. Check the linked information with our team before making a decision.",
-  sources: "Explore the source pages",
+  sources: "Explore related pages",
 };
 
 export function isBuddyTopic(value: unknown): value is BuddyTopic {
