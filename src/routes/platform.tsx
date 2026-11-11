@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, Search, Calculator, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   aiTeamNote,
@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import "./editorial-friendly.css";
 import { PlatformGuides } from "@/components/services/platform-guides";
+import { BuddyServices } from "@/components/buddy/buddy-services";
 
 export const Route = createFileRoute("/platform")({
   component: ServicesPage,
@@ -44,11 +45,7 @@ export const Route = createFileRoute("/platform")({
   }),
 });
 
-const GUIDE_ART = {
-  petra: "/images/ai-team/petra-point.webp",
-  peter: "/images/ai-team/peter-present.webp",
-  pippa: "/images/ai-team/pippa-present.webp",
-} as const;
+const TOOL_ICONS = [Search, Calculator, HeartHandshake];
 
 function Section({
   id,
@@ -149,7 +146,9 @@ function ToolExplorer() {
         aria-label="Explore the platform tools"
         className="friendly-tool-tabs mt-8 grid grid-cols-3"
       >
-        {workflow.map((step, index) => (
+        {workflow.map((step, index) => {
+          const Icon = TOOL_ICONS[index]!;
+          return (
           <button
             key={step.id}
             type="button"
@@ -183,18 +182,11 @@ function ToolExplorer() {
               active === index ? "text-teal-600" : "text-ink-muted hover:text-ink",
             )}
           >
-            <img
-              src={step.portrait}
-              alt=""
-              aria-hidden="true"
-              width={120}
-              height={120}
-              loading="lazy"
-              className="friendly-tool-avatar"
-            />
+            <Icon className="mb-3 size-6 text-teal-600" aria-hidden="true" />
             {step.chip}
           </button>
-        ))}
+          );
+        })}
       </div>
       {workflow.map((step, index) => (
         <div
@@ -206,7 +198,7 @@ function ToolExplorer() {
           tabIndex={0}
           className="friendly-tool-panel"
         >
-          <div className="friendly-tool-scene">
+          <div className="py-4 sm:py-8">
             <div className="friendly-tool-speech max-w-[64ch]">
               <h3 className="font-heading text-[clamp(2rem,4vw,3rem)] font-semibold leading-tight text-ink">
                 {step.claim}
@@ -219,15 +211,6 @@ function ToolExplorer() {
                 View the platform preview <ArrowRight aria-hidden="true" className="size-4" />
               </a>
             </div>
-            <img
-              src={GUIDE_ART[step.id as keyof typeof GUIDE_ART]}
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              width={347}
-              height={560}
-              className="friendly-tool-guide"
-            />
           </div>
         </div>
       ))}
@@ -319,17 +302,6 @@ function ServicesPage() {
               >
                 See how the platform works for you.
               </h1>
-              <div className="friendly-hero-guides" aria-hidden="true">
-                {workflow.map((guide) => (
-                  <img
-                    key={guide.id}
-                    src={GUIDE_ART[guide.id as keyof typeof GUIDE_ART]}
-                    alt=""
-                    width={180}
-                    height={290}
-                  />
-                ))}
-              </div>
             </div>
             <div className="lg:pt-8">
               <p className="text-xl font-medium leading-relaxed text-ink">
@@ -358,6 +330,7 @@ function ServicesPage() {
       <div id="services-preview">
         <PlatformGuides />
       </div>
+      <BuddyServices />
       <Section id="steps-heading" title="From search to supported home">
         <ServiceJourney />
       </Section>

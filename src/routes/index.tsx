@@ -67,7 +67,7 @@ function HomePage() {
     <>
       <HomeHero />
       <MissionSolution />
-      <CharityImpact />
+      <CharityImpact variant="home" />
       <CouncilPanel />
       <section
         aria-labelledby="demand-heading"

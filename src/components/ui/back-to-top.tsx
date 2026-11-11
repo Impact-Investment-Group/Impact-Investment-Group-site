@@ -133,7 +133,7 @@ export function BackToTop() {
             : "smooth",
         });
       }}
-      className="back-to-top press fixed bottom-6 right-5 z-40 grid size-11 place-items-center rounded-full border border-rule bg-page text-ink shadow-[var(--shadow-card)] hover:border-teal-600 hover:text-teal-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+      className="back-to-top press fixed bottom-6 left-5 z-40 grid size-11 place-items-center rounded-full border border-rule bg-page text-ink shadow-[var(--shadow-card)] hover:border-teal-600 hover:text-teal-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
     >
       <ArrowUp aria-hidden="true" className="size-5" strokeWidth={1.6} />
     </button>

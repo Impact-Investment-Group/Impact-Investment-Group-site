@@ -38,6 +38,7 @@ import interVariable from "@fontsource-variable/inter/files/inter-latin-wght-nor
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { BuddyLauncher } from "@/components/buddy/buddy-launcher";
 import { ImageFade } from "@/components/image-fade";
 import { SiteMotion } from "@/components/site-motion";
 import { BackToTop } from "@/components/ui/back-to-top";
@@ -108,7 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Impact Investment Group" },
       {
         name: "description",
@@ -222,6 +223,7 @@ function RootComponent() {
         <SiteFooter />
       </div>
       <BackToTop />
+      <BuddyLauncher />
     </QueryClientProvider>
   );
 }

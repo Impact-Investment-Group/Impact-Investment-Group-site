@@ -83,7 +83,7 @@ export const steps = [
  */
 export const toolsEyebrow = "The platform, live";
 export const toolsHeading = "Find it. Price it. Match it.";
-export const toolsLead = "Three analysts working together on every deal.";
+export const toolsLead = "Connected tools for property, costs and housing need.";
 
 export interface WorkflowStep {
   id: string;
@@ -101,8 +101,8 @@ export const workflow: WorkflowStep[] = [
   {
     id: "petra",
     portrait: "/images/ai-team/petra.webp",
-    claim: "Petra finds it.",
-    body: "Describe the home you need. Petra searches the whole sourced market for the closest fit.",
+    claim: "Find suitable homes.",
+    body: "Describe the home you need. Search the sourced market for properties that fit your brief.",
     chip: "Property Finder",
     accent: "teal",
     // was: "Scans the sourced market for homes that fit your brief."
@@ -110,8 +110,8 @@ export const workflow: WorkflowStep[] = [
   {
     id: "peter",
     portrait: "/images/ai-team/peter.webp",
-    claim: "Peter prices it.",
-    body: "Peter checks valuations and costs against named public data.",
+    claim: "Understand the figures.",
+    body: "Compare property valuations and costs against named public data.",
     chip: "Every figure traceable",
     accent: "orange",
     // was: "Runs the valuation and cost work on named public data."
@@ -119,8 +119,8 @@ export const workflow: WorkflowStep[] = [
   {
     id: "pippa",
     portrait: "/images/ai-team/pippa.webp",
-    claim: "Pippa matches it.",
-    body: "Pippa checks every home against the demand in its area and scores its social impact in plain terms.",
+    claim: "Connect property and need.",
+    body: "Explore the housing demand around a property and review its social impact in plain terms.",
     chip: "Impact score",
     accent: "teal",
     // was: "Scores the social impact of every home the platform offers."
@@ -137,11 +137,11 @@ export const workflow: WorkflowStep[] = [
  * under the trio rather than inside it.
  */
 export const workflowFooter =
-  "All three use the same Demand Map to see where supported housing is needed, town by town. Public figures come first, estimates are labelled and unknowns stay blank.";
+  "The Demand Map helps you explore where supported housing is needed, town by town. Public figures come first, estimates are labelled and unknowns stay blank.";
 
 /** Not optional. The trio is analysis, and the page has to say so. */
 export const aiTeamNote =
-  "Analysis, not financial advice — every figure sourced or a labelled estimate.";
+  "Analysis, not financial advice. Every figure is sourced or a labelled estimate.";
 
 export const differenceHeading = "Longer is not always stronger.";
 export const differenceLead =

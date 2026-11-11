@@ -116,6 +116,10 @@ jobs:
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
         run: python scripts/wave921-ecosystem.py
 
+      - name: Check floating Buddy and real AI states
+        if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
+        run: python scripts/site-buddy.py
+
       - name: Verify rendered colour contrast and light page surfaces
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
         run: |
