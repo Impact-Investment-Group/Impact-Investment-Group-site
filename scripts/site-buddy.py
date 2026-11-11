@@ -259,14 +259,29 @@ def floating_placement_and_minimise(page, fixtures):
         !active.hasAttribute('data-radix-focus-guard'));
     })()"""), "Shift+Tab looped back into the non-modal chat"
     expect(chat).to_be_visible()
-    # Exercise a real page control while Buddy remains open. Scrolling the
-    # existing mission tab near the top avoids the chat panel itself; a modal
-    # backdrop or disabled body pointer events would still block the click.
-    mission_tab = page.locator("#mission-tab-response")
-    mission_tab.evaluate("n => scrollTo({top: scrollY + n.getBoundingClientRect().top - 120, behavior: 'instant'})")
-    mission_tab.click()
-    expect(mission_tab).to_have_attribute("aria-selected", "true")
-    expect(page.locator("#mission-panel-response")).to_be_visible()
+    # Exercise a real page control outside the panel. On the narrowest phone
+    # the header remains exposed while the panel physically covers the mission
+    # tabs. The other widths also exercise the existing page-body interaction.
+    if page.viewport_size["width"] == 320:
+        page.evaluate("scrollTo({top: 0, behavior: 'instant'})")
+        menu_button = page.locator("header.site-header").get_by_role("button", name="Open menu", exact=True)
+        expect(menu_button).to_be_in_viewport()
+        menu_bounds = menu_button.bounding_box()
+        chat_bounds = chat.bounding_box()
+        assert menu_bounds["y"] >= 0 and menu_bounds["y"] + menu_bounds["height"] <= chat_bounds["y"], "Buddy covers the phone's header control"
+        menu_button.click()
+        menu = page.get_by_role("dialog", name="Site menu", exact=True)
+        expect(menu).to_be_visible()
+        expect(chat).to_be_visible()
+        menu.get_by_role("button", name="Close menu", exact=True).click()
+        expect(menu).to_have_count(0)
+        expect(menu_button).to_be_focused()
+    else:
+        mission_tab = page.locator("#mission-tab-response")
+        mission_tab.evaluate("n => scrollTo({top: scrollY + n.getBoundingClientRect().top - 120, behavior: 'instant'})")
+        mission_tab.click()
+        expect(mission_tab).to_have_attribute("aria-selected", "true")
+        expect(page.locator("#mission-panel-response")).to_be_visible()
     expect(page.locator("main [data-buddy-form], main img[src*='/images/ai-team/']")).to_have_count(0)
     expect(chat).to_be_visible()
     assert not fixtures.requests, "Using the page while Buddy was open sent an AI question"

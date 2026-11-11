@@ -70,8 +70,9 @@ are recorded at closeout.
 The repository-wide strict TypeScript check has existing errors outside the
 new Buddy and charity components. It is not claimed as a passing check.
 
-The public Buddy API still returned 404 during this session. The latest
-backend CI was blocked before jobs started by GitHub payments/spending limits.
-Actual provider, Redis and reply-guard readiness cannot be inferred from that
-404. Backend deployment and a successful checked live answer remain necessary
-before claiming that AI chat is operational. Browser AI tests use fixtures.
+The public Buddy readiness endpoint now returns HTTP 200 with
+`{"configured":false}`. This supersedes the earlier missing-route result.
+The boolean does not identify which provider, Redis or reply-guard dependency
+is still unavailable. A configured service and a successful checked live
+answer remain necessary before claiming that AI chat is operational.
+Browser AI tests use fixtures.
