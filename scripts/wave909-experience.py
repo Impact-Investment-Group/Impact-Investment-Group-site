@@ -141,11 +141,16 @@ with sync_playwright() as pw:
                     page.locator("#platform-guides").scroll_into_view_if_needed()
                     page.evaluate("async () => { await Promise.all([...document.images].map(img => img.decode().catch(() => {}))); scrollTo({top:0,behavior:'instant'}); }")
                     page.wait_for_timeout(100)
+                expect(page.locator('main img[src*="/images/ai-team/"]')).to_have_count(0)
+                check(not re.search(r"\b(?:Petra|Peter|Pippa)\b", page.locator("main").inner_text()), "Retired mascot identity remains")
                 for figure in page.locator(".partner-craft-guides").all():
+                    guide = figure.locator("[data-buddy-form]")
+                    expect(guide).to_have_count(1)
+                    expect(guide.locator("canvas")).to_have_count(1)
                     caption_top = figure.locator("figcaption").bounding_box()["y"]
-                    for guide in figure.locator("img").all():
-                        box = guide.bounding_box()
-                        check(box["y"] + box["height"] + 8 <= caption_top, "Guide artwork overlaps its caption")
+                    box = guide.bounding_box()
+                    check(box["width"] >= 160 and box["height"] >= 160, "Buddy artwork lost its reserved size")
+                    check(box["y"] + box["height"] + 8 <= caption_top, "Buddy artwork overlaps its caption")
                 for link in page.locator(".page-outline a").all():
                     check(page.locator(link.get_attribute("href")).count() == 1, "Missing or duplicate section target")
                 page.add_script_tag(path=str(ROOT / "node_modules/axe-core/axe.min.js"))
