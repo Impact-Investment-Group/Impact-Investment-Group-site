@@ -4,7 +4,7 @@ Reviewed 10 to 11 November 2026. Scope: the public website, shared components an
 
 ## Reference principles
 
-The [Instagram reference](https://www.instagram.com/reel/Dfh24cUh4KF/) explains design terminology, rather than a website layout to reproduce. Seventeen numbered terms were observed. The final three were not captured and are not invented here. Five further terms appear in its caption. IIG's existing brand and factual content remain the implementation basis.
+The [Instagram reference](https://www.instagram.com/reel/Dfh24cUh4KF/) explains design terminology, rather than a website layout to reproduce. All twenty numbered terms were observed, with the final three confirmed from its ending. Five further terms appear in its caption. IIG's existing brand and factual content remain the implementation basis.
 
 | Observed principle | Applied, retained or deliberately limited |
 | --- | --- |
@@ -25,6 +25,9 @@ The [Instagram reference](https://www.instagram.com/reel/Dfh24cUh4KF/) explains 
 | 15. Line length | Retain the 64-character reading measure; constrain explanation and conversation widths. `src/experience.css`, Buddy components. |
 | 16. Affordance | Label topics, selected states, retry/cancel and destinations; restore focus on close. Preserve still informational cards. Buddy components, `src/experience.css`. |
 | 17. Combobox | Retain useful search and native role selectors. A custom combobox adds little to short lists. `src/components/partners/partners-hub.tsx`, `src/routes/faqs.tsx`, `src/components/services/platform-guides.tsx`. |
+| 18. Interruptible animation | Topic changes interrupt the current gesture and apply the latest form; off-screen and reduced-motion states settle immediately. `buddy-character.tsx` cancels the pending frame before replaying. |
+| 19. Progressive disclosure | Retain FAQ details and service tabs. Buddy's conversation loads and opens when requested, keeping the initial page focused. `src/routes/faqs.tsx`, `src/routes/platform.tsx`, `buddy-launcher.tsx`. |
+| 20. Shared element transition | Topic changes retain the same Buddy canvas, preserving character continuity. This is not a cross-route shared-element morph. `buddy-explorer.tsx`, `buddy-character.tsx`. |
 | Caption: orphan | Use readable measures and balanced/pretty wrapping. No print-style orphan-control claim for continuous web content. |
 | Caption: tinted neutral | Reuse semantic `page-alt`, `secondary`, `rule` and brand tints. `src/styles.css`, Buddy components. |
 | Caption: skeleton | Pending chat combines restrained placeholder lines with a real status. Artwork has a topic-icon fallback; map skeleton remains. Buddy components, `src/styles.css`. |
