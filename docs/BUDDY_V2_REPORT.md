@@ -69,8 +69,16 @@ new impact statistics or donation claims have been invented.
 
 The local production build passes. Manual browser review covers desktop and
 phone placement, minimize/reopen, conversation availability, Services form
-selection and the charity story controls. Final CI and publication results
-are recorded at closeout.
+selection and the charity story controls. Release source
+`34a8ed8a9fa07b4949852cc279699bdf8e6c1b1a` passed the build, functional,
+accessibility, motion, performance and visual gates in
+[run 43001198823](https://github.com/Impact-Investment-Group/Impact-Investment-Group-site/actions/runs/43001198823).
+The Pages deployment succeeded. Live browser verification on 11 November 2026
+confirmed the original Coming soon pricing page, no package cards or fee
+calculator, and the supplied v2 floating artwork. The live homepage has no
+inline Buddy section or legacy mascot images, and uses the shaped Metro badge.
+The retired Peter artwork URL returns HTTP 404. All six platform screenshot
+crops were visually reviewed without a visible legacy mascot.
 
 The repository-wide strict TypeScript check has existing errors outside the
 new Buddy and charity components. It is not claimed as a passing check.
