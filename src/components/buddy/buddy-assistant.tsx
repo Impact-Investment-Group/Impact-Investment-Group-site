@@ -105,7 +105,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
 
   return <Dialog.Root open={open} onOpenChange={changeOpen}>
     <Dialog.Trigger asChild>
-      <button ref={launcher} type="button" data-buddy-launcher className="fixed bottom-24 right-4 z-40 flex min-h-12 items-center gap-2 rounded-full border border-rule bg-page py-2 pl-3 pr-5 font-heading text-base font-semibold text-ink shadow-lg transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 sm:right-6" style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))" }}>
+      <button ref={launcher} type="button" data-buddy-launcher className="relative mx-auto my-6 flex min-h-12 items-center gap-2 rounded-full border border-rule bg-page py-2 pl-3 pr-5 font-heading text-base font-semibold text-ink shadow-lg transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 lg:fixed lg:bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:right-5 lg:z-40 lg:m-0">
         <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-teal-600"><KeyRound aria-hidden="true" className="size-5" /></span>{buddyCopy.launcher}
       </button>
     </Dialog.Trigger>
