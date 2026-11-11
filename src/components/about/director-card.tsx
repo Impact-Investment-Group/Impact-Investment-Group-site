@@ -124,7 +124,7 @@ export function DirectorCard({
           <h3 className="font-heading text-xl font-semibold leading-tight text-ink">
             {director.name}
           </h3>
-          <p className="mt-2 text-sm leading-relaxed text-teal-600">{director.role}</p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{director.role}</p>
           {director.credentials?.length ? (
             <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink-muted">
               {director.credentials.map((line) => (
