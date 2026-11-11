@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { Minus } from "lucide-react";
 import { BuddyCharacter } from "./buddy-character";
-import { buddyCopy, buddyTopicForPath, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
+import { buddyLauncherLabel, buddyTopicForPath, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
 
 type WidgetProps = {
   topic: BuddyTopic;
@@ -30,10 +30,10 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
       className="pointer-events-auto min-h-11 min-w-16 rounded-full border border-rule bg-page px-3 font-heading text-sm font-semibold text-ink shadow-md transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600">
       Buddy
     </button> : <div className="relative">
-      <button ref={node => { trigger.current = node; setTrigger?.(node); }} type="button" data-buddy-launcher aria-label={buddyCopy.launcher} aria-haspopup="dialog" aria-busy={loading} disabled={loading} onClick={onOpen}
+      <button ref={node => { trigger.current = node; setTrigger?.(node); }} type="button" data-buddy-launcher aria-label={buddyLauncherLabel} aria-haspopup="dialog" aria-busy={loading} disabled={loading} onClick={onOpen}
         className="pointer-events-auto flex min-h-11 w-20 flex-col items-center rounded-2xl bg-transparent p-0 text-ink transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 motion-reduce:transform-none sm:w-[104px]">
         <BuddyCharacter form={topic} action={loading ? "listen" : "wave"} expression="warm" animated continuousIdle className="w-full" />
-        <span className="-mt-1 whitespace-nowrap rounded-full border border-rule bg-page/95 px-3 py-1 text-xs font-semibold leading-5 shadow-sm">{loading ? "Opening..." : buddyCopy.launcher}</span>
+        <span className="-mt-1 whitespace-nowrap rounded-full border border-rule bg-page/95 px-3 py-1 text-xs font-semibold leading-5 shadow-sm">{loading ? "Opening..." : buddyLauncherLabel}</span>
       </button>
       <button type="button" aria-label="Minimize Buddy" title="Minimize Buddy" onClick={() => { movedFocus.current = true; setMinimized(true); }}
         className="pointer-events-auto absolute -right-2 -top-2 flex size-11 items-center justify-center rounded-full text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">

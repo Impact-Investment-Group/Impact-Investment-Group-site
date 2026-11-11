@@ -4,7 +4,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, MessageCircle, RotateCcw, Send, X } from "lucide-react";
 import { BuddyCharacter } from "./buddy-character";
 import { BuddyWidget } from "./buddy-launcher";
-import { buddyCopy, buddyTopicForPath, buddyTopics, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
+import { buddyTopicForPath, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
+import { buddyCopy, buddyTopics } from "@/content/buddy-conversation";
 import { apiUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 

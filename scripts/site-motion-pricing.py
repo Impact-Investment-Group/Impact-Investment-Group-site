@@ -109,7 +109,7 @@ with sync_playwright() as pw:
             page.wait_for_timeout(700)
             assert page.evaluate("__frames") - before < 4, "Idle frame loop returned"
             js_bytes = page.evaluate("performance.getEntriesByType('resource').filter(r=>r.name.endsWith('.js')).reduce((sum,r)=>sum+r.decodedBodySize,0)")
-            assert js_bytes < 780000, "Homepage JavaScript exceeds the wave 1003 allowance"
+            assert js_bytes < 780000, f"Homepage JavaScript ({js_bytes} bytes) exceeds the 780000-byte allowance"
             assert not page.evaluate("document.documentElement.classList.contains('lenis')")
             if width >= 1280:
                 role = page.locator('.hero-role-link').first

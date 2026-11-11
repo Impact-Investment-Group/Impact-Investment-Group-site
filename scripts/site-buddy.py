@@ -329,9 +329,10 @@ def real_fetch_contract(page, fixtures):
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(0)
     expect(chat.get_by_role("button", name="Send", exact=True)).to_be_disabled()
     expect(topics.get_by_role("button", name="Property", exact=True)).to_be_disabled()
+    first_pending = take_pending_reply(page, fixtures)
     assert fixtures.requests == [{"message": first_question, "history": [], "topic": "investment"}], fixtures.requests
     first_reply = "Fixture answer: a sourcing service has an agreed scope."
-    fixtures.fulfill(fixtures.pending.pop(), {"body": {"used_ai": True, "reply": first_reply, "sources": [
+    fixtures.fulfill(first_pending, {"body": {"used_ai": True, "reply": first_reply, "sources": [
         {"title": "Our pricing", "url": "https://www.impactinvestmentgroup.co.uk/pricing"},
         {"title": "Untrusted", "url": "https://untrusted.example/offer"},
         {"title": "Unsafe", "url": "javascript:alert(1)"},
@@ -434,7 +435,7 @@ def cancellation_and_focus(page, fixtures):
     fixtures.queue.append({"pending": True})
     send(chat, "First question to cancel.")
     expect(chat.get_by_role("status")).to_contain_text("thinking")
-    late = fixtures.pending.pop()
+    late = take_pending_reply(page, fixtures)
     chat.get_by_role("button", name="Cancel request", exact=True).click()
     expect(chat.get_by_role("alert")).to_contain_text("Request cancelled")
     expect(chat.get_by_role("status")).to_have_count(0)
@@ -448,7 +449,7 @@ def cancellation_and_focus(page, fixtures):
     fixtures.queue.append({"pending": True})
     send(chat, "Another pending question.")
     expect(chat.get_by_role("status")).to_be_visible()
-    late_close = fixtures.pending.pop()
+    late_close = take_pending_reply(page, fixtures)
     page.keyboard.press("Escape")
     expect(chat).to_have_count(0)
     expect(page.locator("[data-buddy-launcher]")).to_be_focused()
