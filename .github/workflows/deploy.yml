@@ -93,38 +93,46 @@ jobs:
             echo "CNAME in artifact: $(cat dist/client/CNAME)"
           fi
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install browser verification tools
+      # The official image carries all three browsers and their system
+      # dependencies, avoiding apt mirror outages on fresh hosted runners.
+      # Keep its Playwright version in sync with the Python package below.
+      - name: Start browser verification container
+        timeout-minutes: 5
         run: |
-          python -m pip install playwright pillow
-          python -m playwright install --with-deps chromium firefox webkit
+          docker run --detach --init --ipc=host --name site-browser-checks \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work --env CI=true \
+            mcr.microsoft.com/playwright/python:v1.65.0-noble@sha256:f9294526294a7bdfb8ca8aa7d815c049125a10e73b65d47fb9a80f5d74f284a6 \
+            sleep infinity
+          docker exec site-browser-checks python -m pip install playwright==1.65.0 pillow
 
       - name: Check Firefox and WebKit scrolling
-        run: python scripts/site-scroll-smoke.py
+        run: docker exec site-browser-checks python scripts/site-scroll-smoke.py
 
       - name: Check pricing and lightweight motion
-        run: python scripts/site-motion-pricing.py
+        run: docker exec site-browser-checks python scripts/site-motion-pricing.py
 
       - name: Check every page and interactive journeys
         id: browser_checks
-        run: python scripts/wave909-experience.py
+        run: docker exec site-browser-checks python scripts/wave909-experience.py
 
       - name: Check the interactive partner ecosystem
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
-        run: python scripts/wave921-ecosystem.py
+        run: docker exec site-browser-checks python scripts/wave921-ecosystem.py
 
       - name: Check floating Buddy and real AI states
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
-        run: python scripts/site-buddy.py
+        run: docker exec site-browser-checks python scripts/site-buddy.py
 
       - name: Verify rendered colour contrast and light page surfaces
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
         run: |
-          set -o pipefail
-          python scripts/wave412-screenshots.py | tee docs/screenshots/wave909/visual-gate.txt
+          docker exec site-browser-checks bash -o pipefail -c \
+            'python scripts/wave412-screenshots.py | tee docs/screenshots/wave909/visual-gate.txt'
+
+      - name: Stop browser verification container
+        if: always()
+        run: docker rm --force site-browser-checks 2>/dev/null || true
 
       - name: Preserve browser evidence
         if: always()
