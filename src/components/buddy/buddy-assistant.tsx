@@ -113,18 +113,18 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
       <Dialog.Overlay className="fixed inset-0 z-50 bg-ink/20 data-[state=open]:animate-in data-[state=open]:fade-in-0 motion-reduce:animate-none" />
       <Dialog.Content data-buddy-chat onOpenAutoFocus={event => { event.preventDefault(); input.current?.focus(); }} onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
         className="fixed bottom-0 right-0 z-50 flex max-h-dvh w-full origin-bottom-right flex-col overflow-y-auto overscroll-contain rounded-t-3xl border border-rule bg-page text-ink shadow-2xl duration-200 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-4 motion-reduce:animate-none sm:bottom-5 sm:right-5 sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-md sm:rounded-3xl">
-        <header className="flex shrink-0 items-center gap-3 border-b border-rule bg-secondary py-3 pl-4 pr-3">
-          <BuddyCharacter form={topic} action={busy ? "think" : "wave"} animated={open} className="w-20 shrink-0" />
+        <header className="flex shrink-0 items-center gap-3 border-b border-rule bg-secondary py-3 pl-4 pr-3 [@media(max-height:600px)]:py-2">
+          <BuddyCharacter form={topic} action={busy ? "think" : "wave"} animated={open} className="w-20 shrink-0 [@media(max-height:600px)]:w-12" />
           <div className="min-w-0 flex-1">
             <Dialog.Title className="font-heading text-2xl font-bold">{buddyCopy.name}</Dialog.Title>
-            <Dialog.Description className="mt-1 text-sm leading-relaxed text-ink-muted">{buddyCopy.description}</Dialog.Description>
+            <Dialog.Description className="mt-1 text-sm leading-relaxed text-ink-muted [@media(max-height:600px)]:sr-only">{buddyCopy.description}</Dialog.Description>
           </div>
           <Dialog.Close aria-label={buddyCopy.close} className={cn(control, "size-11 shrink-0 px-0 hover:bg-page")}><X className="size-5" aria-hidden="true" /></Dialog.Close>
         </header>
         <div role="group" aria-label="Conversation topic" className="flex shrink-0 flex-wrap gap-1 border-b border-rule px-4 py-2">
           {buddyTopics.map(item => <button key={item.id} type="button" disabled={busy} aria-pressed={topic === item.id} onClick={() => setTopic(item.id)} className={cn(control, "flex-1", topic === item.id ? "bg-secondary text-teal-600" : "text-ink-muted hover:bg-page-alt")}>{item.short}</button>)}
         </div>
-        <div ref={scroll} className="min-h-32 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:min-h-52 [@media(max-height:600px)]:shrink-0" style={{ maxHeight: "min(43dvh, 25rem)" }}>
+        <div ref={scroll} className="min-h-32 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:min-h-52 [@media(max-height:600px)]:min-h-0" style={{ maxHeight: "min(43dvh, 25rem)" }}>
           {turns.length === 0 && <div>
             <MessageCircle className="size-7 text-teal-600" aria-hidden="true" />
             <h3 className="mt-3 text-balance font-heading text-xl font-bold">{buddyCopy.welcome}</h3>
