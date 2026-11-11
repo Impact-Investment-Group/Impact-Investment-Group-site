@@ -5,7 +5,6 @@ import type { LucideIcon } from "lucide-react";
 import { CouncilPanel } from "@/components/home/council-panel";
 import { DemandMap } from "@/components/home/demand-map";
 import { HomeHero } from "@/components/home/hero";
-import { BuddyExplorer } from "@/components/buddy/buddy-explorer";
 import { MissionSolution } from "@/components/home/mission-solution";
 import { HomeFaq } from "@/components/faq/home-faq";
 import { CharityImpact } from "@/components/charity/charity-impact";
@@ -67,7 +66,6 @@ function HomePage() {
   return (
     <>
       <HomeHero />
-      <BuddyExplorer />
       <MissionSolution />
       <CharityImpact />
       <CouncilPanel />

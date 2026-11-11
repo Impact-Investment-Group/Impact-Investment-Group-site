@@ -63,48 +63,85 @@ export const steps = [
   },
 ];
 
-/** Buddy explains the tools; the platform performs the underlying calculations. */
-export const toolsEyebrow = "The platform";
+/**
+ * ── FIND IT · PRICE IT · MATCH IT ─────────────────────────────────────────
+ *
+ * This section used to be SIX things: three tools in a row, and inside the
+ * third one, three analysts. A reader met six items and had to work out how
+ * they related to each other before any of it meant anything.
+ *
+ * Petra, Peter and Pippa already are find / price / match, so the two lists
+ * collapsed into one. Three steps, three faces, and the tool each one works in
+ * named on a chip beside it. Roughly 120 words became 45.
+ *
+ * ⚠️ THE CHIPS NAME A TOOL OR A PROPERTY, NOT A CLAIM ABOUT THE ANALYST.
+ * Pippa's chip is "Impact score" and NOT "Demand Map" — the Demand Map is a
+ * tool the visitor uses, not something she runs, and saying otherwise would
+ * misdescribe the product. The Demand Map keeps its own line under the trio
+ * (`workflowFooter`) for exactly that reason. If either is ever edited, keep
+ * that separation.
+ */
+export const toolsEyebrow = "The platform, live";
 export const toolsHeading = "Find it. Price it. Match it.";
-export const toolsLead = "Explore property, costs and social impact with Buddy.";
+export const toolsLead = "Three analysts working together on every deal.";
 
 export interface WorkflowStep {
-  id: "property" | "investment" | "support";
+  id: string;
+  /** Character artwork in public/images/ai-team/. Cut out, shared baseline. */
+  portrait: string;
+  /** The headline. "<Name> <verbs> it." — keep the full stop. */
   claim: string;
   body: string;
+  /** The tool or property this step happens in. Two or three words. */
   chip: string;
   accent: "teal" | "orange";
 }
 
 export const workflow: WorkflowStep[] = [
   {
-    id: "property",
-    claim: "Find a suitable home.",
-    body: "Describe the home you need. The Property Finder searches sourced properties for the closest fit.",
+    id: "petra",
+    portrait: "/images/ai-team/petra.webp",
+    claim: "Petra finds it.",
+    body: "Describe the home you need. Petra searches the whole sourced market for the closest fit.",
     chip: "Property Finder",
     accent: "teal",
+    // was: "Scans the sourced market for homes that fit your brief."
   },
   {
-    id: "investment",
-    claim: "Understand the numbers.",
-    body: "The platform checks valuations and costs against named public data. Buddy can help explain the process.",
+    id: "peter",
+    portrait: "/images/ai-team/peter.webp",
+    claim: "Peter prices it.",
+    body: "Peter checks valuations and costs against named public data.",
     chip: "Every figure traceable",
     accent: "orange",
+    // was: "Runs the valuation and cost work on named public data."
   },
   {
-    id: "support",
-    claim: "Connect property with purpose.",
-    body: "The platform checks homes against demand in their area and presents their social impact. Buddy can explain how housing, care and support fit together.",
+    id: "pippa",
+    portrait: "/images/ai-team/pippa.webp",
+    claim: "Pippa matches it.",
+    body: "Pippa checks every home against the demand in its area and scores its social impact in plain terms.",
     chip: "Impact score",
     accent: "teal",
+    // was: "Scores the social impact of every home the platform offers."
   },
 ];
 
+/**
+ * The Demand Map, which is NOT one of the three analysts.
+ *
+ * It was a tool of its own in the old three-stop layout and it still has to be
+ * named on this page — it is the thing that shows where supported housing is
+ * actually needed, and the honesty of it (public figures first, estimates
+ * labelled, blanks left blank) is a selling point, not a footnote. It sits
+ * under the trio rather than inside it.
+ */
 export const workflowFooter =
-  "The Demand Map shows where supported housing is needed, town by town. Public figures come first, estimates are labelled and unknowns stay blank.";
+  "All three use the same Demand Map to see where supported housing is needed, town by town. Public figures come first, estimates are labelled and unknowns stay blank.";
 
+/** Not optional. The trio is analysis, and the page has to say so. */
 export const aiTeamNote =
-  "Buddy explains the process. IIG provides property sourcing, not financial advice. Every figure is sourced or a labelled estimate.";
+  "Analysis, not financial advice — every figure sourced or a labelled estimate.";
 
 export const differenceHeading = "Longer is not always stronger.";
 export const differenceLead =

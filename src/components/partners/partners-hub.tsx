@@ -1,4 +1,3 @@
-import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
@@ -97,7 +96,16 @@ export function PartnersHub() {
             <span className="partner-craft-hero__seal" aria-hidden="true">
               <Network />
             </span>
-            <BuddyCharacter form="support" className="partner-craft-hero__companion" />
+            <img
+              className="partner-craft-hero__companion"
+              src="/images/ai-team/trio-wave.webp"
+              srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
+              sizes="180px"
+              width={intrinsic("/images/ai-team/trio-wave.webp")?.width}
+              height={intrinsic("/images/ai-team/trio-wave.webp")?.height}
+              loading="eager"
+              alt=""
+            />
           </figure>
           <div className="partner-craft-hero__support">
             <p className="partner-craft-hero__summary">

@@ -41,7 +41,6 @@ import { SiteFooter } from "@/components/site-footer";
 import { ImageFade } from "@/components/image-fade";
 import { SiteMotion } from "@/components/site-motion";
 import { BackToTop } from "@/components/ui/back-to-top";
-import { BuddyLauncher } from "@/components/buddy/buddy-launcher";
 import { PageOutline, ReadingProgress } from "@/components/page-outline";
 import { siteDescription } from "@/content/site";
 
@@ -109,7 +108,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Impact Investment Group" },
       {
         name: "description",
@@ -220,7 +219,6 @@ function RootComponent() {
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </main>
-        <BuddyLauncher />
         <SiteFooter />
       </div>
       <BackToTop />

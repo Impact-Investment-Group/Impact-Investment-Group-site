@@ -1,4 +1,3 @@
-import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { problemHero, problemSections } from "@/content/problem";
@@ -20,6 +19,12 @@ export const Route = createFileRoute("/the-problem")({
     links: [{ rel: "canonical", href: "/the-problem" }],
   }),
 });
+
+const PORTRAIT: Record<string, { src: string; w: number; h: number }> = {
+  "petra-point": { src: "/images/ai-team/petra-point.webp", w: 338, h: 560 },
+  "peter-present": { src: "/images/ai-team/peter-present.webp", w: 281, h: 560 },
+  "pippa-point": { src: "/images/ai-team/pippa-point.webp", w: 345, h: 560 },
+};
 
 function TheProblemPage() {
   return (
@@ -56,6 +61,7 @@ function TheProblemPage() {
       </section>
       <div className="friendly-evidence-sections mx-auto w-full max-w-[1200px] px-5 sm:px-8">
         {problemSections.map((section, index) => {
+          const portrait = section.character ? PORTRAIT[section.character] : undefined;
           return (
             <section
               key={section.id}
@@ -78,10 +84,17 @@ function TheProblemPage() {
                     ? "English local-authority housing registers are at their highest level since 2014."
                     : section.lead}
                 </p>
-                {section.character && section.id !== "cost" ? (
-                  <BuddyCharacter
-                    form={section.id === "scale" ? "property" : "support"}
+                {portrait && section.id !== "cost" ? (
+                  <img
+                    src={portrait.src}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    width={portrait.w}
+                    height={portrait.h}
                     className="friendly-evidence-guide"
+                    srcSet={variantSrcSet(portrait.src)}
+                    sizes="(min-width: 1024px) 160px, 88px"
                   />
                 ) : null}
               </div>

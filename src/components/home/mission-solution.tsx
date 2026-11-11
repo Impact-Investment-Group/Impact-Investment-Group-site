@@ -1,4 +1,3 @@
-import { BuddyCharacter } from "@/components/buddy/buddy-character";
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
@@ -233,7 +232,16 @@ export function MissionSolution() {
                 >
                   Explore the partner ecosystem <ArrowRight aria-hidden="true" className="size-4" />
                 </Link>
-                <BuddyCharacter form="support" action="reassure" className="w-32 shrink-0 sm:w-36" />
+                <img
+                  src="/images/ai-team/trio-wave.webp"
+                  srcSet={variantSrcSet("/images/ai-team/trio-wave.webp")}
+                  sizes="150px"
+                  width={934}
+                  height={558}
+                  alt=""
+                  loading="lazy"
+                  className="w-32 shrink-0 sm:w-36"
+                />
               </li>
             </ol>
           </div>
