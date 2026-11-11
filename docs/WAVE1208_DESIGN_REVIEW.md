@@ -1,6 +1,6 @@
 # Wave 1208 design review
 
-Reviewed 10 to 11 November 2026. Scope: the public website, shared components and Buddy. This source-backed review does not certify the signed-in platform or claim CI or deployment success. Final verification belongs in `WAVE1208_REPORT.md`.
+Reviewed 10 to 11 November 2026. Scope: the public website, shared components and Buddy. This source-backed review records CI evidence below; it does not certify the signed-in platform or deployment. Final verification belongs in `WAVE1208_REPORT.md`.
 
 ## Reference principles
 
@@ -63,4 +63,8 @@ The shared conversation panel has transient history, bounded input, pending/canc
 
 The signed-in platform's design was not changed. Future candidates include Buddy beside property figures, guided acquisition steps, clearer demand-map legends/layer status, and management-dashboard triage. Each needs its own source/UI review, role permissions and data contracts. These are opportunities, not newly proven defects or completed work.
 
-`scripts/site-buddy.py` specifies keyboard, single-canvas transformation, rendered-artwork, request/history, AI-proof, retry, cancellation, focus, reduced-motion, fallback and phone-layout checks. Existing all-page checks positively assert Buddy and reject retired identities. Browser AI responses are deterministic fixtures and cannot prove live Gemma availability. No local tests, builds or executable audits were run for this review. CI results, visual captures, live AI evidence and publication status must be read from the final wave report.
+`scripts/site-buddy.py` checks keyboard, single-canvas transformation, rendered artwork, request/history, AI proof, retry, cancellation, focus, reduced motion, fallback and phone layout. Existing all-page checks positively assert Buddy and reject retired identities. Browser AI responses are deterministic fixtures and cannot prove live Gemma availability.
+
+[CI run 42930605564](https://github.com/Impact-Investment-Group/Impact-Investment-Group-site/actions/runs/42930605564) passed on `97b9f1a` on 11 November 2026: 64 page/viewport checks, 47 existing interactions, 13 Buddy cases including the 390 × 500 composer, partner ecosystem checks, cross-browser scrolling and pricing checks. Homepage JavaScript measured 771,477 bytes at all four tested widths, below the unchanged 780,000-byte allowance. All 32 visual captures passed; all 276 incomplete contrast nodes were measured from rendered pixels, with none left unmeasured. The feature-branch deployment job was skipped.
+
+No local tests, builds or executable audits were run. Manual browser review of the built artifact and publication remain pending at this checkpoint. The final wave report owns that review, live AI evidence and deployment status.
