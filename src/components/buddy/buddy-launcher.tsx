@@ -37,9 +37,9 @@ export function BuddyLauncher() {
   if (Assistant) return <Assistant initialTopic={options.current.topic} initialTrigger={options.current.trigger} />;
   return <>
     <button type="button" data-buddy-launcher onClick={() => open()} aria-busy={loading} aria-haspopup="dialog" disabled={loading}
-      className="fixed bottom-24 right-4 z-40 flex min-h-12 items-center gap-2 rounded-full border border-rule bg-page py-2 pl-3 pr-5 font-heading text-base font-semibold text-ink shadow-lg transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 sm:right-6" style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))" }}>
+      className="relative mx-auto my-6 flex min-h-12 items-center gap-2 rounded-full border border-rule bg-page py-2 pl-3 pr-5 font-heading text-base font-semibold text-ink shadow-lg transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 lg:fixed lg:bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:right-5 lg:z-40 lg:m-0">
       <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-teal-600"><KeyRound aria-hidden="true" className="size-5" /></span>{loading ? "Opening Buddy..." : buddyCopy.launcher}
     </button>
-    {failed && <p role="alert" className="fixed bottom-40 right-4 z-40 max-w-xs rounded-2xl border border-rule bg-page p-4 text-sm text-ink shadow-lg">Buddy could not open. Try again or <a href="/contact" className="font-semibold underline">contact our team</a>.</p>}
+    {failed && <p role="alert" className="mx-auto mb-6 max-w-xs rounded-2xl border border-rule bg-page p-4 text-sm text-ink shadow-lg lg:fixed lg:bottom-40 lg:right-5 lg:z-40 lg:m-0">Buddy could not open. Try again or <a href="/contact" className="font-semibold underline">contact our team</a>.</p>}
   </>;
 }

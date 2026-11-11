@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, KeyRound, Menu, X } from "lucide-react";
 
 import { Logo, LOGO_HOME_NAME } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
 import { partnerProfiles } from "@/content/partners";
 import { primaryNav, registerRoute } from "@/content/site";
 import { cn } from "@/lib/utils";
+import { openBuddy } from "@/content/buddy";
 
 /**
  * The platform itself is not open yet, so "Log in" lands on the same
@@ -650,6 +651,15 @@ export function SiteHeader() {
                     ) : null}
                   </React.Fragment>
                 ))}
+                <li>
+                  <button type="button" onClick={() => {
+                    setOpen(false);
+                    triggerRef.current?.focus();
+                    window.requestAnimationFrame(() => openBuddy(pathname.startsWith("/pricing") ? "investment" : "property"));
+                  }} className="flex min-h-11 items-center gap-3 font-heading text-[26px] font-semibold text-teal-600">
+                    <KeyRound aria-hidden="true" className="size-5" />Ask Buddy
+                  </button>
+                </li>
               </ul>
             </nav>
 
