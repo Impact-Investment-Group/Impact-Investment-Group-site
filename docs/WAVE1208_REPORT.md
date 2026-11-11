@@ -2,6 +2,11 @@
 
 ## Result and scope
 
+The public website was deployed successfully from `496186a` on 11 November
+2026 and checked live at 01:01 UTC. Buddy's design and interactive explanations
+are live. AI questions remain unavailable until the backend readiness check
+confirms that the service is configured.
+
 The public website has one Buddy identity: a key for property, a pound sign for
 investment information and a heart for care and support. The homepage explorer
 lets visitors choose an area, see Buddy transform, read a short process and
@@ -38,7 +43,7 @@ conversation area shrink while preserving the composer.
 
 ## AI integration
 
-The website posts to its existing direct marketing backend at
+When the readiness check succeeds, the website posts to its existing direct marketing backend at
 `/public/buddy`. The companion platform wave implements this separate public
 route using the existing Cloudflare/Gemma assistant configuration and shared
 allowance. It has no authenticated account/deal context or action tools.
@@ -52,7 +57,7 @@ links; it never produces a scripted answer labelled as AI.
 Model and guard credentials stay server-side. The required reply guard and
 shared budget must be operational before live answers can be claimed. The
 backend wave report records settings, rate limits, telemetry scrubbing,
-deadline behaviour and the concurrent wave 1207 dependency.
+deadline behaviour and provider prerequisites.
 
 Before enabling questions, the panel checks `/public/buddy/status` with a
 six-second timeout and requires `configured: true`. A missing or unavailable
@@ -60,6 +65,14 @@ service shows related pages and a connection retry, with no question sent.
 History can be cleared while offline. Readiness is checked again on opening;
 cancelled or stale responses cannot enable the composer. This addition follows
 the live API returning 404 while its final CI is blocked by GitHub billing.
+
+At closeout, `/public/buddy/status` still returned HTTP 404 with the public
+website's Origin. The companion backend functional head is `a8e6e3104`, with
+report head `5ae20fe1f`; its latest CI run `42932432975` was blocked by GitHub
+billing before the required jobs could run. Live model setup remains
+unverified. Backend deployment, the required reply guard and a successful real
+provider response remain prerequisites for enabling and claiming live AI.
+The website's passing fixture tests do not remove those prerequisites.
 
 ## Verification status
 
@@ -69,14 +82,25 @@ explicit deterministic fixtures; they cannot establish live Gemma operation.
 
 Initial CI found the upfront chat import exceeded the homepage JavaScript
 budget. Loading chat on request restored compliance with the unchanged
-780,000-byte limit. CI run `42930605564` passed on `97b9f1a`: 64 page/viewport
-checks, 47 interactions, 13 Buddy cases, four partner-ecosystem widths,
-Firefox/WebKit scrolling, pricing and motion, and rendered contrast checks.
-Homepage JavaScript measured 771,477 bytes. All 276 contrast nodes needing
-pixel verification were measured, with none unproven, across 32 visual shots.
+780,000-byte limit. Final [CI run 42934010973](https://github.com/Impact-Investment-Group/Impact-Investment-Group-site/actions/runs/42934010973)
+passed and deployed `496186a`: 64 page/viewport checks, 47 interactions, all
+17 Buddy cases, four partner-ecosystem widths, Firefox/WebKit scrolling,
+pricing and motion, and rendered contrast checks. Homepage JavaScript measured
+771,737 bytes at all four tested widths. All 276 contrast nodes needing pixel
+verification were measured, with none unproven, across 32 visual shots.
 
-The exact CI-generated Pages artifact was served unchanged for manual browser
-review. Desktop key/pound forms, 390px menu-to-chat handoff, reopening and focus
-return to the menu trigger were verified. Temporary viewport overrides were
-reset. Public deployment and live AI availability remain separate checks.
-The subsequent readiness cases require a fresh CI result before publication.
+The Buddy cases cover successful fixture answers, strict AI proof, request
+history, cancellation, focus, reduced motion, artwork failure, the 390 × 500
+composer, readiness failure/recovery, a six-second timeout, late responses,
+and clearing history while unavailable. The final Buddy artifact reports
+17 passes and no failures. Unavailable-state screenshots at 390px and 1280px
+show contextual links and connection retry without a composer or fake answer.
+
+Final CI screenshots were reviewed. The live website was checked at 01:01 UTC
+on 11 November: the new homepage
+explorer, Costs and Support selection, and the animated heart form worked.
+Live Ask Buddy displayed the unavailable state against the actual backend.
+At 390 × 844, the related-page links and retry were clear, with no composer.
+Temporary viewport overrides were reset and the browser review was closed.
+This verifies the deployed website and its honest unavailable state, not a
+live Gemma answer.

@@ -1,6 +1,6 @@
 # Wave 1208 design review
 
-Reviewed 10 to 11 November 2026. Scope: the public website, shared components and Buddy. This source-backed review records CI evidence below; it does not certify the signed-in platform or deployment. Final verification belongs in `WAVE1208_REPORT.md`.
+Reviewed 10 to 11 November 2026. Scope: the public website, shared components and Buddy. This source-backed review records CI and public deployment evidence below; it does not certify the signed-in platform. Final verification is recorded in `WAVE1208_REPORT.md`.
 
 ## Reference principles
 
@@ -9,7 +9,7 @@ The [Instagram reference](https://www.instagram.com/reel/Dfh24cUh4KF/) explains 
 | Observed principle | Applied, retained or deliberately limited |
 | --- | --- |
 | 1. Kerning | Retain Barlow, Inter and browser shaping. No manual character-pair adjustments were justified. Typography: `src/styles.css`. |
-| 2. Optical centre | Buddy has a reserved stage and icons have centred targets. Optical balance still requires visual QA; geometry alone does not prove it. `src/components/buddy/buddy-character.tsx`, `buddy-explorer.tsx`. |
+| 2. Optical centre | Buddy has a reserved stage and icons have centred targets. CI captures and live desktop/phone views were reviewed; geometry alone does not establish balance in every context. `src/components/buddy/buddy-character.tsx`, `buddy-explorer.tsx`. |
 | 3. Tabular numbers | Retain pricing/map numerals; use tabular topic and input counters. `src/components/pricing/pricing.css`, `src/components/home/demand-map.tsx`, Buddy components. |
 | 4. Layout shift | Reserve the canvas and tallest topic panel. Preserve fixed header height, image dimensions and font fallbacks. `buddy-character.tsx`, `buddy-explorer.tsx`, `src/styles.css`. |
 | 5. Tracking | Preserve heading/eyebrow hierarchy; Buddy headings use `tracking-tight`. Enlarge tiny navigation labels. `buddy-explorer.tsx`, `src/components/site-header.tsx`. |
@@ -42,7 +42,7 @@ The homepage introduces one Buddy with property, investment and support topics. 
 
 The supplied atlas and articulated renderer animate the key, pound-sign and heart forms. The transformation includes a body-artwork change during the supplied transition; it is not geometric vector morphing. Gestures are bounded, pause off-screen, respect reduced motion and clean up on unmount. Secondary illustrations are stills. Public renderers and identity copy no longer present the old trio. Calculations are attributed to platform tools; Buddy guides and explains.
 
-The shared conversation panel has transient history, bounded input, pending/cancel/retry states, source links and honest failures. It calls the public Buddy endpoint, not the authenticated private assistant. Live model operation requires separate backend evidence.
+The shared conversation panel has transient history, bounded input, pending/cancel/retry states, related-page links and honest failures. It checks public backend readiness before enabling questions and calls the public Buddy endpoint, not the authenticated private assistant. Missing or unavailable readiness offers contextual pages and an explicit connection retry. Live model operation requires separate backend evidence.
 
 ## Route-family review
 
@@ -63,8 +63,8 @@ The shared conversation panel has transient history, bounded input, pending/canc
 
 The signed-in platform's design was not changed. Future candidates include Buddy beside property figures, guided acquisition steps, clearer demand-map legends/layer status, and management-dashboard triage. Each needs its own source/UI review, role permissions and data contracts. These are opportunities, not newly proven defects or completed work.
 
-`scripts/site-buddy.py` checks keyboard, single-canvas transformation, rendered artwork, request/history, AI proof, retry, cancellation, focus, reduced motion, fallback and phone layout. Existing all-page checks positively assert Buddy and reject retired identities. Browser AI responses are deterministic fixtures and cannot prove live Gemma availability.
+`scripts/site-buddy.py` checks keyboard, single-canvas transformation, rendered artwork, request/history, AI proof, retry, cancellation, focus, reduced motion, fallback, phone layout and readiness failure/recovery. Existing all-page checks positively assert Buddy and reject retired identities. Browser AI responses are deterministic fixtures and cannot prove live Gemma availability.
 
-[CI run 42930605564](https://github.com/Impact-Investment-Group/Impact-Investment-Group-site/actions/runs/42930605564) passed on `97b9f1a` on 11 November 2026: 64 page/viewport checks, 47 existing interactions, 13 Buddy cases including the 390 × 500 composer, partner ecosystem checks, cross-browser scrolling and pricing checks. Homepage JavaScript measured 771,477 bytes at all four tested widths, below the unchanged 780,000-byte allowance. All 32 visual captures passed; all 276 incomplete contrast nodes were measured from rendered pixels, with none left unmeasured. The feature-branch deployment job was skipped.
+[Final CI run 42934010973](https://github.com/Impact-Investment-Group/Impact-Investment-Group-site/actions/runs/42934010973) passed and deployed `496186a` on 11 November 2026: 64 page/viewport checks, 47 existing interactions, all 17 Buddy cases including readiness and the 390 × 500 composer, partner ecosystem checks, cross-browser scrolling and pricing checks. Homepage JavaScript measured 771,737 bytes at all four tested widths, below the unchanged 780,000-byte allowance. All 32 visual captures passed; all 276 incomplete contrast nodes were measured from rendered pixels, with none left unmeasured.
 
-No local tests, builds or executable audits were run. Manual browser review of the built artifact and publication remain pending at this checkpoint. The final wave report owns that review, live AI evidence and deployment status.
+No local tests, builds or executable audits were run. Live review at 01:01 UTC on 11 November confirmed the homepage explorer, Costs/Support switching and animated heart form. Live Ask Buddy showed its unavailable state against the actual backend; a 390 × 844 phone view showed clear links and retry without a composer. The public status endpoint still returned HTTP 404, and backend CI was blocked by GitHub billing. Live model setup and the required guard remain prerequisites, as detailed in the final wave report. No live AI answer is claimed.
