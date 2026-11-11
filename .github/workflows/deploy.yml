@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, feat/wave1208-buddy-website]
   workflow_dispatch:
     inputs:
       source_ref:
@@ -16,7 +16,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -116,6 +116,10 @@ jobs:
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
         run: python scripts/wave921-ecosystem.py
 
+      - name: Check Buddy journeys and AI states
+        if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
+        run: python scripts/site-buddy.py
+
       - name: Verify rendered colour contrast and light page surfaces
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
         run: |
@@ -138,11 +142,20 @@ jobs:
           path: docs/screenshots/wave921
           retention-days: 7
 
+      - name: Preserve Buddy evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddy-experience-${{ github.sha }}
+          path: docs/screenshots/wave909/buddy
+          retention-days: 7
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/client
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:

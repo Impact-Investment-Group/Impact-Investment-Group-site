@@ -41,6 +41,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { ImageFade } from "@/components/image-fade";
 import { SiteMotion } from "@/components/site-motion";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { BuddyAssistant } from "@/components/buddy/buddy-assistant";
 import { PageOutline, ReadingProgress } from "@/components/page-outline";
 import { siteDescription } from "@/content/site";
 
@@ -108,7 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Impact Investment Group" },
       {
         name: "description",
@@ -222,6 +223,7 @@ function RootComponent() {
         <SiteFooter />
       </div>
       <BackToTop />
+      <BuddyAssistant />
     </QueryClientProvider>
   );
 }
