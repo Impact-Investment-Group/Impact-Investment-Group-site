@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { RolePicker } from "@/components/register/role-picker";
 import { PreReleaseBadge } from "@/components/ui/pre-release-badge";
 import { Reveal } from "@/components/ui/reveal";
-import { pickerContent } from "@/content/register";
+import { pickerContent } from "@/content/audiences";
 import { SIZES_CARD_ILLUSTRATION, variantSrcSet } from "@/lib/responsive-image";
 
 /**

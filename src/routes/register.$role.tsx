@@ -4,7 +4,7 @@ import { ArrowLeft, LifeBuoy } from "lucide-react";
 import { RoleIcon } from "@/components/register/role-icon";
 import { RegistrationFlow } from "@/components/register/registration-flow";
 import { Button } from "@/components/ui/button";
-import { getRegisterRole, residentUrgentNote } from "@/content/register";
+import { residentUrgentNote } from "@/content/register";
 import { crisisLines, crisisNote, whatsappCommunity } from "@/content/site";
 
 /**
@@ -21,14 +21,15 @@ import { crisisLines, crisisNote, whatsappCommunity } from "@/content/site";
 export const Route = createFileRoute("/register/$role")({
   // The ten ids are a closed set. Anything else is a 404 rather than an empty
   // page, so a mistyped or retired link fails loudly instead of quietly.
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    const { getRegisterRole } = await import("@/content/register");
     const role = getRegisterRole(params.role);
     if (!role) throw notFound();
     return { role };
   },
   component: RegisterRolePage,
-  head: ({ params }) => {
-    const role = getRegisterRole(params.role);
+  head: ({ loaderData }) => {
+    const role = loaderData?.role;
     if (!role) return {};
     // A pipe, not an em dash. The rest of the site's titles use an em
     // dash and these two deliberately do not: this wave authors none.

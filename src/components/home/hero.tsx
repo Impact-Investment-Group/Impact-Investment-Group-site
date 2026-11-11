@@ -3,8 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { RoleIcon } from "@/components/register/role-icon";
-import { registerRoles } from "@/content/audiences";
-import { registerAsDivider } from "@/content/register";
+import { registerRoles, registerAsDivider } from "@/content/audiences";
 import { cn } from "@/lib/utils";
 import { SIZES_HERO_GROUND, variantSrcSet } from "@/lib/responsive-image";
 import { ZooplaDiscovery } from "./zoopla-discovery";

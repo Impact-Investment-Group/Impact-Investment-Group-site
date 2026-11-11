@@ -1,5 +1,16 @@
 /** The wait-list role tiles and the three-panel band. Copy edits happen here, not in JSX. */
 
+export const registerAsDivider = "Register to join the waitlist as";
+
+export const pickerContent = {
+  eyebrow: "The waiting list",
+  h1: "Register to join the waitlist",
+  lede: "Choose the role that fits you. Create your account, then tell us your preferences one question at a time.",
+  gridLabel: "I am registering as",
+  footnote:
+    "Registering costs nothing and commits you to nothing. It puts you on the list before the platform opens, and it puts your answer in the room while we are still deciding what it does.",
+} as const;
+
 export interface AudienceRole {
   /**
    * Also the URL segment of this role's wait-list page, /register/<id>, and the
