@@ -261,16 +261,17 @@ def floating_placement_and_minimise(page, fixtures):
         !active.hasAttribute('data-radix-focus-guard'));
     })()"""), "Shift+Tab looped back into the non-modal chat"
     expect(chat).to_be_visible()
-    # Exercise a real page control outside the panel. On the narrowest phone
-    # the header remains exposed while the panel physically covers the mission
-    # tabs. The other widths also exercise the existing page-body interaction.
-    if page.viewport_size["width"] == 320:
+    # Exercise a real page control outside the panel. On phones the header
+    # remains exposed while the panel physically covers the mission tabs.
+    # Larger widths also exercise the existing page-body interaction.
+    if page.viewport_size["width"] < 640:
         page.evaluate("scrollTo({top: 0, behavior: 'instant'})")
         menu_button = page.locator("header.site-header").get_by_role("button", name="Open menu", exact=True)
         expect(menu_button).to_be_in_viewport()
         menu_bounds = menu_button.bounding_box()
         chat_bounds = chat.bounding_box()
         assert menu_bounds["y"] >= 0 and menu_bounds["y"] + menu_bounds["height"] <= chat_bounds["y"], "Buddy covers the phone's header control"
+        assert menu_button.evaluate("n => { const r=n.getBoundingClientRect(); return n.contains(document.elementFromPoint(r.x+r.width/2, r.y+r.height/2)); }"), "The phone's menu target is covered"
         menu_button.click()
         menu = page.get_by_role("dialog", name="Site menu", exact=True)
         expect(menu).to_be_visible()
