@@ -97,6 +97,12 @@ with sync_playwright() as pw:
         page.on("pageerror", lambda error: errors.append(str(error)))
         try:
             page.goto(base + "/", wait_until="networkidle")
+            # Buddy is intentionally animated while visible. Use its real pause
+            # control before measuring page idleness, retaining the same strict
+            # RAF budget. site-buddy.py separately verifies the active widget,
+            # minimized render cleanup and reduced-motion behaviour.
+            page.get_by_role('button', name='Minimize Buddy', exact=True).click()
+            expect(page.get_by_role('button', name='Show Buddy', exact=True)).to_be_visible()
             page.wait_for_timeout(1400)
             page.locator('header.site-header').screenshot(path=str(OUT / f"logo-header-{width}.png"))
             before = page.evaluate("__frames")
