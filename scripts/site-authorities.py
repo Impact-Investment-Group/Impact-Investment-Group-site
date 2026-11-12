@@ -113,6 +113,12 @@ def reduced_mobile(page):
     first = preview.bounding_box()["x"]
     page.wait_for_timeout(300)
     assert abs(preview.bounding_box()["x"] - first) < 0.2
+    lane = page.locator("#council-logo-preview .logo-marquee")
+    lane.focus()
+    expect(lane).to_be_focused()
+    before_scroll = lane.evaluate("node => node.scrollLeft")
+    lane.press("ArrowRight")
+    page.wait_for_function("before => document.querySelector('#council-logo-preview .logo-marquee').scrollLeft > before", arg=before_scroll)
     open_directory(page)
     page.get_by_label("Country", exact=True).select_option("Northern Ireland")
     expect(page.locator("#authority-results [data-authority-code]")).to_have_count(11)

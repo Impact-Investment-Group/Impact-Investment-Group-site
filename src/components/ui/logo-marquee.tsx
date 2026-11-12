@@ -25,6 +25,7 @@ export function LogoMarquee({
   className,
   plateClassName,
   imgClassName,
+  focusable = false,
 }: {
   items: LogoCredit[];
   /** Accessible name for the list of credits behind the lane. */
@@ -34,6 +35,8 @@ export function LogoMarquee({
   plateClassName?: string;
   /** Overrides how the artwork sits inside the plate. */
   imgClassName?: string;
+  /** Allow keyboard scrolling when this lane uses a reduced-motion overflow view. */
+  focusable?: boolean;
 }) {
   // Duplicated once so the translate loops seamlessly. Keys carry the index
   // because every logo appears twice.
@@ -45,6 +48,9 @@ export function LogoMarquee({
       ref={ref}
       data-motion={playing ? "running" : "paused"}
       className={cn("logo-marquee", className)}
+      tabIndex={focusable ? 0 : undefined}
+      role={focusable ? "region" : undefined}
+      aria-label={focusable ? label : undefined}
     >
       <div className="logo-marquee__track" aria-hidden="true">
         {lane.map((item, i) => (

@@ -64,6 +64,8 @@ export function CouncilPanel() {
           <LogoMarquee
             items={authorityPreview}
             label="A selection of local authorities across the UK"
+            focusable
+            className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
             plateClassName="h-16 w-[136px] overflow-hidden sm:h-[68px] sm:w-[148px]"
             imgClassName="size-full"
           />
