@@ -122,7 +122,10 @@ with sync_playwright() as pw:
                     ])
                     supplied = [
                         (0, "Israel Silgram", "Impact Director", "israel-silgram", []),
-                        (2, "Laurie Hale", "Housing Manager", "laurie-hale", ["20+ years in the property sector"]),
+                        (2, "Laurie Hale", "Housing Manager", "laurie-hale", [
+                            "20+ years in residential property management",
+                            "Landlord & investor relations, portfolio growth, compliance and asset management",
+                        ]),
                         (3, "Josh Howard", "Partnership Manager", "josh-howard", ["15+ years experience in strategic partnership management and contract growth"]),
                         (4, "Callum Saxon", "Chief Technology Officer", "callum-saxon-v2", []),
                         (5, "Tommy Lam", "Software Engineer & AI Specialist", "tommy-lam", ["Software engineering · AI & LLMs", "4 years professional experience"]),
