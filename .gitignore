@@ -40,3 +40,6 @@ docs/screenshots/wave490/control/
 # Wave 507's guard writes 120 full-page shots here on every run and pairs them
 # by hash; the record keeps the hashes and the shots are never committed.
 docs/screenshots/wave507/
+
+# Complete council gallery is generated from its reviewed catalogue at build time.
+/public/local-authorities/index.html

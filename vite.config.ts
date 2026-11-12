@@ -79,7 +79,17 @@ export default defineConfig({
             crawlLinks: true,
             // Query variants share one file on Pages. Keep the canonical HTML
             // so a crawled enquiry cannot overwrite the default contact form.
-            filter: (page) => !new URL(page.path, "https://impactinvestmentgroup.co.uk").search,
+            filter: (page: { path: string }) => {
+              const url = new URL(page.path, "https://impactinvestmentgroup.co.uk");
+              const path = url.pathname.replace(/\/+$/, "");
+              // A complete no-JavaScript gallery is generated in public/.
+              // Do not replace it with the React router's unknown-route page.
+              return (
+                !url.search &&
+                path !== "/local-authorities" &&
+                path !== `${basePath.replace(/\/+$/, "")}/local-authorities`
+              );
+            },
             autoSubfolderIndex: true,
             failOnError: true,
             retryCount: 2,

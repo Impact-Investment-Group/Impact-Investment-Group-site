@@ -1,0 +1,3123 @@
+{
+  "metadata": {
+    "as_of": "2026-11-12",
+    "retrieved_at": "2026-11-12T09:57:23.178416+00:00",
+    "scope": "All 382 current service-delivering UK principal local authorities: 361 ONS May 2026 districts/unitaries/council areas plus 21 English county councils. Includes City of London and Isles of Scilly.",
+    "counts_by_country": {
+      "England": 317,
+      "Northern Ireland": 11,
+      "Scotland": 32,
+      "Wales": 22
+    },
+    "counts_by_type": {
+      "non_metropolitan_district": 164,
+      "metropolitan_district": 36,
+      "unitary": 62,
+      "county": 21,
+      "city_of_london": 1,
+      "london_borough": 32,
+      "isles_of_scilly": 1,
+      "northern_ireland_district": 11,
+      "scottish_council": 32,
+      "welsh_principal_council": 22
+    },
+    "excluded": "Combined authorities, combined county authorities, Greater London Authority, parish/town/community councils, national park/fire/police authorities, and future/shadow councils are distinct layers and excluded.",
+    "surrey_transition": "The existing Surrey county and 11 district/borough councils remain service-delivering authorities until 31 March 2027. East and West Surrey shadow councils prepare for service responsibility from 1 April 2027; do not prematurely replace the current 12.",
+    "sources": {
+      "names_and_websites": "https://raw.githubusercontent.com/alphagov/local-links-manager/e0044d06811681acc2ed14acbd83cfdaa4177714/data/local-authorities.csv",
+      "ons_names_and_codes": "https://www.arcgis.com/home/item.html?id=43eddab36751466db7bb4006b242243c",
+      "ons_upper_tiers": "https://www.arcgis.com/home/item.html?id=79e0950fa93446b996d0f3f95537ab6d",
+      "surrey_status": "https://www.gov.uk/government/collections/surrey-local-government-reorganisation",
+      "surrey_detail": "https://www.surreylgrhub.gov.uk/news/article/6/details-of-surrey-s-new-councils-confirmed-as-government-order-becomes-law",
+      "england_structure": "https://www.gov.uk/guidance/local-government-structure-and-elections",
+      "scotland": "https://www.gov.scot/policies/local-government/",
+      "wales": "https://www.gov.wales/find-your-local-planning-authority",
+      "northern_ireland": "https://www.nidirect.gov.uk/articles/local-councils"
+    },
+    "directory_code_corrections": {
+      "E08000016": "E08000038",
+      "E08000019": "E08000039",
+      "E10000023": "E06000065",
+      "E10000027": "E06000066",
+      "S12000015": "S12000047",
+      "S12000024": "S12000048",
+      "S12000046": "S12000049",
+      "S12000044": "S12000050"
+    },
+    "directory_name_corrections": {
+      "E06000065": "North Yorkshire Council",
+      "E06000066": "Somerset Council"
+    },
+    "name_correction_sources": [
+      "https://www.northyorks.gov.uk/",
+      "https://www.somerset.gov.uk/"
+    ],
+    "validation": {
+      "exact_ons_code_set_match": true,
+      "unique_codes": 382,
+      "missing_websites": 0,
+      "current_ons_lad_rows": 361,
+      "additional_ons_county_rows": 21,
+      "govuk_directory_sha256": "24c6ea7db4f679ec592aa58930d12a02944517aa2aa0f2999723d6cac466110f"
+    },
+    "limitations": "Council homepage URLs are sourced from the GOV.UK directory, not individually availability-tested. Logos are not supplied by this roster. GSS codes identify current statistical geography, while the GOV.UK entity id/slug assists identity matching; retain both when updating boundaries. No new relationship or endorsement is established by listing a council."
+  },
+  "authorities": [
+    {
+      "gss_code": "S12000033",
+      "name": "Aberdeen City Council",
+      "area_name": "Aberdeen City",
+      "country": "Scotland",
+      "website": "https://www.aberdeencity.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000033.webp"
+    },
+    {
+      "gss_code": "S12000034",
+      "name": "Aberdeenshire Council",
+      "area_name": "Aberdeenshire",
+      "country": "Scotland",
+      "website": "https://www.aberdeenshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000034.webp"
+    },
+    {
+      "gss_code": "E07000223",
+      "name": "Adur District Council",
+      "area_name": "Adur",
+      "country": "England",
+      "website": "https://www.adur-worthing.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000223.webp"
+    },
+    {
+      "gss_code": "E07000032",
+      "name": "Amber Valley Borough Council",
+      "area_name": "Amber Valley",
+      "country": "England",
+      "website": "http://www.ambervalley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000032.webp"
+    },
+    {
+      "gss_code": "S12000041",
+      "name": "Angus Council",
+      "area_name": "Angus",
+      "country": "Scotland",
+      "website": "https://www.angus.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000041.webp"
+    },
+    {
+      "gss_code": "N09000001",
+      "name": "Antrim and Newtownabbey Borough Council",
+      "area_name": "Antrim and Newtownabbey",
+      "country": "Northern Ireland",
+      "website": "https://antrimandnewtownabbey.gov.uk/",
+      "logo": "/images/logos/councils/uk/N09000001.webp"
+    },
+    {
+      "gss_code": "N09000011",
+      "name": "Ards and North Down Borough Council",
+      "area_name": "Ards and North Down",
+      "country": "Northern Ireland",
+      "website": "https://www.ardsandnorthdown.gov.uk/",
+      "logo": "/images/logos/councils/uk/N09000011.webp"
+    },
+    {
+      "gss_code": "S12000035",
+      "name": "Argyll and Bute Council",
+      "area_name": "Argyll and Bute",
+      "country": "Scotland",
+      "website": "https://www.argyll-bute.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000035.webp"
+    },
+    {
+      "gss_code": "N09000002",
+      "name": "Armagh City, Banbridge and Craigavon Borough Council",
+      "area_name": "Armagh City, Banbridge and Craigavon",
+      "country": "Northern Ireland",
+      "website": "https://www.armaghbanbridgecraigavon.gov.uk",
+      "logo": "/images/logos/councils/uk/N09000002.webp"
+    },
+    {
+      "gss_code": "E07000224",
+      "name": "Arun District Council",
+      "area_name": "Arun",
+      "country": "England",
+      "website": "http://www.arun.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000224.webp"
+    },
+    {
+      "gss_code": "E07000170",
+      "name": "Ashfield District Council",
+      "area_name": "Ashfield",
+      "country": "England",
+      "website": "https://www.ashfield.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000170.webp"
+    },
+    {
+      "gss_code": "E07000105",
+      "name": "Ashford Borough Council",
+      "area_name": "Ashford",
+      "country": "England",
+      "website": "https://www.ashford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000105.webp"
+    },
+    {
+      "gss_code": "E07000200",
+      "name": "Babergh District Council",
+      "area_name": "Babergh",
+      "country": "England",
+      "website": "https://www.babergh.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000200.webp"
+    },
+    {
+      "gss_code": "E08000038",
+      "name": "Barnsley Metropolitan Borough Council",
+      "area_name": "Barnsley",
+      "country": "England",
+      "website": "https://www.barnsley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000038.webp"
+    },
+    {
+      "gss_code": "E07000066",
+      "name": "Basildon Borough Council",
+      "area_name": "Basildon",
+      "country": "England",
+      "website": "https://www.basildon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000066.webp"
+    },
+    {
+      "gss_code": "E07000084",
+      "name": "Basingstoke and Deane Borough Council",
+      "area_name": "Basingstoke and Deane",
+      "country": "England",
+      "website": "http://www.basingstoke.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000084.webp"
+    },
+    {
+      "gss_code": "E07000171",
+      "name": "Bassetlaw District Council",
+      "area_name": "Bassetlaw",
+      "country": "England",
+      "website": "https://www.bassetlaw.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000171.webp"
+    },
+    {
+      "gss_code": "E06000022",
+      "name": "Bath and North East Somerset Council",
+      "area_name": "Bath and North East Somerset",
+      "country": "England",
+      "website": "http://www.bathnes.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000022.webp"
+    },
+    {
+      "gss_code": "E06000055",
+      "name": "Bedford Borough Council",
+      "area_name": "Bedford",
+      "country": "England",
+      "website": "https://www.bedford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000055.webp"
+    },
+    {
+      "gss_code": "N09000003",
+      "name": "Belfast City Council",
+      "area_name": "Belfast",
+      "country": "Northern Ireland",
+      "website": "https://www.belfastcity.gov.uk/",
+      "logo": "/images/logos/councils/uk/N09000003.webp"
+    },
+    {
+      "gss_code": "E08000025",
+      "name": "Birmingham City Council",
+      "area_name": "Birmingham",
+      "country": "England",
+      "website": "https://www.birmingham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000025.webp"
+    },
+    {
+      "gss_code": "E07000129",
+      "name": "Blaby District Council",
+      "area_name": "Blaby",
+      "country": "England",
+      "website": "https://www.blaby.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000129.webp"
+    },
+    {
+      "gss_code": "E06000008",
+      "name": "Blackburn with Darwen Borough Council",
+      "area_name": "Blackburn with Darwen",
+      "country": "England",
+      "website": "https://www.blackburn.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000008.webp"
+    },
+    {
+      "gss_code": "E06000009",
+      "name": "Blackpool Borough Council",
+      "area_name": "Blackpool",
+      "country": "England",
+      "website": "https://www.blackpool.gov.uk/Home.aspx",
+      "logo": "/images/logos/councils/uk/E06000009.webp"
+    },
+    {
+      "gss_code": "W06000019",
+      "name": "Blaenau Gwent County Borough Council",
+      "area_name": "Blaenau Gwent",
+      "country": "Wales",
+      "website": "https://www.blaenau-gwent.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000019.webp"
+    },
+    {
+      "gss_code": "E07000033",
+      "name": "Bolsover District Council",
+      "area_name": "Bolsover",
+      "country": "England",
+      "website": "https://www.bolsover.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000033.webp"
+    },
+    {
+      "gss_code": "E08000001",
+      "name": "Bolton Metropolitan Borough Council",
+      "area_name": "Bolton",
+      "country": "England",
+      "website": "http://www.bolton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000001.webp"
+    },
+    {
+      "gss_code": "E07000146",
+      "name": "Borough Council of Kings Lynn and West Norfolk",
+      "area_name": "King's Lynn and West Norfolk",
+      "country": "England",
+      "website": "http://www.west-norfolk.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000146.webp"
+    },
+    {
+      "gss_code": "E07000095",
+      "name": "Borough of Broxbourne",
+      "area_name": "Broxbourne",
+      "country": "England",
+      "website": "https://www.broxbourne.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000095.webp"
+    },
+    {
+      "gss_code": "E07000136",
+      "name": "Boston Borough Council",
+      "area_name": "Boston",
+      "country": "England",
+      "website": "https://www.boston.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000136.webp"
+    },
+    {
+      "gss_code": "E06000058",
+      "name": "Bournemouth, Christchurch and Poole Council",
+      "area_name": "Bournemouth, Christchurch and Poole",
+      "country": "England",
+      "website": "https://www.bcpcouncil.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000058.webp"
+    },
+    {
+      "gss_code": "E06000036",
+      "name": "Bracknell Forest Council",
+      "area_name": "Bracknell Forest",
+      "country": "England",
+      "website": "https://www.bracknell-forest.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000036.webp"
+    },
+    {
+      "gss_code": "E07000067",
+      "name": "Braintree District Council",
+      "area_name": "Braintree",
+      "country": "England",
+      "website": "http://www.braintree.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000067.webp"
+    },
+    {
+      "gss_code": "E07000143",
+      "name": "Breckland Council",
+      "area_name": "Breckland",
+      "country": "England",
+      "website": "http://www.breckland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000143.webp"
+    },
+    {
+      "gss_code": "E07000068",
+      "name": "Brentwood Borough Council",
+      "area_name": "Brentwood",
+      "country": "England",
+      "website": "http://www.brentwood.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000068.webp"
+    },
+    {
+      "gss_code": "W06000013",
+      "name": "Bridgend County Borough Council",
+      "area_name": "Bridgend",
+      "country": "Wales",
+      "website": "https://www.bridgend.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000013.webp"
+    },
+    {
+      "gss_code": "E06000043",
+      "name": "Brighton and Hove City Council",
+      "area_name": "Brighton and Hove",
+      "country": "England",
+      "website": "https://www.brighton-hove.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000043.webp"
+    },
+    {
+      "gss_code": "E06000023",
+      "name": "Bristol City Council",
+      "area_name": "Bristol, City of",
+      "country": "England",
+      "website": "https://www.bristol.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000023.webp"
+    },
+    {
+      "gss_code": "E07000144",
+      "name": "Broadland District Council",
+      "area_name": "Broadland",
+      "country": "England",
+      "website": "https://www.southnorfolkandbroadland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000144.webp"
+    },
+    {
+      "gss_code": "E07000234",
+      "name": "Bromsgrove District Council",
+      "area_name": "Bromsgrove",
+      "country": "England",
+      "website": "http://www.bromsgrove.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000234.webp"
+    },
+    {
+      "gss_code": "E07000172",
+      "name": "Broxtowe Borough Council",
+      "area_name": "Broxtowe",
+      "country": "England",
+      "website": "https://www.broxtowe.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000172.webp"
+    },
+    {
+      "gss_code": "E06000060",
+      "name": "Buckinghamshire Council",
+      "area_name": "Buckinghamshire",
+      "country": "England",
+      "website": "https://www.buckinghamshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000060.webp"
+    },
+    {
+      "gss_code": "E07000117",
+      "name": "Burnley Borough Council",
+      "area_name": "Burnley",
+      "country": "England",
+      "website": "http://www.burnley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000117.webp"
+    },
+    {
+      "gss_code": "E08000002",
+      "name": "Bury Metropolitan Borough Council",
+      "area_name": "Bury",
+      "country": "England",
+      "website": "https://www.bury.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000002.webp"
+    },
+    {
+      "gss_code": "W06000018",
+      "name": "Caerphilly County Borough Council",
+      "area_name": "Caerphilly",
+      "country": "Wales",
+      "website": "http://www.caerphilly.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000018.webp"
+    },
+    {
+      "gss_code": "E08000033",
+      "name": "Calderdale Metropolitan Borough Council",
+      "area_name": "Calderdale",
+      "country": "England",
+      "website": "http://www.calderdale.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000033.webp"
+    },
+    {
+      "gss_code": "E07000008",
+      "name": "Cambridge City Council",
+      "area_name": "Cambridge",
+      "country": "England",
+      "website": "https://www.cambridge.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000008.webp"
+    },
+    {
+      "gss_code": "E10000003",
+      "name": "Cambridgeshire County Council",
+      "area_name": "Cambridgeshire",
+      "country": "England",
+      "website": "https://www.cambridgeshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000003.webp"
+    },
+    {
+      "gss_code": "E07000192",
+      "name": "Cannock Chase District Council",
+      "area_name": "Cannock Chase",
+      "country": "England",
+      "website": "http://www.cannockchasedc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000192.webp"
+    },
+    {
+      "gss_code": "E07000106",
+      "name": "Canterbury City Council",
+      "area_name": "Canterbury",
+      "country": "England",
+      "website": "https://www.canterbury.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000106.webp"
+    },
+    {
+      "gss_code": "W06000010",
+      "name": "Carmarthenshire County Council",
+      "area_name": "Carmarthenshire",
+      "country": "Wales",
+      "website": "https://www.carmarthenshire.gov.wales/home/council-services/",
+      "logo": "/images/logos/councils/uk/W06000010.webp"
+    },
+    {
+      "gss_code": "E07000069",
+      "name": "Castle Point Borough Council",
+      "area_name": "Castle Point",
+      "country": "England",
+      "website": "https://www.castlepoint.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000069.webp"
+    },
+    {
+      "gss_code": "N09000004",
+      "name": "Causeway Coast and Glens Borough Council",
+      "area_name": "Causeway Coast and Glens",
+      "country": "Northern Ireland",
+      "website": "https://www.causewaycoastandglens.gov.uk/",
+      "logo": "/images/logos/councils/uk/N09000004.webp"
+    },
+    {
+      "gss_code": "E06000056",
+      "name": "Central Bedfordshire Council",
+      "area_name": "Central Bedfordshire",
+      "country": "England",
+      "website": "http://www.centralbedfordshire.gov.uk",
+      "logo": "/images/logos/councils/uk/E06000056.webp"
+    },
+    {
+      "gss_code": "W06000008",
+      "name": "Ceredigion County Council",
+      "area_name": "Ceredigion",
+      "country": "Wales",
+      "website": "http://www.ceredigion.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000008.webp"
+    },
+    {
+      "gss_code": "E07000130",
+      "name": "Charnwood Borough Council",
+      "area_name": "Charnwood",
+      "country": "England",
+      "website": "http://www.charnwood.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000130.webp"
+    },
+    {
+      "gss_code": "E07000070",
+      "name": "Chelmsford City Council",
+      "area_name": "Chelmsford",
+      "country": "England",
+      "website": "https://www.chelmsford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000070.webp"
+    },
+    {
+      "gss_code": "E07000078",
+      "name": "Cheltenham Borough Council",
+      "area_name": "Cheltenham",
+      "country": "England",
+      "website": "https://www.cheltenham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000078.webp"
+    },
+    {
+      "gss_code": "E07000177",
+      "name": "Cherwell District Council",
+      "area_name": "Cherwell",
+      "country": "England",
+      "website": "https://www.cherwell.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000177.webp"
+    },
+    {
+      "gss_code": "E06000049",
+      "name": "Cheshire East Council",
+      "area_name": "Cheshire East",
+      "country": "England",
+      "website": "https://www.cheshireeast.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000049.webp"
+    },
+    {
+      "gss_code": "E06000050",
+      "name": "Cheshire West and Chester Council",
+      "area_name": "Cheshire West and Chester",
+      "country": "England",
+      "website": "https://www.cheshirewestandchester.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000050.webp"
+    },
+    {
+      "gss_code": "E07000034",
+      "name": "Chesterfield Borough Council",
+      "area_name": "Chesterfield",
+      "country": "England",
+      "website": "https://www.chesterfield.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000034.webp"
+    },
+    {
+      "gss_code": "E07000225",
+      "name": "Chichester District Council",
+      "area_name": "Chichester",
+      "country": "England",
+      "website": "http://www.chichester.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000225.webp"
+    },
+    {
+      "gss_code": "E07000118",
+      "name": "Chorley Council",
+      "area_name": "Chorley",
+      "country": "England",
+      "website": "http://www.chorley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000118.webp"
+    },
+    {
+      "gss_code": "W06000011",
+      "name": "City and County of Swansea Council",
+      "area_name": "Swansea",
+      "country": "Wales",
+      "website": "https://www.swansea.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000011.webp"
+    },
+    {
+      "gss_code": "E08000032",
+      "name": "City of Bradford Metropolitan District Council",
+      "area_name": "Bradford",
+      "country": "England",
+      "website": "https://www.bradford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000032.webp"
+    },
+    {
+      "gss_code": "W06000015",
+      "name": "City of Cardiff Council",
+      "area_name": "Cardiff",
+      "country": "Wales",
+      "website": "https://www.cardiff.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000015.webp"
+    },
+    {
+      "gss_code": "S12000036",
+      "name": "City of Edinburgh Council",
+      "area_name": "City of Edinburgh",
+      "country": "Scotland",
+      "website": "https://www.edinburgh.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000036.webp"
+    },
+    {
+      "gss_code": "E07000138",
+      "name": "City of Lincoln Council",
+      "area_name": "Lincoln",
+      "country": "England",
+      "website": "http://www.lincoln.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000138.webp"
+    },
+    {
+      "gss_code": "E09000001",
+      "name": "City of London Corporation",
+      "area_name": "City of London",
+      "country": "England",
+      "website": "https://www.cityoflondon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000001.webp"
+    },
+    {
+      "gss_code": "E09000033",
+      "name": "City of Westminster",
+      "area_name": "Westminster",
+      "country": "England",
+      "website": "https://www.westminster.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000033.webp"
+    },
+    {
+      "gss_code": "E08000031",
+      "name": "City of Wolverhampton Council",
+      "area_name": "Wolverhampton",
+      "country": "England",
+      "website": "http://www.wolverhampton.gov.uk",
+      "logo": "/images/logos/councils/uk/E08000031.webp"
+    },
+    {
+      "gss_code": "E06000014",
+      "name": "City of York Council",
+      "area_name": "York",
+      "country": "England",
+      "website": "https://www.york.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000014.webp"
+    },
+    {
+      "gss_code": "S12000005",
+      "name": "Clackmannanshire Council",
+      "area_name": "Clackmannanshire",
+      "country": "Scotland",
+      "website": "https://www.clacks.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000005.webp"
+    },
+    {
+      "gss_code": "E07000071",
+      "name": "Colchester City Council",
+      "area_name": "Colchester",
+      "country": "England",
+      "website": "http://www.colchester.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000071.webp"
+    },
+    {
+      "gss_code": "S12000013",
+      "name": "Comhairle nan Eilean Siar",
+      "area_name": "Na h-Eileanan Siar",
+      "country": "Scotland",
+      "website": "https://www.cne-siar.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000013.webp"
+    },
+    {
+      "gss_code": "W06000003",
+      "name": "Conwy County Borough Council",
+      "area_name": "Conwy",
+      "country": "Wales",
+      "website": "https://www.conwy.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000003.webp"
+    },
+    {
+      "gss_code": "E06000052",
+      "name": "Cornwall Council",
+      "area_name": "Cornwall",
+      "country": "England",
+      "website": "https://www.cornwall.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000052.webp"
+    },
+    {
+      "gss_code": "E07000079",
+      "name": "Cotswold District Council",
+      "area_name": "Cotswold",
+      "country": "England",
+      "website": "https://www.cotswold.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000079.webp"
+    },
+    {
+      "gss_code": "E06000053",
+      "name": "Council of the Isles of Scilly",
+      "area_name": "Isles of Scilly",
+      "country": "England",
+      "website": "http://www.scilly.gov.uk",
+      "logo": "/images/logos/councils/uk/E06000053.webp"
+    },
+    {
+      "gss_code": "E08000026",
+      "name": "Coventry City Council",
+      "area_name": "Coventry",
+      "country": "England",
+      "website": "https://www.coventry.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000026.webp"
+    },
+    {
+      "gss_code": "E07000226",
+      "name": "Crawley Borough Council",
+      "area_name": "Crawley",
+      "country": "England",
+      "website": "https://crawley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000226.webp"
+    },
+    {
+      "gss_code": "E06000063",
+      "name": "Cumberland Council",
+      "area_name": "Cumberland",
+      "country": "England",
+      "website": "https://www.cumberland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000063.webp"
+    },
+    {
+      "gss_code": "E07000096",
+      "name": "Dacorum Borough Council",
+      "area_name": "Dacorum",
+      "country": "England",
+      "website": "http://www.dacorum.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000096.webp"
+    },
+    {
+      "gss_code": "E06000005",
+      "name": "Darlington Borough Council",
+      "area_name": "Darlington",
+      "country": "England",
+      "website": "https://www.darlington.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000005.webp"
+    },
+    {
+      "gss_code": "E07000107",
+      "name": "Dartford Borough Council",
+      "area_name": "Dartford",
+      "country": "England",
+      "website": "http://www.dartford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000107.webp"
+    },
+    {
+      "gss_code": "W06000004",
+      "name": "Denbighshire County Council",
+      "area_name": "Denbighshire",
+      "country": "Wales",
+      "website": "https://www.denbighshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000004.webp"
+    },
+    {
+      "gss_code": "E06000015",
+      "name": "Derby City",
+      "area_name": "Derby",
+      "country": "England",
+      "website": "https://www.derby.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000015.webp"
+    },
+    {
+      "gss_code": "E10000007",
+      "name": "Derbyshire County Council",
+      "area_name": "Derbyshire",
+      "country": "England",
+      "website": "http://www.derbyshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000007.webp"
+    },
+    {
+      "gss_code": "E07000035",
+      "name": "Derbyshire Dales District Council",
+      "area_name": "Derbyshire Dales",
+      "country": "England",
+      "website": "https://www.derbyshiredales.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000035.webp"
+    },
+    {
+      "gss_code": "N09000005",
+      "name": "Derry City and Strabane District Council",
+      "area_name": "Derry City and Strabane",
+      "country": "Northern Ireland",
+      "website": "https://www.derrystrabane.com/",
+      "logo": "/images/logos/councils/uk/N09000005.webp"
+    },
+    {
+      "gss_code": "E10000008",
+      "name": "Devon County Council",
+      "area_name": "Devon",
+      "country": "England",
+      "website": "https://new.devon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000008.webp"
+    },
+    {
+      "gss_code": "E08000017",
+      "name": "Doncaster Metropolitan Borough Council",
+      "area_name": "Doncaster",
+      "country": "England",
+      "website": "http://www.doncaster.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000017.webp"
+    },
+    {
+      "gss_code": "E06000059",
+      "name": "Dorset Council",
+      "area_name": "Dorset",
+      "country": "England",
+      "website": "https://www.dorsetcouncil.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000059.webp"
+    },
+    {
+      "gss_code": "E07000108",
+      "name": "Dover District Council",
+      "area_name": "Dover",
+      "country": "England",
+      "website": "http://www.dover.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000108.webp"
+    },
+    {
+      "gss_code": "E08000027",
+      "name": "Dudley Metropolitan Borough Council",
+      "area_name": "Dudley",
+      "country": "England",
+      "website": "https://www.dudley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000027.webp"
+    },
+    {
+      "gss_code": "S12000006",
+      "name": "Dumfries and Galloway Council",
+      "area_name": "Dumfries and Galloway",
+      "country": "Scotland",
+      "website": "https://www.dumgal.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000006.webp"
+    },
+    {
+      "gss_code": "S12000042",
+      "name": "Dundee City Council",
+      "area_name": "Dundee City",
+      "country": "Scotland",
+      "website": "https://www.dundeecity.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000042.webp"
+    },
+    {
+      "gss_code": "E06000047",
+      "name": "Durham County Council",
+      "area_name": "County Durham",
+      "country": "England",
+      "website": "http://www.durham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000047.webp"
+    },
+    {
+      "gss_code": "S12000008",
+      "name": "East Ayrshire Council",
+      "area_name": "East Ayrshire",
+      "country": "Scotland",
+      "website": "https://www.east-ayrshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000008.webp"
+    },
+    {
+      "gss_code": "E07000009",
+      "name": "East Cambridgeshire District Council",
+      "area_name": "East Cambridgeshire",
+      "country": "England",
+      "website": "http://www.eastcambs.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000009.webp"
+    },
+    {
+      "gss_code": "E07000040",
+      "name": "East Devon District Council",
+      "area_name": "East Devon",
+      "country": "England",
+      "website": "http://eastdevon.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000040.webp"
+    },
+    {
+      "gss_code": "S12000045",
+      "name": "East Dunbartonshire Council",
+      "area_name": "East Dunbartonshire",
+      "country": "Scotland",
+      "website": "https://www.eastdunbarton.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000045.webp"
+    },
+    {
+      "gss_code": "E07000085",
+      "name": "East Hampshire District Council",
+      "area_name": "East Hampshire",
+      "country": "England",
+      "website": "http://www.easthants.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000085.webp"
+    },
+    {
+      "gss_code": "E07000242",
+      "name": "East Hertfordshire District Council",
+      "area_name": "East Hertfordshire",
+      "country": "England",
+      "website": "https://www.eastherts.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000242.webp"
+    },
+    {
+      "gss_code": "E07000137",
+      "name": "East Lindsey District Council",
+      "area_name": "East Lindsey",
+      "country": "England",
+      "website": "https://www.e-lindsey.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000137.webp"
+    },
+    {
+      "gss_code": "S12000010",
+      "name": "East Lothian Council",
+      "area_name": "East Lothian",
+      "country": "Scotland",
+      "website": "https://www.eastlothian.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000010.webp"
+    },
+    {
+      "gss_code": "S12000011",
+      "name": "East Renfrewshire Council",
+      "area_name": "East Renfrewshire",
+      "country": "Scotland",
+      "website": "http://www.eastrenfrewshire.gov.uk",
+      "logo": "/images/logos/councils/uk/S12000011.webp"
+    },
+    {
+      "gss_code": "E06000011",
+      "name": "East Riding of Yorkshire Council",
+      "area_name": "East Riding of Yorkshire",
+      "country": "England",
+      "website": "http://www.eastriding.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000011.webp"
+    },
+    {
+      "gss_code": "E07000193",
+      "name": "East Staffordshire Borough Council",
+      "area_name": "East Staffordshire",
+      "country": "England",
+      "website": "https://www.eaststaffsbc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000193.webp"
+    },
+    {
+      "gss_code": "E07000244",
+      "name": "East Suffolk District Council",
+      "area_name": "East Suffolk",
+      "country": "England",
+      "website": "https://www.eastsuffolk.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000244.webp"
+    },
+    {
+      "gss_code": "E10000011",
+      "name": "East Sussex County Council",
+      "area_name": "East Sussex",
+      "country": "England",
+      "website": "http://www.eastsussex.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000011.webp"
+    },
+    {
+      "gss_code": "E07000061",
+      "name": "Eastbourne Borough Council",
+      "area_name": "Eastbourne",
+      "country": "England",
+      "website": "https://www.lewes-eastbourne.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000061.webp"
+    },
+    {
+      "gss_code": "E07000086",
+      "name": "Eastleigh Borough Council",
+      "area_name": "Eastleigh",
+      "country": "England",
+      "website": "http://www.eastleigh.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000086.webp"
+    },
+    {
+      "gss_code": "E07000207",
+      "name": "Elmbridge Borough Council",
+      "area_name": "Elmbridge",
+      "country": "England",
+      "website": "http://www.elmbridge.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000207.webp"
+    },
+    {
+      "gss_code": "E07000072",
+      "name": "Epping Forest District Council",
+      "area_name": "Epping Forest",
+      "country": "England",
+      "website": "https://www.eppingforestdc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000072.webp"
+    },
+    {
+      "gss_code": "E07000208",
+      "name": "Epsom and Ewell Borough Council",
+      "area_name": "Epsom and Ewell",
+      "country": "England",
+      "website": "http://www.epsom-ewell.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000208.webp"
+    },
+    {
+      "gss_code": "E07000036",
+      "name": "Erewash Borough Council",
+      "area_name": "Erewash",
+      "country": "England",
+      "website": "https://www.erewash.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000036.webp"
+    },
+    {
+      "gss_code": "E10000012",
+      "name": "Essex County Council",
+      "area_name": "Essex",
+      "country": "England",
+      "website": "https://www.essex.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000012.webp"
+    },
+    {
+      "gss_code": "E07000041",
+      "name": "Exeter City Council",
+      "area_name": "Exeter",
+      "country": "England",
+      "website": "https://exeter.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000041.webp"
+    },
+    {
+      "gss_code": "S12000014",
+      "name": "Falkirk Council",
+      "area_name": "Falkirk",
+      "country": "Scotland",
+      "website": "https://www.falkirk.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000014.webp"
+    },
+    {
+      "gss_code": "E07000087",
+      "name": "Fareham Borough Council",
+      "area_name": "Fareham",
+      "country": "England",
+      "website": "https://www.fareham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000087.webp"
+    },
+    {
+      "gss_code": "E07000010",
+      "name": "Fenland District Council",
+      "area_name": "Fenland",
+      "country": "England",
+      "website": "http://www.fenland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000010.webp"
+    },
+    {
+      "gss_code": "N09000006",
+      "name": "Fermanagh and Omagh District Council",
+      "area_name": "Fermanagh and Omagh",
+      "country": "Northern Ireland",
+      "website": "https://www.fermanaghomagh.com/",
+      "logo": "/images/logos/councils/uk/N09000006.webp"
+    },
+    {
+      "gss_code": "S12000047",
+      "name": "Fife Council",
+      "area_name": "Fife",
+      "country": "Scotland",
+      "website": "https://www.fife.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000047.webp"
+    },
+    {
+      "gss_code": "W06000005",
+      "name": "Flintshire County Council",
+      "area_name": "Flintshire",
+      "country": "Wales",
+      "website": "http://www.flintshire.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000005.webp"
+    },
+    {
+      "gss_code": "E07000112",
+      "name": "Folkestone and Hythe District Council",
+      "area_name": "Folkestone and Hythe",
+      "country": "England",
+      "website": "https://www.folkestone-hythe.gov.uk/home",
+      "logo": "/images/logos/councils/uk/E07000112.webp"
+    },
+    {
+      "gss_code": "E07000080",
+      "name": "Forest of Dean District Council",
+      "area_name": "Forest of Dean",
+      "country": "England",
+      "website": "https://www.fdean.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000080.webp"
+    },
+    {
+      "gss_code": "E07000119",
+      "name": "Fylde Borough Council",
+      "area_name": "Fylde",
+      "country": "England",
+      "website": "https://www.fylde.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000119.webp"
+    },
+    {
+      "gss_code": "E08000037",
+      "name": "Gateshead Metropolitan Borough Council",
+      "area_name": "Gateshead",
+      "country": "England",
+      "website": "https://www.gateshead.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000037.webp"
+    },
+    {
+      "gss_code": "E07000173",
+      "name": "Gedling Borough Council",
+      "area_name": "Gedling",
+      "country": "England",
+      "website": "https://www.gedling.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000173.webp"
+    },
+    {
+      "gss_code": "S12000049",
+      "name": "Glasgow City Council",
+      "area_name": "Glasgow City",
+      "country": "Scotland",
+      "website": "https://www.glasgow.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000049.webp"
+    },
+    {
+      "gss_code": "E07000081",
+      "name": "Gloucester City Council",
+      "area_name": "Gloucester",
+      "country": "England",
+      "website": "http://www.gloucester.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000081.webp"
+    },
+    {
+      "gss_code": "E10000013",
+      "name": "Gloucestershire County Council",
+      "area_name": "Gloucestershire",
+      "country": "England",
+      "website": "https://www.gloucestershire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000013.webp"
+    },
+    {
+      "gss_code": "E07000088",
+      "name": "Gosport Borough Council",
+      "area_name": "Gosport",
+      "country": "England",
+      "website": "https://www.gosport.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000088.webp"
+    },
+    {
+      "gss_code": "E07000109",
+      "name": "Gravesham Borough Council",
+      "area_name": "Gravesham",
+      "country": "England",
+      "website": "http://www.gravesham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000109.webp"
+    },
+    {
+      "gss_code": "E07000145",
+      "name": "Great Yarmouth Borough Council",
+      "area_name": "Great Yarmouth",
+      "country": "England",
+      "website": "https://www.great-yarmouth.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000145.webp"
+    },
+    {
+      "gss_code": "E07000209",
+      "name": "Guildford Borough Council",
+      "area_name": "Guildford",
+      "country": "England",
+      "website": "http://www.guildford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000209.webp"
+    },
+    {
+      "gss_code": "W06000002",
+      "name": "Gwynedd Council",
+      "area_name": "Gwynedd",
+      "country": "Wales",
+      "website": "https://www.gwynedd.llyw.cymru/",
+      "logo": "/images/logos/councils/uk/W06000002.webp"
+    },
+    {
+      "gss_code": "E06000006",
+      "name": "Halton Borough Council",
+      "area_name": "Halton",
+      "country": "England",
+      "website": "http://www.halton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000006.webp"
+    },
+    {
+      "gss_code": "E10000014",
+      "name": "Hampshire County Council",
+      "area_name": "Hampshire",
+      "country": "England",
+      "website": "http://www.hants.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000014.webp"
+    },
+    {
+      "gss_code": "E07000131",
+      "name": "Harborough District Council",
+      "area_name": "Harborough",
+      "country": "England",
+      "website": "http://www.harborough.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000131.webp"
+    },
+    {
+      "gss_code": "E07000073",
+      "name": "Harlow Council",
+      "area_name": "Harlow",
+      "country": "England",
+      "website": "http://www.harlow.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000073.webp"
+    },
+    {
+      "gss_code": "E07000089",
+      "name": "Hart District Council",
+      "area_name": "Hart",
+      "country": "England",
+      "website": "https://www.hart.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000089.webp"
+    },
+    {
+      "gss_code": "E06000001",
+      "name": "Hartlepool Borough Council",
+      "area_name": "Hartlepool",
+      "country": "England",
+      "website": "http://www.hartlepool.gov.uk",
+      "logo": "/images/logos/councils/uk/E06000001.webp"
+    },
+    {
+      "gss_code": "E07000062",
+      "name": "Hastings Borough Council",
+      "area_name": "Hastings",
+      "country": "England",
+      "website": "https://www.hastings.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000062.webp"
+    },
+    {
+      "gss_code": "E07000090",
+      "name": "Havant Borough Council",
+      "area_name": "Havant",
+      "country": "England",
+      "website": "http://www.havant.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000090.webp"
+    },
+    {
+      "gss_code": "E06000019",
+      "name": "Herefordshire Council",
+      "area_name": "Herefordshire, County of",
+      "country": "England",
+      "website": "https://www.herefordshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000019.webp"
+    },
+    {
+      "gss_code": "E10000015",
+      "name": "Hertfordshire County Council",
+      "area_name": "Hertfordshire",
+      "country": "England",
+      "website": "https://www.hertfordshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000015.webp"
+    },
+    {
+      "gss_code": "E07000098",
+      "name": "Hertsmere Borough Council",
+      "area_name": "Hertsmere",
+      "country": "England",
+      "website": "https://www.hertsmere.gov.uk/home.aspx",
+      "logo": "/images/logos/councils/uk/E07000098.webp"
+    },
+    {
+      "gss_code": "E07000037",
+      "name": "High Peak Borough Council",
+      "area_name": "High Peak",
+      "country": "England",
+      "website": "https://www.highpeak.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000037.webp"
+    },
+    {
+      "gss_code": "E07000132",
+      "name": "Hinckley and Bosworth Borough Council",
+      "area_name": "Hinckley and Bosworth",
+      "country": "England",
+      "website": "https://www.hinckley-bosworth.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000132.webp"
+    },
+    {
+      "gss_code": "E07000227",
+      "name": "Horsham District Council",
+      "area_name": "Horsham",
+      "country": "England",
+      "website": "https://www.horsham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000227.webp"
+    },
+    {
+      "gss_code": "E06000010",
+      "name": "Hull City Council",
+      "area_name": "Kingston upon Hull, City of",
+      "country": "England",
+      "website": "https://www.hull.gov.uk",
+      "logo": "/images/logos/councils/uk/E06000010.webp"
+    },
+    {
+      "gss_code": "E07000011",
+      "name": "Huntingdonshire District Council",
+      "area_name": "Huntingdonshire",
+      "country": "England",
+      "website": "https://www.huntingdonshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000011.webp"
+    },
+    {
+      "gss_code": "E07000120",
+      "name": "Hyndburn Borough Council",
+      "area_name": "Hyndburn",
+      "country": "England",
+      "website": "https://www.hyndburnbc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000120.webp"
+    },
+    {
+      "gss_code": "S12000018",
+      "name": "Inverclyde Council",
+      "area_name": "Inverclyde",
+      "country": "Scotland",
+      "website": "https://www.inverclyde.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000018.webp"
+    },
+    {
+      "gss_code": "E07000202",
+      "name": "Ipswich Borough Council",
+      "area_name": "Ipswich",
+      "country": "England",
+      "website": "https://www.ipswich.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000202.webp"
+    },
+    {
+      "gss_code": "W06000001",
+      "name": "Isle of Anglesey County Council",
+      "area_name": "Isle of Anglesey",
+      "country": "Wales",
+      "website": "https://www.anglesey.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000001.webp"
+    },
+    {
+      "gss_code": "E06000046",
+      "name": "Isle of Wight Council",
+      "area_name": "Isle of Wight",
+      "country": "England",
+      "website": "https://www.iow.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000046.webp"
+    },
+    {
+      "gss_code": "E10000016",
+      "name": "Kent County Council",
+      "area_name": "Kent",
+      "country": "England",
+      "website": "http://www.kent.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000016.webp"
+    },
+    {
+      "gss_code": "E08000034",
+      "name": "Kirklees Council",
+      "area_name": "Kirklees",
+      "country": "England",
+      "website": "https://www.kirklees.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000034.webp"
+    },
+    {
+      "gss_code": "E08000011",
+      "name": "Knowsley Metropolitan Borough Council",
+      "area_name": "Knowsley",
+      "country": "England",
+      "website": "http://www.knowsley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000011.webp"
+    },
+    {
+      "gss_code": "E10000017",
+      "name": "Lancashire County Council",
+      "area_name": "Lancashire",
+      "country": "England",
+      "website": "https://www.lancashire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000017.webp"
+    },
+    {
+      "gss_code": "E07000121",
+      "name": "Lancaster City Council",
+      "area_name": "Lancaster",
+      "country": "England",
+      "website": "https://www.lancaster.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000121.webp"
+    },
+    {
+      "gss_code": "E08000035",
+      "name": "Leeds City Council",
+      "area_name": "Leeds",
+      "country": "England",
+      "website": "https://www.leeds.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000035.webp"
+    },
+    {
+      "gss_code": "E06000016",
+      "name": "Leicester City Council",
+      "area_name": "Leicester",
+      "country": "England",
+      "website": "https://www.leicester.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000016.webp"
+    },
+    {
+      "gss_code": "E10000018",
+      "name": "Leicestershire County Council",
+      "area_name": "Leicestershire",
+      "country": "England",
+      "website": "https://www.leicestershire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000018.webp"
+    },
+    {
+      "gss_code": "E07000063",
+      "name": "Lewes District Council",
+      "area_name": "Lewes",
+      "country": "England",
+      "website": "https://www.lewes-eastbourne.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000063.webp"
+    },
+    {
+      "gss_code": "E07000194",
+      "name": "Lichfield District Council",
+      "area_name": "Lichfield",
+      "country": "England",
+      "website": "https://www.lichfielddc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000194.webp"
+    },
+    {
+      "gss_code": "E10000019",
+      "name": "Lincolnshire County Council",
+      "area_name": "Lincolnshire",
+      "country": "England",
+      "website": "https://www.lincolnshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000019.webp"
+    },
+    {
+      "gss_code": "N09000007",
+      "name": "Lisburn and Castlereagh City Council",
+      "area_name": "Lisburn and Castlereagh",
+      "country": "Northern Ireland",
+      "website": "https://www.lisburncastlereagh.gov.uk/",
+      "logo": "/images/logos/councils/uk/N09000007.webp"
+    },
+    {
+      "gss_code": "E08000012",
+      "name": "Liverpool City Council",
+      "area_name": "Liverpool",
+      "country": "England",
+      "website": "https://liverpool.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000012.webp"
+    },
+    {
+      "gss_code": "E09000002",
+      "name": "London Borough of Barking and Dagenham",
+      "area_name": "Barking and Dagenham",
+      "country": "England",
+      "website": "https://www.lbbd.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000002.webp"
+    },
+    {
+      "gss_code": "E09000003",
+      "name": "London Borough of Barnet",
+      "area_name": "Barnet",
+      "country": "England",
+      "website": "https://www.barnet.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000003.webp"
+    },
+    {
+      "gss_code": "E09000004",
+      "name": "London Borough of Bexley",
+      "area_name": "Bexley",
+      "country": "England",
+      "website": "https://www.bexley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000004.webp"
+    },
+    {
+      "gss_code": "E09000005",
+      "name": "London Borough of Brent",
+      "area_name": "Brent",
+      "country": "England",
+      "website": "https://www.brent.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000005.webp"
+    },
+    {
+      "gss_code": "E09000006",
+      "name": "London Borough of Bromley",
+      "area_name": "Bromley",
+      "country": "England",
+      "website": "https://www.bromley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000006.webp"
+    },
+    {
+      "gss_code": "E09000007",
+      "name": "London Borough of Camden",
+      "area_name": "Camden",
+      "country": "England",
+      "website": "https://www.camden.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000007.webp"
+    },
+    {
+      "gss_code": "E09000008",
+      "name": "London Borough of Croydon",
+      "area_name": "Croydon",
+      "country": "England",
+      "website": "http://www.croydon.gov.uk",
+      "logo": "/images/logos/councils/uk/E09000008.webp"
+    },
+    {
+      "gss_code": "E09000009",
+      "name": "London Borough of Ealing",
+      "area_name": "Ealing",
+      "country": "England",
+      "website": "http://www.ealing.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000009.webp"
+    },
+    {
+      "gss_code": "E09000010",
+      "name": "London Borough of Enfield",
+      "area_name": "Enfield",
+      "country": "England",
+      "website": "https://new.enfield.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000010.webp"
+    },
+    {
+      "gss_code": "E09000012",
+      "name": "London Borough of Hackney",
+      "area_name": "Hackney",
+      "country": "England",
+      "website": "http://www.hackney.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000012.webp"
+    },
+    {
+      "gss_code": "E09000013",
+      "name": "London Borough of Hammersmith & Fulham",
+      "area_name": "Hammersmith and Fulham",
+      "country": "England",
+      "website": "http://www.lbhf.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000013.webp"
+    },
+    {
+      "gss_code": "E09000014",
+      "name": "London Borough of Haringey",
+      "area_name": "Haringey",
+      "country": "England",
+      "website": "https://www.haringey.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000014.webp"
+    },
+    {
+      "gss_code": "E09000015",
+      "name": "London Borough of Harrow",
+      "area_name": "Harrow",
+      "country": "England",
+      "website": "https://www.harrow.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000015.webp"
+    },
+    {
+      "gss_code": "E09000016",
+      "name": "London Borough of Havering",
+      "area_name": "Havering",
+      "country": "England",
+      "website": "https://www.havering.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000016.webp"
+    },
+    {
+      "gss_code": "E09000017",
+      "name": "London Borough of Hillingdon",
+      "area_name": "Hillingdon",
+      "country": "England",
+      "website": "https://www.hillingdon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000017.webp"
+    },
+    {
+      "gss_code": "E09000018",
+      "name": "London Borough of Hounslow",
+      "area_name": "Hounslow",
+      "country": "England",
+      "website": "https://www.hounslow.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000018.webp"
+    },
+    {
+      "gss_code": "E09000019",
+      "name": "London Borough of Islington",
+      "area_name": "Islington",
+      "country": "England",
+      "website": "https://www.islington.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000019.webp"
+    },
+    {
+      "gss_code": "E09000022",
+      "name": "London Borough of Lambeth",
+      "area_name": "Lambeth",
+      "country": "England",
+      "website": "http://www.lambeth.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000022.webp"
+    },
+    {
+      "gss_code": "E09000023",
+      "name": "London Borough of Lewisham",
+      "area_name": "Lewisham",
+      "country": "England",
+      "website": "https://lewisham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000023.webp"
+    },
+    {
+      "gss_code": "E09000024",
+      "name": "London Borough of Merton",
+      "area_name": "Merton",
+      "country": "England",
+      "website": "http://www.merton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000024.webp"
+    },
+    {
+      "gss_code": "E09000025",
+      "name": "London Borough of Newham",
+      "area_name": "Newham",
+      "country": "England",
+      "website": "https://www.newham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000025.webp"
+    },
+    {
+      "gss_code": "E09000026",
+      "name": "London Borough of Redbridge",
+      "area_name": "Redbridge",
+      "country": "England",
+      "website": "https://www.redbridge.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000026.webp"
+    },
+    {
+      "gss_code": "E09000027",
+      "name": "London Borough of Richmond upon Thames",
+      "area_name": "Richmond upon Thames",
+      "country": "England",
+      "website": "http://www.richmond.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000027.webp"
+    },
+    {
+      "gss_code": "E09000028",
+      "name": "London Borough of Southwark",
+      "area_name": "Southwark",
+      "country": "England",
+      "website": "https://www.southwark.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000028.webp"
+    },
+    {
+      "gss_code": "E09000029",
+      "name": "London Borough of Sutton",
+      "area_name": "Sutton",
+      "country": "England",
+      "website": "https://www.sutton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000029.webp"
+    },
+    {
+      "gss_code": "E09000030",
+      "name": "London Borough of Tower Hamlets",
+      "area_name": "Tower Hamlets",
+      "country": "England",
+      "website": "http://www.towerhamlets.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000030.webp"
+    },
+    {
+      "gss_code": "E09000031",
+      "name": "London Borough of Waltham Forest",
+      "area_name": "Waltham Forest",
+      "country": "England",
+      "website": "https://www.walthamforest.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000031.webp"
+    },
+    {
+      "gss_code": "E09000032",
+      "name": "London Borough of Wandsworth",
+      "area_name": "Wandsworth",
+      "country": "England",
+      "website": "https://www.wandsworth.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000032.webp"
+    },
+    {
+      "gss_code": "E06000032",
+      "name": "Luton Borough Council",
+      "area_name": "Luton",
+      "country": "England",
+      "website": "https://www.luton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000032.webp"
+    },
+    {
+      "gss_code": "E07000110",
+      "name": "Maidstone Borough Council",
+      "area_name": "Maidstone",
+      "country": "England",
+      "website": "http://www.maidstone.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000110.webp"
+    },
+    {
+      "gss_code": "E07000074",
+      "name": "Maldon District Council",
+      "area_name": "Maldon",
+      "country": "England",
+      "website": "http://www.maldon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000074.webp"
+    },
+    {
+      "gss_code": "E07000235",
+      "name": "Malvern Hills District Council",
+      "area_name": "Malvern Hills",
+      "country": "England",
+      "website": "https://www.malvernhills.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000235.webp"
+    },
+    {
+      "gss_code": "E08000003",
+      "name": "Manchester City Council",
+      "area_name": "Manchester",
+      "country": "England",
+      "website": "http://www.manchester.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000003.webp"
+    },
+    {
+      "gss_code": "E07000174",
+      "name": "Mansfield District Council",
+      "area_name": "Mansfield",
+      "country": "England",
+      "website": "https://www.mansfield.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000174.webp"
+    },
+    {
+      "gss_code": "E06000035",
+      "name": "Medway Council",
+      "area_name": "Medway",
+      "country": "England",
+      "website": "https://www.medway.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000035.webp"
+    },
+    {
+      "gss_code": "E07000133",
+      "name": "Melton Borough Council",
+      "area_name": "Melton",
+      "country": "England",
+      "website": "http://www.melton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000133.webp"
+    },
+    {
+      "gss_code": "W06000024",
+      "name": "Merthyr Tydfil County Borough Council",
+      "area_name": "Merthyr Tydfil",
+      "country": "Wales",
+      "website": "https://www.merthyr.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000024.webp"
+    },
+    {
+      "gss_code": "E07000042",
+      "name": "Mid Devon District Council",
+      "area_name": "Mid Devon",
+      "country": "England",
+      "website": "https://www.middevon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000042.webp"
+    },
+    {
+      "gss_code": "E07000203",
+      "name": "Mid Suffolk District Council",
+      "area_name": "Mid Suffolk",
+      "country": "England",
+      "website": "https://www.midsuffolk.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000203.webp"
+    },
+    {
+      "gss_code": "E07000228",
+      "name": "Mid Sussex District Council",
+      "area_name": "Mid Sussex",
+      "country": "England",
+      "website": "http://www.midsussex.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000228.webp"
+    },
+    {
+      "gss_code": "N09000009",
+      "name": "Mid Ulster District Council",
+      "area_name": "Mid Ulster",
+      "country": "Northern Ireland",
+      "website": "https://www.midulstercouncil.org/",
+      "logo": "/images/logos/councils/uk/N09000009.webp"
+    },
+    {
+      "gss_code": "N09000008",
+      "name": "Mid and East Antrim Borough Council",
+      "area_name": "Mid and East Antrim",
+      "country": "Northern Ireland",
+      "website": "https://www.midandeastantrim.gov.uk/",
+      "logo": "/images/logos/councils/uk/N09000008.webp"
+    },
+    {
+      "gss_code": "E06000002",
+      "name": "Middlesbrough Borough Council",
+      "area_name": "Middlesbrough",
+      "country": "England",
+      "website": "http://www.middlesbrough.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000002.webp"
+    },
+    {
+      "gss_code": "S12000019",
+      "name": "Midlothian Council",
+      "area_name": "Midlothian",
+      "country": "Scotland",
+      "website": "https://www.midlothian.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000019.webp"
+    },
+    {
+      "gss_code": "E06000042",
+      "name": "Milton Keynes City Council",
+      "area_name": "Milton Keynes",
+      "country": "England",
+      "website": "https://www.milton-keynes.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000042.webp"
+    },
+    {
+      "gss_code": "E07000210",
+      "name": "Mole Valley District Council",
+      "area_name": "Mole Valley",
+      "country": "England",
+      "website": "https://www.molevalley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000210.webp"
+    },
+    {
+      "gss_code": "W06000021",
+      "name": "Monmouthshire County Council",
+      "area_name": "Monmouthshire",
+      "country": "Wales",
+      "website": "https://www.monmouthshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000021.webp"
+    },
+    {
+      "gss_code": "W06000012",
+      "name": "Neath Port Talbot County Borough Council",
+      "area_name": "Neath Port Talbot",
+      "country": "Wales",
+      "website": "http://www.neath-porttalbot.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000012.webp"
+    },
+    {
+      "gss_code": "E07000091",
+      "name": "New Forest District Council",
+      "area_name": "New Forest",
+      "country": "England",
+      "website": "https://www.newforest.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000091.webp"
+    },
+    {
+      "gss_code": "E07000175",
+      "name": "Newark and Sherwood District Council",
+      "area_name": "Newark and Sherwood",
+      "country": "England",
+      "website": "https://www.newark-sherwooddc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000175.webp"
+    },
+    {
+      "gss_code": "E08000021",
+      "name": "Newcastle City Council",
+      "area_name": "Newcastle upon Tyne",
+      "country": "England",
+      "website": "https://www.newcastle.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000021.webp"
+    },
+    {
+      "gss_code": "E07000195",
+      "name": "Newcastle-under-Lyme District Council",
+      "area_name": "Newcastle-under-Lyme",
+      "country": "England",
+      "website": "https://www.newcastle-staffs.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000195.webp"
+    },
+    {
+      "gss_code": "W06000022",
+      "name": "Newport City Council",
+      "area_name": "Newport",
+      "country": "Wales",
+      "website": "https://www.newport.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000022.webp"
+    },
+    {
+      "gss_code": "N09000010",
+      "name": "Newry, Mourne and Down District Council",
+      "area_name": "Newry, Mourne and Down",
+      "country": "Northern Ireland",
+      "website": "http://www.newrymournedown.org/",
+      "logo": "/images/logos/councils/uk/N09000010.webp"
+    },
+    {
+      "gss_code": "E10000020",
+      "name": "Norfolk County Council",
+      "area_name": "Norfolk",
+      "country": "England",
+      "website": "http://www.norfolk.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000020.webp"
+    },
+    {
+      "gss_code": "S12000021",
+      "name": "North Ayrshire Council",
+      "area_name": "North Ayrshire",
+      "country": "Scotland",
+      "website": "https://www.north-ayrshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000021.webp"
+    },
+    {
+      "gss_code": "E07000043",
+      "name": "North Devon Council",
+      "area_name": "North Devon",
+      "country": "England",
+      "website": "http://www.northdevon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000043.webp"
+    },
+    {
+      "gss_code": "E07000038",
+      "name": "North East Derbyshire District Council",
+      "area_name": "North East Derbyshire",
+      "country": "England",
+      "website": "https://www.ne-derbyshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000038.webp"
+    },
+    {
+      "gss_code": "E06000012",
+      "name": "North East Lincolnshire Council",
+      "area_name": "North East Lincolnshire",
+      "country": "England",
+      "website": "http://www.nelincs.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000012.webp"
+    },
+    {
+      "gss_code": "E07000099",
+      "name": "North Hertfordshire District Council",
+      "area_name": "North Hertfordshire",
+      "country": "England",
+      "website": "http://www.north-herts.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000099.webp"
+    },
+    {
+      "gss_code": "E07000139",
+      "name": "North Kesteven District Council",
+      "area_name": "North Kesteven",
+      "country": "England",
+      "website": "https://www.n-kesteven.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000139.webp"
+    },
+    {
+      "gss_code": "S12000050",
+      "name": "North Lanarkshire Council",
+      "area_name": "North Lanarkshire",
+      "country": "Scotland",
+      "website": "https://www.northlanarkshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000050.webp"
+    },
+    {
+      "gss_code": "E06000013",
+      "name": "North Lincolnshire Council",
+      "area_name": "North Lincolnshire",
+      "country": "England",
+      "website": "https://www.northlincs.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000013.webp"
+    },
+    {
+      "gss_code": "E07000147",
+      "name": "North Norfolk District Council",
+      "area_name": "North Norfolk",
+      "country": "England",
+      "website": "https://www.north-norfolk.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000147.webp"
+    },
+    {
+      "gss_code": "E06000061",
+      "name": "North Northamptonshire Council",
+      "area_name": "North Northamptonshire",
+      "country": "England",
+      "website": "https://www.northnorthants.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000061.webp"
+    },
+    {
+      "gss_code": "E06000024",
+      "name": "North Somerset Council",
+      "area_name": "North Somerset",
+      "country": "England",
+      "website": "http://www.n-somerset.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000024.webp"
+    },
+    {
+      "gss_code": "E08000022",
+      "name": "North Tyneside Council",
+      "area_name": "North Tyneside",
+      "country": "England",
+      "website": "https://my.northtyneside.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000022.webp"
+    },
+    {
+      "gss_code": "E07000218",
+      "name": "North Warwickshire Borough Council",
+      "area_name": "North Warwickshire",
+      "country": "England",
+      "website": "https://www.northwarks.gov.uk/site/",
+      "logo": "/images/logos/councils/uk/E07000218.webp"
+    },
+    {
+      "gss_code": "E07000134",
+      "name": "North West Leicestershire District Council",
+      "area_name": "North West Leicestershire",
+      "country": "England",
+      "website": "http://www.nwleics.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000134.webp"
+    },
+    {
+      "gss_code": "E06000065",
+      "name": "North Yorkshire Council",
+      "area_name": "North Yorkshire",
+      "country": "England",
+      "website": "https://www.northyorks.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000065.webp"
+    },
+    {
+      "gss_code": "E06000057",
+      "name": "Northumberland County Council",
+      "area_name": "Northumberland",
+      "country": "England",
+      "website": "http://www.northumberland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000057.webp"
+    },
+    {
+      "gss_code": "E07000148",
+      "name": "Norwich City Council",
+      "area_name": "Norwich",
+      "country": "England",
+      "website": "http://www.norwich.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000148.webp"
+    },
+    {
+      "gss_code": "E06000018",
+      "name": "Nottingham City Council",
+      "area_name": "Nottingham",
+      "country": "England",
+      "website": "https://www.nottinghamcity.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000018.webp"
+    },
+    {
+      "gss_code": "E10000024",
+      "name": "Nottinghamshire County Council",
+      "area_name": "Nottinghamshire",
+      "country": "England",
+      "website": "http://www.nottinghamshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000024.webp"
+    },
+    {
+      "gss_code": "E07000219",
+      "name": "Nuneaton and Bedworth Borough Council",
+      "area_name": "Nuneaton and Bedworth",
+      "country": "England",
+      "website": "https://www.nuneatonandbedworth.gov.uk/site/",
+      "logo": "/images/logos/councils/uk/E07000219.webp"
+    },
+    {
+      "gss_code": "E07000135",
+      "name": "Oadby and Wigston Borough Council",
+      "area_name": "Oadby and Wigston",
+      "country": "England",
+      "website": "https://www.oadby-wigston.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000135.webp"
+    },
+    {
+      "gss_code": "E08000004",
+      "name": "Oldham Metropolitan Borough Council",
+      "area_name": "Oldham",
+      "country": "England",
+      "website": "https://www.oldham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000004.webp"
+    },
+    {
+      "gss_code": "S12000023",
+      "name": "Orkney Islands Council",
+      "area_name": "Orkney Islands",
+      "country": "Scotland",
+      "website": "https://www.orkney.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000023.webp"
+    },
+    {
+      "gss_code": "E07000178",
+      "name": "Oxford City Council",
+      "area_name": "Oxford",
+      "country": "England",
+      "website": "https://www.oxford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000178.webp"
+    },
+    {
+      "gss_code": "E10000025",
+      "name": "Oxfordshire County Council",
+      "area_name": "Oxfordshire",
+      "country": "England",
+      "website": "http://www.oxfordshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000025.webp"
+    },
+    {
+      "gss_code": "W06000009",
+      "name": "Pembrokeshire County Council",
+      "area_name": "Pembrokeshire",
+      "country": "Wales",
+      "website": "http://www.pembrokeshire.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000009.webp"
+    },
+    {
+      "gss_code": "E07000122",
+      "name": "Pendle Borough Council",
+      "area_name": "Pendle",
+      "country": "England",
+      "website": "https://www.pendle.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000122.webp"
+    },
+    {
+      "gss_code": "S12000048",
+      "name": "Perth and Kinross Council",
+      "area_name": "Perth and Kinross",
+      "country": "Scotland",
+      "website": "https://www.pkc.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000048.webp"
+    },
+    {
+      "gss_code": "E06000031",
+      "name": "Peterborough City Council",
+      "area_name": "Peterborough",
+      "country": "England",
+      "website": "http://www.peterborough.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000031.webp"
+    },
+    {
+      "gss_code": "E06000026",
+      "name": "Plymouth City Council",
+      "area_name": "Plymouth",
+      "country": "England",
+      "website": "https://www.plymouth.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000026.webp"
+    },
+    {
+      "gss_code": "E06000044",
+      "name": "Portsmouth City Council",
+      "area_name": "Portsmouth",
+      "country": "England",
+      "website": "https://www.portsmouth.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000044.webp"
+    },
+    {
+      "gss_code": "W06000023",
+      "name": "Powys County Council",
+      "area_name": "Powys",
+      "country": "Wales",
+      "website": "http://www.powys.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000023.webp"
+    },
+    {
+      "gss_code": "E07000123",
+      "name": "Preston City Council",
+      "area_name": "Preston",
+      "country": "England",
+      "website": "https://www.preston.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000123.webp"
+    },
+    {
+      "gss_code": "E06000038",
+      "name": "Reading Borough Council",
+      "area_name": "Reading",
+      "country": "England",
+      "website": "https://www.reading.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000038.webp"
+    },
+    {
+      "gss_code": "E06000003",
+      "name": "Redcar and Cleveland Borough Council",
+      "area_name": "Redcar and Cleveland",
+      "country": "England",
+      "website": "https://www.redcar-cleveland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000003.webp"
+    },
+    {
+      "gss_code": "E07000236",
+      "name": "Redditch Borough Council",
+      "area_name": "Redditch",
+      "country": "England",
+      "website": "https://www.redditchbc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000236.webp"
+    },
+    {
+      "gss_code": "E07000211",
+      "name": "Reigate and Banstead Borough Council",
+      "area_name": "Reigate and Banstead",
+      "country": "England",
+      "website": "https://www.reigate-banstead.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000211.webp"
+    },
+    {
+      "gss_code": "S12000038",
+      "name": "Renfrewshire Council",
+      "area_name": "Renfrewshire",
+      "country": "Scotland",
+      "website": "https://www.renfrewshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000038.webp"
+    },
+    {
+      "gss_code": "W06000016",
+      "name": "Rhondda Cynon Taf County Borough Council",
+      "area_name": "Rhondda Cynon Taf",
+      "country": "Wales",
+      "website": "https://www.rctcbc.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000016.webp"
+    },
+    {
+      "gss_code": "E07000124",
+      "name": "Ribble Valley Borough Council",
+      "area_name": "Ribble Valley",
+      "country": "England",
+      "website": "https://www.ribblevalley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000124.webp"
+    },
+    {
+      "gss_code": "E08000005",
+      "name": "Rochdale Metropolitan Borough Council",
+      "area_name": "Rochdale",
+      "country": "England",
+      "website": "http://www.rochdale.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000005.webp"
+    },
+    {
+      "gss_code": "E07000075",
+      "name": "Rochford District Council",
+      "area_name": "Rochford",
+      "country": "England",
+      "website": "https://www.rochford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000075.webp"
+    },
+    {
+      "gss_code": "E07000125",
+      "name": "Rossendale Borough Council",
+      "area_name": "Rossendale",
+      "country": "England",
+      "website": "https://www.rossendale.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000125.webp"
+    },
+    {
+      "gss_code": "E07000064",
+      "name": "Rother District Council",
+      "area_name": "Rother",
+      "country": "England",
+      "website": "http://www.rother.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000064.webp"
+    },
+    {
+      "gss_code": "E08000018",
+      "name": "Rotherham Metropolitan Borough Council",
+      "area_name": "Rotherham",
+      "country": "England",
+      "website": "https://www.rotherham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000018.webp"
+    },
+    {
+      "gss_code": "E09000011",
+      "name": "Royal Borough of Greenwich",
+      "area_name": "Greenwich",
+      "country": "England",
+      "website": "http://www.royalgreenwich.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000011.webp"
+    },
+    {
+      "gss_code": "E09000020",
+      "name": "Royal Borough of Kensington and Chelsea",
+      "area_name": "Kensington and Chelsea",
+      "country": "England",
+      "website": "https://www.rbkc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000020.webp"
+    },
+    {
+      "gss_code": "E09000021",
+      "name": "Royal Borough of Kingston upon Thames",
+      "area_name": "Kingston upon Thames",
+      "country": "England",
+      "website": "https://www.kingston.gov.uk/",
+      "logo": "/images/logos/councils/uk/E09000021.webp"
+    },
+    {
+      "gss_code": "E06000040",
+      "name": "Royal Borough of Windsor and Maidenhead",
+      "area_name": "Windsor and Maidenhead",
+      "country": "England",
+      "website": "http://www.rbwm.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000040.webp"
+    },
+    {
+      "gss_code": "E07000220",
+      "name": "Rugby Borough Council",
+      "area_name": "Rugby",
+      "country": "England",
+      "website": "http://www.rugby.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000220.webp"
+    },
+    {
+      "gss_code": "E07000212",
+      "name": "Runnymede Borough Council",
+      "area_name": "Runnymede",
+      "country": "England",
+      "website": "https://www.runnymede.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000212.webp"
+    },
+    {
+      "gss_code": "E07000176",
+      "name": "Rushcliffe Borough Council",
+      "area_name": "Rushcliffe",
+      "country": "England",
+      "website": "http://www.rushcliffe.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000176.webp"
+    },
+    {
+      "gss_code": "E07000092",
+      "name": "Rushmoor Borough Council",
+      "area_name": "Rushmoor",
+      "country": "England",
+      "website": "http://www.rushmoor.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000092.webp"
+    },
+    {
+      "gss_code": "E06000017",
+      "name": "Rutland County Council",
+      "area_name": "Rutland",
+      "country": "England",
+      "website": "https://www.rutland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000017.webp"
+    },
+    {
+      "gss_code": "E08000006",
+      "name": "Salford City Council",
+      "area_name": "Salford",
+      "country": "England",
+      "website": "https://www.salford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000006.webp"
+    },
+    {
+      "gss_code": "E08000028",
+      "name": "Sandwell Metropolitan Borough Council",
+      "area_name": "Sandwell",
+      "country": "England",
+      "website": "http://www.sandwell.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000028.webp"
+    },
+    {
+      "gss_code": "S12000026",
+      "name": "Scottish Borders Council",
+      "area_name": "Scottish Borders",
+      "country": "Scotland",
+      "website": "https://www.scotborders.gov.uk",
+      "logo": "/images/logos/councils/uk/S12000026.webp"
+    },
+    {
+      "gss_code": "E08000014",
+      "name": "Sefton Metropolitan Borough Council",
+      "area_name": "Sefton",
+      "country": "England",
+      "website": "https://www.sefton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000014.webp"
+    },
+    {
+      "gss_code": "E07000111",
+      "name": "Sevenoaks District Council",
+      "area_name": "Sevenoaks",
+      "country": "England",
+      "website": "http://www.sevenoaks.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000111.webp"
+    },
+    {
+      "gss_code": "E08000039",
+      "name": "Sheffield City Council",
+      "area_name": "Sheffield",
+      "country": "England",
+      "website": "https://www.sheffield.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000039.webp"
+    },
+    {
+      "gss_code": "S12000027",
+      "name": "Shetland Islands Council",
+      "area_name": "Shetland Islands",
+      "country": "Scotland",
+      "website": "https://www.shetland.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000027.webp"
+    },
+    {
+      "gss_code": "E06000051",
+      "name": "Shropshire Council",
+      "area_name": "Shropshire",
+      "country": "England",
+      "website": "http://www.shropshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000051.webp"
+    },
+    {
+      "gss_code": "E06000039",
+      "name": "Slough Borough Council",
+      "area_name": "Slough",
+      "country": "England",
+      "website": "https://www.slough.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000039.webp"
+    },
+    {
+      "gss_code": "E08000029",
+      "name": "Solihull Metropolitan Borough Council",
+      "area_name": "Solihull",
+      "country": "England",
+      "website": "https://www.solihull.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000029.webp"
+    },
+    {
+      "gss_code": "E06000066",
+      "name": "Somerset Council",
+      "area_name": "Somerset",
+      "country": "England",
+      "website": "https://www.somerset.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000066.webp"
+    },
+    {
+      "gss_code": "S12000028",
+      "name": "South Ayrshire Council",
+      "area_name": "South Ayrshire",
+      "country": "Scotland",
+      "website": "https://www.south-ayrshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000028.webp"
+    },
+    {
+      "gss_code": "E07000012",
+      "name": "South Cambridgeshire District Council",
+      "area_name": "South Cambridgeshire",
+      "country": "England",
+      "website": "http://www.scambs.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000012.webp"
+    },
+    {
+      "gss_code": "E07000039",
+      "name": "South Derbyshire District Council",
+      "area_name": "South Derbyshire",
+      "country": "England",
+      "website": "https://www.southderbyshire.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000039.webp"
+    },
+    {
+      "gss_code": "E06000025",
+      "name": "South Gloucestershire Council",
+      "area_name": "South Gloucestershire",
+      "country": "England",
+      "website": "http://www.southglos.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000025.webp"
+    },
+    {
+      "gss_code": "E07000044",
+      "name": "South Hams District Council",
+      "area_name": "South Hams",
+      "country": "England",
+      "website": "http://www.southhams.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000044.webp"
+    },
+    {
+      "gss_code": "E07000140",
+      "name": "South Holland District Council",
+      "area_name": "South Holland",
+      "country": "England",
+      "website": "https://www.sholland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000140.webp"
+    },
+    {
+      "gss_code": "E07000141",
+      "name": "South Kesteven District Council",
+      "area_name": "South Kesteven",
+      "country": "England",
+      "website": "http://www.southkesteven.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000141.webp"
+    },
+    {
+      "gss_code": "S12000029",
+      "name": "South Lanarkshire Council",
+      "area_name": "South Lanarkshire",
+      "country": "Scotland",
+      "website": "https://www.southlanarkshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000029.webp"
+    },
+    {
+      "gss_code": "E07000149",
+      "name": "South Norfolk District Council",
+      "area_name": "South Norfolk",
+      "country": "England",
+      "website": "https://www.southnorfolkandbroadland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000149.webp"
+    },
+    {
+      "gss_code": "E07000179",
+      "name": "South Oxfordshire District Council",
+      "area_name": "South Oxfordshire",
+      "country": "England",
+      "website": "http://www.southoxon.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000179.webp"
+    },
+    {
+      "gss_code": "E07000126",
+      "name": "South Ribble Borough Council",
+      "area_name": "South Ribble",
+      "country": "England",
+      "website": "http://www.southribble.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000126.webp"
+    },
+    {
+      "gss_code": "E07000196",
+      "name": "South Staffordshire Council",
+      "area_name": "South Staffordshire",
+      "country": "England",
+      "website": "https://www.sstaffs.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000196.webp"
+    },
+    {
+      "gss_code": "E08000023",
+      "name": "South Tyneside Council",
+      "area_name": "South Tyneside",
+      "country": "England",
+      "website": "http://www.southtyneside.gov.uk",
+      "logo": "/images/logos/councils/uk/E08000023.webp"
+    },
+    {
+      "gss_code": "E06000045",
+      "name": "Southampton City Council",
+      "area_name": "Southampton",
+      "country": "England",
+      "website": "http://www.southampton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000045.webp"
+    },
+    {
+      "gss_code": "E06000033",
+      "name": "Southend-on-Sea City Council",
+      "area_name": "Southend-on-Sea",
+      "country": "England",
+      "website": "http://www.southend.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000033.webp"
+    },
+    {
+      "gss_code": "E07000213",
+      "name": "Spelthorne Borough Council",
+      "area_name": "Spelthorne",
+      "country": "England",
+      "website": "http://www.spelthorne.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000213.webp"
+    },
+    {
+      "gss_code": "E07000240",
+      "name": "St Albans City and District Council",
+      "area_name": "St Albans",
+      "country": "England",
+      "website": "https://www.stalbans.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000240.webp"
+    },
+    {
+      "gss_code": "E08000013",
+      "name": "St Helens Council",
+      "area_name": "St. Helens",
+      "country": "England",
+      "website": "https://www.sthelens.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000013.webp"
+    },
+    {
+      "gss_code": "E07000197",
+      "name": "Stafford Borough Council",
+      "area_name": "Stafford",
+      "country": "England",
+      "website": "https://www.staffordbc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000197.webp"
+    },
+    {
+      "gss_code": "E10000028",
+      "name": "Staffordshire County Council",
+      "area_name": "Staffordshire",
+      "country": "England",
+      "website": "https://www.staffordshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000028.webp"
+    },
+    {
+      "gss_code": "E07000198",
+      "name": "Staffordshire Moorlands District Council",
+      "area_name": "Staffordshire Moorlands",
+      "country": "England",
+      "website": "https://www.staffsmoorlands.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000198.webp"
+    },
+    {
+      "gss_code": "E07000243",
+      "name": "Stevenage Borough Council",
+      "area_name": "Stevenage",
+      "country": "England",
+      "website": "https://www.stevenage.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000243.webp"
+    },
+    {
+      "gss_code": "S12000030",
+      "name": "Stirling Council",
+      "area_name": "Stirling",
+      "country": "Scotland",
+      "website": "https://stirling.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000030.webp"
+    },
+    {
+      "gss_code": "E08000007",
+      "name": "Stockport Metropolitan Borough Council",
+      "area_name": "Stockport",
+      "country": "England",
+      "website": "https://www.stockport.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000007.webp"
+    },
+    {
+      "gss_code": "E06000004",
+      "name": "Stockton-on-Tees Borough Council",
+      "area_name": "Stockton-on-Tees",
+      "country": "England",
+      "website": "https://www.stockton.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000004.webp"
+    },
+    {
+      "gss_code": "E06000021",
+      "name": "Stoke-on-Trent City Council",
+      "area_name": "Stoke-on-Trent",
+      "country": "England",
+      "website": "https://www.stoke.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000021.webp"
+    },
+    {
+      "gss_code": "E07000221",
+      "name": "Stratford-on-Avon District Council",
+      "area_name": "Stratford-on-Avon",
+      "country": "England",
+      "website": "https://www.stratford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000221.webp"
+    },
+    {
+      "gss_code": "E07000082",
+      "name": "Stroud District Council",
+      "area_name": "Stroud",
+      "country": "England",
+      "website": "http://www.stroud.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000082.webp"
+    },
+    {
+      "gss_code": "E10000029",
+      "name": "Suffolk County Council",
+      "area_name": "Suffolk",
+      "country": "England",
+      "website": "http://www.suffolk.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000029.webp"
+    },
+    {
+      "gss_code": "E08000024",
+      "name": "Sunderland City Council",
+      "area_name": "Sunderland",
+      "country": "England",
+      "website": "https://www.sunderland.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000024.webp"
+    },
+    {
+      "gss_code": "E10000030",
+      "name": "Surrey County Council",
+      "area_name": "Surrey",
+      "country": "England",
+      "website": "http://www.surreycc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000030.webp"
+    },
+    {
+      "gss_code": "E07000214",
+      "name": "Surrey Heath Borough Council",
+      "area_name": "Surrey Heath",
+      "country": "England",
+      "website": "https://www.surreyheath.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000214.webp"
+    },
+    {
+      "gss_code": "E07000113",
+      "name": "Swale Borough Council",
+      "area_name": "Swale",
+      "country": "England",
+      "website": "http://www.swale.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000113.webp"
+    },
+    {
+      "gss_code": "E06000030",
+      "name": "Swindon Borough Council",
+      "area_name": "Swindon",
+      "country": "England",
+      "website": "https://www.swindon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000030.webp"
+    },
+    {
+      "gss_code": "E08000008",
+      "name": "Tameside Metropolitan Borough Council",
+      "area_name": "Tameside",
+      "country": "England",
+      "website": "http://www.tameside.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000008.webp"
+    },
+    {
+      "gss_code": "E07000199",
+      "name": "Tamworth Borough Council",
+      "area_name": "Tamworth",
+      "country": "England",
+      "website": "https://www.tamworth.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000199.webp"
+    },
+    {
+      "gss_code": "E07000215",
+      "name": "Tandridge District Council",
+      "area_name": "Tandridge",
+      "country": "England",
+      "website": "https://www.tandridge.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000215.webp"
+    },
+    {
+      "gss_code": "E07000045",
+      "name": "Teignbridge District Council",
+      "area_name": "Teignbridge",
+      "country": "England",
+      "website": "http://www.teignbridge.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000045.webp"
+    },
+    {
+      "gss_code": "E06000020",
+      "name": "Telford & Wrekin Council",
+      "area_name": "Telford and Wrekin",
+      "country": "England",
+      "website": "http://www.telford.gov.uk",
+      "logo": "/images/logos/councils/uk/E06000020.webp"
+    },
+    {
+      "gss_code": "E07000076",
+      "name": "Tendring District Council",
+      "area_name": "Tendring",
+      "country": "England",
+      "website": "http://www.tendringdc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000076.webp"
+    },
+    {
+      "gss_code": "E07000093",
+      "name": "Test Valley Borough Council",
+      "area_name": "Test Valley",
+      "country": "England",
+      "website": "https://www.testvalley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000093.webp"
+    },
+    {
+      "gss_code": "E07000083",
+      "name": "Tewkesbury Borough Council",
+      "area_name": "Tewkesbury",
+      "country": "England",
+      "website": "https://tewkesbury.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000083.webp"
+    },
+    {
+      "gss_code": "E07000114",
+      "name": "Thanet District Council",
+      "area_name": "Thanet",
+      "country": "England",
+      "website": "http://thanet.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000114.webp"
+    },
+    {
+      "gss_code": "S12000017",
+      "name": "The Highland Council",
+      "area_name": "Highland",
+      "country": "Scotland",
+      "website": "https://www.highland.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000017.webp"
+    },
+    {
+      "gss_code": "S12000020",
+      "name": "The Moray Council",
+      "area_name": "Moray",
+      "country": "Scotland",
+      "website": "http://www.moray.gov.uk",
+      "logo": "/images/logos/councils/uk/S12000020.webp"
+    },
+    {
+      "gss_code": "E07000102",
+      "name": "Three Rivers District Council",
+      "area_name": "Three Rivers",
+      "country": "England",
+      "website": "http://www.threerivers.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000102.webp"
+    },
+    {
+      "gss_code": "E06000034",
+      "name": "Thurrock Council",
+      "area_name": "Thurrock",
+      "country": "England",
+      "website": "http://www.thurrock.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000034.webp"
+    },
+    {
+      "gss_code": "E07000115",
+      "name": "Tonbridge and Malling Borough Council",
+      "area_name": "Tonbridge and Malling",
+      "country": "England",
+      "website": "https://www.tmbc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000115.webp"
+    },
+    {
+      "gss_code": "E06000027",
+      "name": "Torbay Council",
+      "area_name": "Torbay",
+      "country": "England",
+      "website": "http://www.torbay.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000027.webp"
+    },
+    {
+      "gss_code": "W06000020",
+      "name": "Torfaen County Borough Council",
+      "area_name": "Torfaen",
+      "country": "Wales",
+      "website": "http://www.torfaen.gov.uk",
+      "logo": "/images/logos/councils/uk/W06000020.webp"
+    },
+    {
+      "gss_code": "E07000046",
+      "name": "Torridge District Council",
+      "area_name": "Torridge",
+      "country": "England",
+      "website": "https://www.torridge.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000046.webp"
+    },
+    {
+      "gss_code": "E08000009",
+      "name": "Trafford Metropolitan Borough Council",
+      "area_name": "Trafford",
+      "country": "England",
+      "website": "http://www.trafford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000009.webp"
+    },
+    {
+      "gss_code": "E07000116",
+      "name": "Tunbridge Wells Borough Council",
+      "area_name": "Tunbridge Wells",
+      "country": "England",
+      "website": "https://www.tunbridgewells.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000116.webp"
+    },
+    {
+      "gss_code": "E07000077",
+      "name": "Uttlesford District Council",
+      "area_name": "Uttlesford",
+      "country": "England",
+      "website": "https://www.uttlesford.gov.uk/home",
+      "logo": "/images/logos/councils/uk/E07000077.webp"
+    },
+    {
+      "gss_code": "W06000014",
+      "name": "Vale of Glamorgan Council",
+      "area_name": "Vale of Glamorgan",
+      "country": "Wales",
+      "website": "https://valeofglamorgan.gov.uk/en/index.aspx",
+      "logo": "/images/logos/councils/uk/W06000014.webp"
+    },
+    {
+      "gss_code": "E07000180",
+      "name": "Vale of White Horse District Council",
+      "area_name": "Vale of White Horse",
+      "country": "England",
+      "website": "http://www.whitehorsedc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000180.webp"
+    },
+    {
+      "gss_code": "E08000036",
+      "name": "Wakefield Metropolitan District Council",
+      "area_name": "Wakefield",
+      "country": "England",
+      "website": "https://www.wakefield.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000036.webp"
+    },
+    {
+      "gss_code": "E08000030",
+      "name": "Walsall Metropolitan Borough Council",
+      "area_name": "Walsall",
+      "country": "England",
+      "website": "https://go.walsall.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000030.webp"
+    },
+    {
+      "gss_code": "E06000007",
+      "name": "Warrington Borough Council",
+      "area_name": "Warrington",
+      "country": "England",
+      "website": "https://www.warrington.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000007.webp"
+    },
+    {
+      "gss_code": "E07000222",
+      "name": "Warwick District Council",
+      "area_name": "Warwick",
+      "country": "England",
+      "website": "http://www.warwickdc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000222.webp"
+    },
+    {
+      "gss_code": "E10000031",
+      "name": "Warwickshire County Council",
+      "area_name": "Warwickshire",
+      "country": "England",
+      "website": "https://www.warwickshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000031.webp"
+    },
+    {
+      "gss_code": "E07000103",
+      "name": "Watford Borough Council",
+      "area_name": "Watford",
+      "country": "England",
+      "website": "https://www.watford.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000103.webp"
+    },
+    {
+      "gss_code": "E07000216",
+      "name": "Waverley Borough Council",
+      "area_name": "Waverley",
+      "country": "England",
+      "website": "https://www.waverley.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000216.webp"
+    },
+    {
+      "gss_code": "E07000065",
+      "name": "Wealden District Council",
+      "area_name": "Wealden",
+      "country": "England",
+      "website": "https://www.wealden.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000065.webp"
+    },
+    {
+      "gss_code": "E07000241",
+      "name": "Welwyn Hatfield Council",
+      "area_name": "Welwyn Hatfield",
+      "country": "England",
+      "website": "https://www.welhat.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000241.webp"
+    },
+    {
+      "gss_code": "E06000037",
+      "name": "West Berkshire Council",
+      "area_name": "West Berkshire",
+      "country": "England",
+      "website": "http://www.westberks.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000037.webp"
+    },
+    {
+      "gss_code": "E07000047",
+      "name": "West Devon Borough Council",
+      "area_name": "West Devon",
+      "country": "England",
+      "website": "http://www.westdevon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000047.webp"
+    },
+    {
+      "gss_code": "S12000039",
+      "name": "West Dunbartonshire Council",
+      "area_name": "West Dunbartonshire",
+      "country": "Scotland",
+      "website": "https://www.west-dunbarton.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000039.webp"
+    },
+    {
+      "gss_code": "E07000127",
+      "name": "West Lancashire Borough Council",
+      "area_name": "West Lancashire",
+      "country": "England",
+      "website": "http://www.westlancs.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000127.webp"
+    },
+    {
+      "gss_code": "E07000142",
+      "name": "West Lindsey District Council",
+      "area_name": "West Lindsey",
+      "country": "England",
+      "website": "https://www.west-lindsey.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000142.webp"
+    },
+    {
+      "gss_code": "S12000040",
+      "name": "West Lothian Council",
+      "area_name": "West Lothian",
+      "country": "Scotland",
+      "website": "https://www.westlothian.gov.uk/",
+      "logo": "/images/logos/councils/uk/S12000040.webp"
+    },
+    {
+      "gss_code": "E06000062",
+      "name": "West Northamptonshire Council",
+      "area_name": "West Northamptonshire",
+      "country": "England",
+      "website": "https://www.westnorthants.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000062.webp"
+    },
+    {
+      "gss_code": "E07000181",
+      "name": "West Oxfordshire District Council",
+      "area_name": "West Oxfordshire",
+      "country": "England",
+      "website": "https://www.westoxon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000181.webp"
+    },
+    {
+      "gss_code": "E07000245",
+      "name": "West Suffolk District Council",
+      "area_name": "West Suffolk",
+      "country": "England",
+      "website": "https://www.westsuffolk.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000245.webp"
+    },
+    {
+      "gss_code": "E10000032",
+      "name": "West Sussex County Council",
+      "area_name": "West Sussex",
+      "country": "England",
+      "website": "http://www.westsussex.gov.uk/",
+      "logo": "/images/logos/councils/uk/E10000032.webp"
+    },
+    {
+      "gss_code": "E06000064",
+      "name": "Westmorland and Furness Council",
+      "area_name": "Westmorland and Furness",
+      "country": "England",
+      "website": "https://www.westmorlandandfurness.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000064.webp"
+    },
+    {
+      "gss_code": "E08000010",
+      "name": "Wigan Metropolitan Borough Council",
+      "area_name": "Wigan",
+      "country": "England",
+      "website": "http://www.wigan.gov.uk",
+      "logo": "/images/logos/councils/uk/E08000010.webp"
+    },
+    {
+      "gss_code": "E06000054",
+      "name": "Wiltshire Council",
+      "area_name": "Wiltshire",
+      "country": "England",
+      "website": "https://www.wiltshire.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000054.webp"
+    },
+    {
+      "gss_code": "E07000094",
+      "name": "Winchester City Council",
+      "area_name": "Winchester",
+      "country": "England",
+      "website": "https://www.winchester.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000094.webp"
+    },
+    {
+      "gss_code": "E08000015",
+      "name": "Wirral Council",
+      "area_name": "Wirral",
+      "country": "England",
+      "website": "http://www.wirral.gov.uk/",
+      "logo": "/images/logos/councils/uk/E08000015.webp"
+    },
+    {
+      "gss_code": "E07000217",
+      "name": "Woking Borough Council",
+      "area_name": "Woking",
+      "country": "England",
+      "website": "https://www.woking.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000217.webp"
+    },
+    {
+      "gss_code": "E06000041",
+      "name": "Wokingham Borough Council",
+      "area_name": "Wokingham",
+      "country": "England",
+      "website": "https://www.wokingham.gov.uk/",
+      "logo": "/images/logos/councils/uk/E06000041.webp"
+    },
+    {
+      "gss_code": "E07000237",
+      "name": "Worcester City Council",
+      "area_name": "Worcester",
+      "country": "England",
+      "website": "http://www.worcester.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000237.webp"
+    },
+    {
+      "gss_code": "E10000034",
+      "name": "Worcestershire County Council",
+      "area_name": "Worcestershire",
+      "country": "England",
+      "website": "http://www.worcestershire.gov.uk",
+      "logo": "/images/logos/councils/uk/E10000034.webp"
+    },
+    {
+      "gss_code": "E07000229",
+      "name": "Worthing Borough Council",
+      "area_name": "Worthing",
+      "country": "England",
+      "website": "https://www.adur-worthing.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000229.webp"
+    },
+    {
+      "gss_code": "W06000006",
+      "name": "Wrexham County Borough Council",
+      "area_name": "Wrexham",
+      "country": "Wales",
+      "website": "http://www.wrexham.gov.uk/",
+      "logo": "/images/logos/councils/uk/W06000006.webp"
+    },
+    {
+      "gss_code": "E07000238",
+      "name": "Wychavon District Council",
+      "area_name": "Wychavon",
+      "country": "England",
+      "website": "http://www.wychavon.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000238.webp"
+    },
+    {
+      "gss_code": "E07000128",
+      "name": "Wyre Council",
+      "area_name": "Wyre",
+      "country": "England",
+      "website": "http://www.wyre.gov.uk",
+      "logo": "/images/logos/councils/uk/E07000128.webp"
+    },
+    {
+      "gss_code": "E07000239",
+      "name": "Wyre Forest District Council",
+      "area_name": "Wyre Forest",
+      "country": "England",
+      "website": "https://www.wyreforestdc.gov.uk/",
+      "logo": "/images/logos/councils/uk/E07000239.webp"
+    }
+  ]
+}

@@ -1,11 +1,12 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { finaliseAuthorityDirectory } from "./build-authority-directory.mjs";
 
 const dir = process.argv[2] ?? "dist/client";
 const base = (process.env.BASE_PATH ?? "/").replace(/\/+$/, "");
 // Root-absolute references to files in public/ are written by hand in the source
 // and so are not rewritten by Vite's `base`. Fix them up for the subpath.
-const roots = ["images/", "favicon.png", "robots.txt", "methodology-pack.txt"];
+const roots = ["images/", "data/", "local-authorities/", "favicon.png", "robots.txt", "methodology-pack.txt"];
 const exts = [".html", ".js", ".css", ".json", ".txt", ".xml"];
 
 let patched = 0;
@@ -128,6 +129,10 @@ if (!stylesheet) {
   );
   process.exit(1);
 }
+finaliseAuthorityDirectory(
+  dir,
+  [...shell.matchAll(/<link\b[^>]*\brel="stylesheet"[^>]*>/g)].map((match) => match[0]).join(""),
+);
 writeFileSync(
   join(dir, "404.html"),
   `<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/>` +

@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build": "node scripts/build-authority-directory.mjs && vite build",
+    "build:dev": "node scripts/build-authority-directory.mjs && vite build --mode development",
+    "prepare:authorities": "node scripts/build-authority-directory.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
