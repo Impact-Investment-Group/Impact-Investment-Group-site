@@ -22,7 +22,7 @@ export const Route = createFileRoute("/pricing")({
 
 function PricingPage() {
   return (
-    <div className="pricing-page" data-pricing-page>
+    <div className="pricing-page" data-pricing-page data-buddy-topic="investment">
       <section className="pricing-intro" aria-labelledby="pricing-heading">
         <header className="pricing-intro__copy">
           <p className="pricing-eyebrow">{pricing.eyebrow}</p>

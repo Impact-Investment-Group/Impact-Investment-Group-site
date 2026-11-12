@@ -10,7 +10,7 @@ export const styles: string[];
 export const forms: string[];
 
 export class Character {
-  constructor(atlas: HTMLImageElement);
+  constructor(atlas: HTMLImageElement, hands?: HTMLImageElement);
   draw(context: CanvasRenderingContext2D, form: number, pose: Pose, x: number, y: number, scale?: number, alpha?: number): void;
   transition(
     context: CanvasRenderingContext2D,

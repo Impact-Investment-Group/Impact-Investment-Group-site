@@ -46,7 +46,7 @@ function LayerExplorer() {
   const layer = dealLayers[active]!;
   const owners = layerOwners.find((item) => item.number === layer.number)!;
   return (
-    <div className="friendly-layer-explorer mt-8">
+    <div className="friendly-layer-explorer mt-8" data-buddy-topic={layer.number === "04" ? "support" : layer.number === "05" ? "investment" : "property"}>
       <div
         role="tablist"
         aria-label="Deal layers"
@@ -191,7 +191,7 @@ function LayerExplorer() {
 
 function SolutionsPage() {
   return (
-    <div className="friendly-editorial friendly-solutions">
+    <div className="friendly-editorial friendly-solutions" data-buddy-topic="property">
       <section aria-labelledby="solution-heading" className="page-intro friendly-hero">
         <div className="mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-2 lg:gap-12 lg:py-20">
           <div>
@@ -282,7 +282,7 @@ function SolutionsPage() {
           </div>
         </div>
       </section>
-      <section aria-label="Looking for a home" className="border-t border-rule">
+      <section aria-label="Looking for a home" className="border-t border-rule" data-buddy-topic="support">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-6 sm:px-8">
           <p className="max-w-[95ch] text-sm leading-relaxed text-ink-muted">
             {lookingForHome.body}{" "}

@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { platformGuides, platformGuideScreenshotCrops, type PlatformGuide } from "@/content/platform-guides";
+import { buddyTopicForPath } from "@/content/buddy";
 import "./platform-guides.css";
 
 const platformOrigin = "https://app.impactinvestmentgroup.co.uk";
@@ -239,6 +240,7 @@ export function PlatformGuides() {
   return (
     <section
       id="platform-guides"
+      data-buddy-topic={buddyTopicForPath(`/register/${guide?.id ?? ""}`)}
       className="platform-guides"
       aria-labelledby="platform-guides-heading"
       ref={sectionRef}

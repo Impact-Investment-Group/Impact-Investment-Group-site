@@ -1,0 +1,154 @@
+{
+  "version": "hands-v3",
+  "image": "/images/buddy/hands-v3.webp",
+  "width": 1536,
+  "height": 1024,
+  "poseOrder": [
+    "open",
+    "fist",
+    "point",
+    "thumb",
+    "cupped",
+    "relaxed"
+  ],
+  "cells": [
+    [
+      0,
+      0,
+      512,
+      512
+    ],
+    [
+      512,
+      0,
+      512,
+      512
+    ],
+    [
+      1024,
+      0,
+      512,
+      512
+    ],
+    [
+      0,
+      512,
+      512,
+      512
+    ],
+    [
+      512,
+      512,
+      512,
+      512
+    ],
+    [
+      1024,
+      512,
+      512,
+      512
+    ]
+  ],
+  "rects": [
+    [
+      99,
+      62,
+      363,
+      402
+    ],
+    [
+      623,
+      113,
+      262,
+      351
+    ],
+    [
+      1134,
+      56,
+      265,
+      408
+    ],
+    [
+      150,
+      563,
+      278,
+      407
+    ],
+    [
+      566,
+      623,
+      392,
+      340
+    ],
+    [
+      1095,
+      572,
+      300,
+      389
+    ]
+  ],
+  "pivots": [
+    [
+      0.4820936639118457,
+      0.9502487562189055
+    ],
+    [
+      0.42748091603053434,
+      0.9430199430199431
+    ],
+    [
+      0.4188679245283019,
+      0.9509803921568627
+    ],
+    [
+      0.45323741007194246,
+      0.9434889434889435
+    ],
+    [
+      0.30357142857142855,
+      0.9323529411764706
+    ],
+    [
+      0.54,
+      0.04627249357326478
+    ]
+  ],
+  "pivotPixelsInAtlas": [
+    [
+      274,
+      444
+    ],
+    [
+      735,
+      444
+    ],
+    [
+      1245,
+      444
+    ],
+    [
+      276,
+      947
+    ],
+    [
+      685,
+      940
+    ],
+    [
+      1257,
+      590
+    ]
+  ],
+  "angleOffsets": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    3.141592653589793
+  ],
+  "coordinateConvention": "Source x points right and y points down. Canvas positive angles rotate clockwise. Rects are [x,y,width,height]; pivots are normalized within each rect.",
+  "boundsBasis": "Measured alpha>=8 bounds plus two pixels on every side. Full atlas bytes and alpha remain unchanged; source rectangles only select individual sprites.",
+  "pivotBasis": "Chosen visual centre of each cuff attachment plane; source has no rig metadata. Values are exact integration anchors, with approximately +/-3 source pixels of visual placement tolerance.",
+  "orientation": "First five poses have bottom cuffs and fingers extending up. Relaxed has top cuff and fingers extending down; angleOffsets[5]=PI preserves the engine fingers-up convention."
+}

@@ -1,4 +1,5 @@
 """CI-only Buddy browser journeys. All AI responses are explicit local fixtures."""
+import argparse
 import functools
 import hashlib
 import http.server
@@ -9,6 +10,11 @@ import threading
 from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright, expect
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--case', action='append', default=[], help='Run only this named journey (repeatable). Default: all.')
+parser.add_argument('--width', action='append', type=int, choices=(320, 390, 768, 1280), default=[], help='Run only this viewport width (repeatable). Default: all.')
+ARGS = parser.parse_args()
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs/screenshots/wave909/buddy"
@@ -27,6 +33,8 @@ server = http.server.ThreadingHTTPServer(
 threading.Thread(target=server.serve_forever, daemon=True).start()
 BASE = f"http://127.0.0.1:{server.server_address[1]}"
 REPORT = {"checks": [], "failures": [], "ai_mode": "mocked local responses only"}
+if ARGS.case or ARGS.width:
+    REPORT['selection'] = {'cases': ARGS.case or 'all', 'widths': ARGS.width or 'all'}
 V2_ATLAS_SIZE = 219614
 V2_ATLAS_SHA256 = "63ccd2d7b230b116b2f44225c546f07bab811551a175c7792ad58894fadc45b2"
 V2_ATLAS_PATH = "/images/buddy/atlas-v2.webp"
@@ -174,6 +182,7 @@ def assert_canvas_artwork(character):
     expect(canvas).to_be_visible()
     expect(canvas).to_have_count(1)
     expect(character).to_have_attribute("data-buddy-version", "v2-refined")
+    expect(character).to_have_attribute("data-buddy-hands", "v3")
     assert canvas.evaluate("n => n.getContext('2d').getImageData(0, 0, n.width, n.height).data.some((v, i) => i % 4 === 3 && v > 0)"), "Buddy's canvas is blank"
     return canvas
 
@@ -468,7 +477,9 @@ def invalid_response_topics(page, fixtures):
 
 def retry_and_refusal(page, fixtures):
     visit(page, "/platform/")
+    initial_topic = page.locator('[data-buddy-widget]').get_attribute('data-buddy-context')
     chat = chat_open(page)
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', initial_topic)
     fixtures.queue.append({"status": 503, "body": {"detail": "fixture unavailable"}})
     send(chat, "Explain the property process.")
     expect(chat.get_by_role("alert")).to_contain_text("couldn't get an AI answer")
@@ -509,6 +520,7 @@ def retry_and_refusal(page, fixtures):
     expect(chat.get_by_role("alert")).to_contain_text("couldn't get an AI answer")
     expect(chat.get_by_role("button", name="Try again", exact=True)).to_be_visible()
     original_retry = fixtures.requests[-1]
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', original_retry['topic'])
     before_open = len(fixtures.requests)
     status_count = len(fixtures.status_requests)
     chat.get_by_role('link', name='Contact our team', exact=True).click()
@@ -529,7 +541,7 @@ def retry_and_refusal(page, fixtures):
     showcase.get_by_role('button', name='Open Buddy', exact=True).focus()
     page.keyboard.press('Enter')
     expect(chat.get_by_role('button', name='Try again', exact=True)).to_be_visible()
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'property')
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', original_retry['topic'])
     assert len(fixtures.requests) == before_open, 'Opening Services reposted the failed question'
     assert len(fixtures.status_requests) == status_count, 'Opening an existing failed chat restarted readiness'
     fixtures.answer('Fixture retry answer after opening Services.', topic='investment')
@@ -603,8 +615,10 @@ def take_pending_reply(page, fixtures):
 
 def nonmodal_continuous_conversation(page, fixtures):
     visit(page, "/platform/")
+    initial_topic = page.locator('[data-buddy-widget]').get_attribute('data-buddy-context')
     chat = chat_open(page)
     character = chat.locator('[data-buddy-form]')
+    expect(character).to_have_attribute('data-buddy-form', initial_topic)
     fixtures.queue.append({"pending": True})
     first_question = 'Explain property sourcing while I browse the site.'
     send(chat, first_question)
@@ -616,6 +630,7 @@ def nonmodal_continuous_conversation(page, fixtures):
     page.keyboard.press('Enter')
     expect(chat).to_have_attribute('data-buddy-activity', 'think')
     expect(chat).to_have_attribute('data-buddy-readiness', 'ready')
+    expect(character).to_have_attribute('data-buddy-form', initial_topic)
     assert len(fixtures.status_requests) == status_count, 'Reopening restarted readiness during a reply'
     assert page.evaluate('window.__buddyRequestAborted') == 0, 'Reopening cancelled the visitor question'
 
@@ -624,9 +639,9 @@ def nonmodal_continuous_conversation(page, fixtures):
     page.keyboard.press('Enter')
     expect(page).to_have_url(re.compile(r'/pricing/?$'))
     expect(chat).to_be_visible()
-    expect(character).to_have_attribute('data-buddy-form', 'property')
+    expect(character).to_have_attribute('data-buddy-form', initial_topic)
     expect(chat).to_have_attribute('data-buddy-activity', 'think')
-    assert len(fixtures.requests) == 1 and fixtures.requests[0]['topic'] == 'property'
+    assert len(fixtures.requests) == 1 and fixtures.requests[0]['topic'] == initial_topic
     assert len(fixtures.status_requests) == status_count, 'Navigation restarted the conversation'
     assert page.evaluate('window.__buddyRequestAborted') == 0, 'Navigation cancelled the question'
     first_reply = 'Fixture investment answer preserved across navigation.'
@@ -792,6 +807,109 @@ def readiness_cancel_timeout(page, fixtures):
     no_overflow(page)
 
 
+def centre_section(page, selector):
+    page.locator(selector).evaluate("node => {const b=node.getBoundingClientRect();scrollTo({top:scrollY+b.top+b.height/2-innerHeight/2,behavior:'instant'})}")
+
+
+def scroll_context_and_retained_chat(page, fixtures):
+    visit(page)
+    widget = page.locator('[data-buddy-widget]')
+    character = widget.locator('[data-buddy-form]')
+    financial = '#mission-panel-need [data-buddy-topic="investment"]'
+    for selector, topic in [
+        ('section[aria-labelledby="hero-heading"]', 'property'),
+        ('#charity-impact', 'support'),
+        ('.council-panel', 'property'),
+        (financial, 'investment'),
+    ]:
+        centre_section(page, selector)
+        expect(widget).to_have_attribute('data-buddy-context', topic)
+        expect(character).to_have_attribute('data-buddy-form', topic)
+        assert_canvas_artwork(character)
+    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Reading the page opened or contacted AI'
+
+    # A brief pass through another section must not switch Buddy's form.
+    centre_section(page, '#charity-impact')
+    expect(widget).to_have_attribute('data-buddy-context', 'support')
+    page.evaluate("""() => {
+      window.__contextChanges=[];
+      const widget=document.querySelector('[data-buddy-widget]');
+      window.__contextObserver=new MutationObserver(() => window.__contextChanges.push(widget.dataset.buddyContext));
+      window.__contextObserver.observe(widget,{attributes:true,attributeFilter:['data-buddy-context']});
+      for(const selector of ['#mission-panel-need [data-buddy-topic="investment"]','.council-panel']) {
+        const box=document.querySelector(selector).getBoundingClientRect();
+        scrollTo({top:scrollY+box.top+box.height/2-innerHeight/2,behavior:'instant'});
+      }
+    }""")
+    expect(widget).to_have_attribute('data-buddy-context', 'property')
+    assert 'investment' not in page.evaluate('window.__contextChanges'), 'A passing section caused a form flash'
+    page.evaluate('window.__contextObserver.disconnect()')
+
+    # Changing an existing tab is a semantic mutation, without a route change.
+    page.locator('#mission-tab-response').click()
+    centre_section(page, '#mission-panel-response')
+    expect(widget).to_have_attribute('data-buddy-context', 'support')
+    assert page.locator(financial).is_hidden(), 'Inactive financial content stayed visible'
+    expect(character).to_have_attribute('data-buddy-form', 'support')
+
+    centre_section(page, '#charity-impact')
+    expect(widget).to_have_attribute('data-buddy-context', 'support')
+    chat = chat_open(page)
+    chat_character = chat.locator('[data-buddy-form]')
+    expect(chat_character).to_have_attribute('data-buddy-form', 'support')
+    fixtures.queue.append({'pending': True})
+    question = 'Explain how care organisations work with IIG.'
+    send(chat, question)
+    pending = take_pending_reply(page, fixtures)
+    centre_section(page, '.council-panel')
+    expect(chat).to_have_attribute('data-buddy-page-topic', 'property')
+    expect(chat_character).to_have_attribute('data-buddy-form', 'support')
+    expect(chat).to_have_attribute('data-buddy-activity', 'think')
+    assert fixtures.requests == [{'message': question, 'history': [], 'topic': 'support'}], 'Scrolling retargeted or repeated the pending question'
+    fixtures.fulfill(pending, {'body': {'used_ai': True, 'reply': 'Fixture answer connecting care with investment.', 'topic': 'investment'}})
+    expect(chat_character).to_have_attribute('data-buddy-form', 'investment')
+    expect(chat.locator('[data-buddy-turn]')).to_have_count(2)
+    draft = 'Keep this unfinished follow-up while I read.'
+    chat.get_by_label('Your question for Buddy', exact=True).fill(draft)
+    centre_section(page, '#charity-impact')
+    expect(chat).to_have_attribute('data-buddy-page-topic', 'support')
+    expect(chat_character).to_have_attribute('data-buddy-form', 'investment')
+    expect(chat.get_by_label('Your question for Buddy', exact=True)).to_have_value(draft)
+    expect(chat.locator('[data-buddy-turn]')).to_have_count(2)
+    chat.get_by_role('button', name='Close Buddy', exact=True).click()
+    expect(widget).to_have_attribute('data-buddy-context', 'support')
+    expect(character).to_have_attribute('data-buddy-form', 'support')
+    centre_section(page, '.council-panel')
+    expect(widget).to_have_attribute('data-buddy-context', 'property')
+    chat = chat_open(page)
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'investment')
+    expect(chat.get_by_label('Your question for Buddy', exact=True)).to_have_value(draft)
+    expect(chat.locator('[data-buddy-turn]')).to_have_count(2)
+    assert len(fixtures.requests) == 1, 'Closing, scrolling or reopening submitted a question'
+    chat.get_by_role('button', name='New conversation', exact=True).click()
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'property')
+    expect(chat.get_by_label('Your question for Buddy', exact=True)).to_have_value('')
+    expect(chat.locator('[data-buddy-turn]')).to_have_count(0)
+    chat.get_by_role('button', name='Close Buddy', exact=True).click()
+
+    # New route content and a same-page showcase mutation are both observed.
+    page.locator('footer').get_by_role('link', name='Our Services', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(page).to_have_url(re.compile(r'/platform/?$'))
+    centre_section(page, '[data-buddy-showcase]')
+    showcase = page.locator('[data-buddy-showcase]')
+    showcase.get_by_role('button', name='Care & support', exact=True).click()
+    centre_section(page, '[data-buddy-showcase]')
+    expect(widget).to_have_attribute('data-buddy-context', 'support')
+    showcase.get_by_role('button', name='Costs', exact=True).click()
+    expect(widget).to_have_attribute('data-buddy-context', 'investment')
+    chat = chat_open(page)
+    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'investment')
+    expect(chat.locator('[data-buddy-turn]')).to_have_count(0)
+    assert len(fixtures.requests) == 1
+    no_overflow(page)
+
+
 def reduced_motion(page, fixtures):
     visit(page, "/platform/")
     showcase = page.locator("[data-buddy-showcase]")
@@ -865,18 +983,28 @@ try:
             ("retry-and-ai-proof", retry_and_refusal, {}),
             ("cancel-late-response-focus", cancellation_and_focus, {}),
             ("nonmodal-continuous-conversation", nonmodal_continuous_conversation, {"reduced": True}),
+            ("scroll-context-retained-chat", scroll_context_and_retained_chat, {"reduced": True}),
             ("readiness-gate-recovery", readiness_gate, {"reduced": True}),
             ("readiness-cancel-timeout", readiness_cancel_timeout, {"reduced": True}),
             ("reduced-motion", reduced_motion, {"reduced": True}),
             ("artwork-fallback", missing_artwork, {"fail_atlas": True, "reduced": True}),
             ("short-viewport", short_viewport, {"reduced": True}),
         ]
+        unknown = set(ARGS.case) - {name for name, _, _ in cases}
+        if unknown:
+            parser.error('Unknown journey: ' + ', '.join(sorted(unknown)))
+        selected = 0
         for width in (320, 390, 768, 1280):
+            if ARGS.width and width not in ARGS.width:
+                continue
             for name, run, options in cases:
+                if ARGS.case and name not in ARGS.case:
+                    continue
                 if width not in (390, 1280) and name != "floating-placement-minimise":
                     continue
                 if name == "short-viewport" and width != 390:
                     continue
+                selected += 1
                 context, fixtures = context_for(browser, width=width, **options)
                 page = context.new_page()
                 errors = []
@@ -894,6 +1022,7 @@ try:
                     page.screenshot(path=str(OUT / f"failure-{name}-{width}.png"), full_page=True)
                 finally:
                     context.close()
+        assert selected, 'The selected journey/width combination contains no supported cases'
         browser.close()
 except Exception as error:
     REPORT["failures"].append({"name": "suite-startup", "error": str(error)})

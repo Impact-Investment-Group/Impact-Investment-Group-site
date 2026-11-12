@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { Minus } from "lucide-react";
 import { BuddyCharacter } from "./buddy-character";
-import { buddyLauncherLabel, buddyTopicForPath, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
+import { buddyLauncherLabel, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
+import { useBuddyPageContext } from "@/hooks/use-buddy-page-context";
 
 type WidgetProps = {
   topic: BuddyTopic;
@@ -23,7 +24,7 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
     if (movedFocus.current) (minimized ? reopen.current : trigger.current)?.focus();
   }, [minimized]);
 
-  return <div data-buddy-widget data-buddy-minimized={minimized} className="pointer-events-none fixed z-40 flex flex-col items-end"
+  return <div data-buddy-widget data-buddy-context={topic} data-buddy-minimized={minimized} className="pointer-events-none fixed z-40 flex flex-col items-end"
     style={{ bottom: "calc(.75rem + env(safe-area-inset-bottom, 0px))", right: "calc(.75rem + env(safe-area-inset-right, 0px))" }}>
     {minimized ? <button ref={reopen} type="button" data-buddy-reopen aria-label="Show Buddy"
       onClick={() => { movedFocus.current = true; setMinimized(false); }}
@@ -47,6 +48,9 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
 /** Keep the conversation and its dependencies off the initial public-page request. */
 export function BuddyLauncher() {
   const { pathname } = useLocation();
+  const contextTopic = useBuddyPageContext(pathname);
+  const pageContext = useRef(contextTopic);
+  pageContext.current = contextTopic;
   const [Assistant, setAssistant] = useState<typeof import("./buddy-assistant").BuddyAssistant | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -56,7 +60,7 @@ export function BuddyLauncher() {
 
   function open(topic?: BuddyTopic) {
     if (pending.current) return;
-    options.current = { topic: topic ?? buddyTopicForPath(location.pathname), trigger: document.activeElement as HTMLElement };
+    options.current = { topic: topic ?? pageContext.current, trigger: document.activeElement as HTMLElement };
     pending.current = true;
     setLoading(true);
     setFailed(false);
@@ -77,6 +81,6 @@ export function BuddyLauncher() {
     return () => { mounted.current = false; window.removeEventListener("iig:open-buddy", show); };
   }, []);
 
-  if (Assistant) return <Assistant initialTopic={options.current.topic} initialTrigger={options.current.trigger} />;
-  return <BuddyWidget topic={buddyTopicForPath(pathname)} onOpen={() => open()} loading={loading} failed={failed} />;
+  if (Assistant) return <Assistant initialTopic={options.current.topic} initialTrigger={options.current.trigger} contextTopic={contextTopic} />;
+  return <BuddyWidget topic={contextTopic} onOpen={() => open()} loading={loading} failed={failed} />;
 }

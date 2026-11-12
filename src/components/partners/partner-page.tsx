@@ -601,7 +601,7 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
     connectedNetworkPresentations[profile.id] ?? connectedNetworkPresentations["investor"]!;
 
   return (
-    <div className="partner-page partner-craft">
+    <div className="partner-page partner-craft" data-buddy-topic={partnerBuddyForm(profile)}>
       {profile.crisisSignpost ? <CrisisSignpost signpost={profile.crisisSignpost} /> : null}
       <section aria-labelledby={headingId} className="partner-craft-hero section-light">
         <div className="partner-craft-hero__layout">

@@ -42,6 +42,7 @@ export function MissionSolution() {
   }
   return (
     <section
+      data-buddy-topic={active === 0 ? "property" : "support"}
       aria-labelledby="mission-heading"
       className="mission-editorial border-y border-rule bg-page"
     >
@@ -147,6 +148,7 @@ export function MissionSolution() {
                 {stats.map((stat) => (
                   <div
                     key={stat.id}
+                    data-buddy-topic={stat.id === "asset-requirement" ? "investment" : undefined}
                     className="grid grid-cols-[minmax(100px,.75fr)_1fr] gap-x-4 border-b border-rule py-4"
                   >
                     <dt className="col-start-2 text-sm font-medium leading-relaxed text-ink">

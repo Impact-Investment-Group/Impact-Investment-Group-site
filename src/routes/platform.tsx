@@ -256,7 +256,7 @@ function DifferenceStory() {
           </details>
         ))}
       </div>
-      <dl className="friendly-lease-comparison mt-8 grid gap-4 sm:grid-cols-2">
+      <dl className="friendly-lease-comparison mt-8 grid gap-4 sm:grid-cols-2" data-buddy-topic="investment">
         {leaseComparison.map((model) => (
           <div key={model.id}>
             <dt className="text-sm font-semibold text-ink">{model.label}</dt>

@@ -70,6 +70,7 @@ function HomePage() {
       <CharityImpact variant="home" />
       <CouncilPanel />
       <section
+        data-buddy-topic="property"
         aria-labelledby="demand-heading"
         className="home-demand-friendly section-light border-t border-rule"
       >

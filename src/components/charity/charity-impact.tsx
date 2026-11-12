@@ -94,7 +94,7 @@ export function CharityImpact({ variant = "default" }: { variant?: "default" | "
   const work = charity.work[active] ?? charity.work[0];
 
   if (variant === "home") return (
-    <section id="charity-impact" data-charity-home className="charity-home relative isolate overflow-hidden border-y border-orange-600/15 text-ink" aria-labelledby="charity-impact-heading">
+    <section id="charity-impact" data-charity-home data-buddy-topic="support" className="charity-home relative isolate overflow-hidden border-y border-orange-600/15 text-ink" aria-labelledby="charity-impact-heading">
       <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold text-orange-700">{charity.eyebrow}</p>
@@ -150,6 +150,7 @@ export function CharityImpact({ variant = "default" }: { variant?: "default" | "
   return (
     <section
       id="charity-impact"
+      data-buddy-topic="support"
       className="charity-impact"
       aria-labelledby="charity-impact-heading"
     >

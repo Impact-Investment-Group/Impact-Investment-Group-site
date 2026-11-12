@@ -118,6 +118,7 @@ export function HomeHero() {
 
   return (
     <section
+      data-buddy-topic="property"
       aria-labelledby="hero-heading"
       className="relative isolate flex flex-col justify-center overflow-hidden bg-page md:min-h-[calc(100svh_-_77px)]"
     >

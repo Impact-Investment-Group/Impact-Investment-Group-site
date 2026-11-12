@@ -24,6 +24,7 @@ export function CouncilPanel() {
 
   return (
     <section
+      data-buddy-topic="property"
       aria-labelledby="commissioning-councils"
       className="council-panel border-y border-rule bg-page py-6 sm:py-7"
       data-council-interactive={interactive ? "true" : "false"}

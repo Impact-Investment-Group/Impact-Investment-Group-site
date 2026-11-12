@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, MessageCircle, RotateCcw, Send, X } from "lucide-react";
 import { BUDDY_FORM_CHANGE_MS, BuddyCharacter } from "./buddy-character";
 import { BuddyWidget } from "./buddy-launcher";
-import { buddyTopicForPath, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
+import { isBuddyTopic, type BuddyTopic } from "@/content/buddy";
 import { buddyCopy, buddyTopics } from "@/content/buddy-conversation";
 import { apiUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -60,8 +60,7 @@ function safeSources(value: unknown): Source[] {
   });
 }
 
-export function BuddyAssistant({ initialTopic = "property", initialTrigger = null }: { initialTopic?: BuddyTopic; initialTrigger?: HTMLElement | null }) {
-  const { pathname } = useLocation();
+export function BuddyAssistant({ initialTopic = "property", initialTrigger = null, contextTopic = initialTopic }: { initialTopic?: BuddyTopic; initialTrigger?: HTMLElement | null; contextTopic?: BuddyTopic }) {
   const [open, setOpen] = useState(true);
   const [topic, setTopic] = useState<BuddyTopic>(initialTopic);
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -77,7 +76,6 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   const [speaking, setSpeaking] = useState(false);
   const typingTimer = useRef<number | undefined>(undefined);
   const speakingTimer = useRef<number | undefined>(undefined);
-  const previousPath = useRef(pathname);
   const abort = useRef<AbortController | null>(null);
   const requestId = useRef(0);
   const readinessAbort = useRef<AbortController | null>(null);
@@ -121,23 +119,13 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
       readinessAbort.current?.abort();
       readinessAbort.current = null;
     } else {
+      if (!turns.length && !draft && !abort.current) setTopic(contextTopic);
       returnFocus.current = document.activeElement as HTMLElement;
       setReadiness("loading");
       setConnectionAttempt(previous => previous + 1);
     }
     setOpen(next);
   };
-
-  useEffect(() => {
-    if (pathname !== previousPath.current) {
-      previousPath.current = pathname;
-      // Navigation is page context, not permission to retarget an open chat,
-      // a retained conversation, a draft or an in-flight question.
-      if (!open && turns.length === 0 && !draft && !abort.current) {
-        setTopic(buddyTopicForPath(pathname));
-      }
-    }
-  }, [pathname, open, turns.length, draft]);
 
   useEffect(() => {
     const show = (event: Event) => {
@@ -252,13 +240,14 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   const clearConversation = () => {
     cancel(false);
     setTurns([]); setRetry(null); setError(""); setDraft("");
+    setTopic(contextTopic);
     (readiness === "ready" ? input.current : dialog.current)?.focus();
   };
 
   return <Dialog.Root open={open} onOpenChange={changeOpen} modal={false}>
-    {!open && <BuddyWidget topic={topic} onOpen={() => changeOpen(true)} setTrigger={node => { launcher.current = node; }} />}
+    {!open && <BuddyWidget topic={contextTopic} onOpen={() => changeOpen(true)} setTrigger={node => { launcher.current = node; }} />}
     <Dialog.Portal>
-      <Dialog.Content ref={dialog} data-buddy-chat data-buddy-readiness={readiness} data-buddy-activity={activity} onKeyDownCapture={leaveChatAtTabBoundary} onInteractOutside={event => event.preventDefault()} onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }} onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
+      <Dialog.Content ref={dialog} data-buddy-chat data-buddy-page-topic={contextTopic} data-buddy-readiness={readiness} data-buddy-activity={activity} onKeyDownCapture={leaveChatAtTabBoundary} onInteractOutside={event => event.preventDefault()} onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }} onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
         className="fixed bottom-0 right-0 z-50 flex max-h-dvh w-full origin-bottom-right flex-col overflow-y-auto overscroll-contain rounded-t-3xl border border-rule bg-page text-ink shadow-2xl duration-200 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-4 motion-reduce:animate-none sm:bottom-5 sm:right-5 sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-md sm:rounded-3xl">
         <header className="flex shrink-0 items-center gap-3 border-b border-rule bg-secondary py-3 pl-4 pr-3 [@media(max-height:600px)]:py-2">
           <BuddyCharacter form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} animated={open} continuousIdle className="w-14 shrink-0 [@media(max-height:600px)]:w-12" />

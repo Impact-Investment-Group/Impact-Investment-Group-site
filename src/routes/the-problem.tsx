@@ -23,7 +23,7 @@ export const Route = createFileRoute("/the-problem")({
 
 function TheProblemPage() {
   return (
-    <div className="friendly-editorial friendly-problem">
+    <div className="friendly-editorial friendly-problem" data-buddy-topic="property">
       <section className="page-intro friendly-hero" aria-labelledby="problem-heading">
         <div className="mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-2 lg:gap-14 lg:py-20">
           <div>
@@ -62,6 +62,7 @@ function TheProblemPage() {
               aria-labelledby={section.id + "-heading"}
               className="friendly-evidence-stage"
               data-stage={section.id}
+              data-buddy-topic={section.buddyForm ?? "support"}
             >
               <div className="friendly-evidence-intro">
                 <span className="friendly-evidence-number" aria-hidden="true">

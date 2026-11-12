@@ -71,6 +71,11 @@ jobs:
           node --test scripts/publish-faq.test.mjs
           node scripts/publish-faq.mjs --validate
 
+      # Historical content intentionally keeps its own earlier character rig.
+      - name: Check Buddy wrist and animation continuity
+        if: inputs.source_ref == ''
+        run: node --test scripts/buddy-engine.test.mjs
+
       # STATIC_BUILD switches vite.config.ts to prerender with no Nitro server.
       - name: Build static site
         env:

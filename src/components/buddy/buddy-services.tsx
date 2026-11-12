@@ -15,7 +15,7 @@ export function BuddyServices() {
   const [form, setForm] = useState<BuddyForm>("property");
   const topic = topics.find((item) => item.id === form)!;
   return (
-    <section aria-labelledby="buddy-services-heading" className="border-y border-rule bg-page-alt" data-buddy-showcase>
+    <section aria-labelledby="buddy-services-heading" className="border-y border-rule bg-page-alt" data-buddy-showcase data-buddy-topic={form}>
       <div className="mx-auto grid w-full max-w-[1200px] items-center gap-6 px-5 py-12 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-10 sm:px-8 lg:grid-cols-[210px_minmax(0,1fr)] lg:py-16">
         <div className="mx-auto w-40 sm:w-full">
           <BuddyCharacter form={form} action={topic.action} animated />

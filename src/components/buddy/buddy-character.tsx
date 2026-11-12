@@ -40,21 +40,58 @@ const blendSeconds = 0.45;
 const gestureSeconds: Record<BuddyAction, number> = {
   idle: 0, wave: 2.2, listen: 4.5, think: 4.5, talk: 3.2, explain: 3.2, reassure: 2.8, approve: 1.8,
 };
-// The supplied v2 rig's Idle, Celebrate, Nod, Wave and Thank you poses.
-// Each gesture is brief; pauses keep the invitation readable beside page content.
-const idleSequence = [
+// Brief, form-specific gestures separated by natural rests.
+const idleSequences = [[
   { action: 0, seconds: 3, expression: 2 },
-  { action: 9, seconds: 2.4, expression: 6 },
+  { action: 5, seconds: 2.8, expression: 3 },
   { action: 0, seconds: 3, expression: 2 },
   { action: 8, seconds: 1.8, expression: 2 },
   { action: 0, seconds: 3, expression: 2 },
   { action: 1, seconds: 2.2, expression: 2 },
   { action: 0, seconds: 3, expression: 2 },
+  { action: 24, seconds: 3.2, expression: 6 },
+  { action: 0, seconds: 3.5, expression: 2 },
+  { action: 19, seconds: 2, expression: 12 },
+], [
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 19, seconds: 2, expression: 12 },
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 18, seconds: 2.4, expression: 3 },
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 24, seconds: 3.2, expression: 6 },
+  { action: 0, seconds: 3.5, expression: 2 },
+  { action: 5, seconds: 2.8, expression: 2 },
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 1, seconds: 2.2, expression: 2 },
+], [
+  { action: 0, seconds: 3, expression: 7 },
   { action: 21, seconds: 2.4, expression: 7 },
-] as const;
+  { action: 0, seconds: 3, expression: 7 },
+  { action: 10, seconds: 2.8, expression: 7 },
+  { action: 0, seconds: 3, expression: 2 },
+  { action: 1, seconds: 2.2, expression: 2 },
+  { action: 0, seconds: 3, expression: 7 },
+  { action: 24, seconds: 3.2, expression: 6 },
+  { action: 0, seconds: 3.5, expression: 7 },
+  { action: 8, seconds: 1.8, expression: 2 },
+]] as const;
 export const BUDDY_FORM_CHANGE_MS = 2100;
 const transitionSeconds = BUDDY_FORM_CHANGE_MS / 1000;
 let atlasPromise: Promise<HTMLImageElement> | undefined;
+let handsPromise: Promise<HTMLImageElement> | undefined;
+
+function loadHands(): Promise<HTMLImageElement | undefined> {
+  if (!handsPromise) {
+    handsPromise = new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.onload = () => { void image.decode().catch(() => undefined).then(() => resolve(image)); };
+      image.onerror = () => reject(new Error("Buddy hands unavailable"));
+      image.src = "/images/buddy/hands-v3.webp";
+    });
+  }
+  return handsPromise.catch(() => { handsPromise = undefined; return undefined; });
+}
 
 function loadAtlas(): Promise<HTMLImageElement> {
   if (!atlasPromise) {
@@ -89,6 +126,7 @@ export function BuddyCharacter({
   const updateRef = useRef<((options: Options, replay: boolean) => void) | null>(null);
   const replayRef = useRef(replayKey);
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
+  const [refinedHands, setRefinedHands] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -197,6 +235,7 @@ export function BuddyCharacter({
     }
 
     function advanceIdleStep(index: number) {
+      const idleSequence = idleSequences[currentForm] ?? idleSequences[0];
       const next = index % idleSequence.length;
       const step = idleSequence[next]!;
       setAction(step.action, step.expression);
@@ -229,6 +268,7 @@ export function BuddyCharacter({
         blendElapsed += delta;
         if (blendingFrom && blendElapsed >= blendSeconds) blendingFrom = undefined;
         if (idleStep >= 0) {
+          const idleSequence = idleSequences[currentForm] ?? idleSequences[0];
           if (gestureElapsed >= idleSequence[idleStep]!.seconds) advanceIdleStep(idleStep + 1);
         } else if (!resting && gestureElapsed >= gestureSeconds[options.action]) {
           // Finish the gesture where it was drawn, then ease into a calm rest.
@@ -285,10 +325,11 @@ export function BuddyCharacter({
       if (loading || rig || disposed) return;
       loading = true;
       try {
-        const [module, atlas] = await Promise.all([import("./buddy-engine.js"), loadAtlas()]);
+        const [module, atlas, hands] = await Promise.all([import("./buddy-engine.js"), loadAtlas(), loadHands()]);
         if (disposed) return;
         engine = module;
-        rig = new module.Character(atlas);
+        rig = new module.Character(atlas, hands);
+        setRefinedHands(Boolean(hands));
         options = optionsRef.current;
         currentForm = formIndices[options.form];
         setAction(actionIndices[options.action], expressionIndices[options.expression], undefined);
@@ -349,7 +390,7 @@ export function BuddyCharacter({
   }, [form, action, expression, animated, continuousIdle, playfulIdle, replayKey]);
 
   return (
-    <div ref={containerRef} aria-hidden="true" data-buddy-form={form} data-buddy-version="v2-refined" data-buddy-artwork="v2" data-buddy-status={status}
+    <div ref={containerRef} aria-hidden="true" data-buddy-form={form} data-buddy-version="v2-refined" data-buddy-artwork="v2" data-buddy-hands={refinedHands ? "v3" : "v2"} data-buddy-status={status}
       className={cn("relative isolate aspect-square w-full shrink-0", className)}>
       {status === "failed" && <img src={fallbackImages[form]} alt="" width={1600} height={1600} loading="lazy" decoding="async"
         className="absolute inset-0 h-full w-full object-contain" />}
