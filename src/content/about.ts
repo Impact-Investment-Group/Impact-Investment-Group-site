@@ -182,7 +182,10 @@ export const team: Director[] = [
     role: "Housing Manager",
     initials: "LH",
     icon: "House",
-    credentials: ["20+ years in the property sector"],
+    credentials: [
+      "20+ years in residential property management",
+      "Landlord & investor relations, portfolio growth, compliance and asset management",
+    ],
   },
   {
     name: "Josh Howard",
