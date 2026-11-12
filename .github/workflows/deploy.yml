@@ -124,13 +124,13 @@ jobs:
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
         run: docker exec site-browser-checks python scripts/site-buddy.py
 
-      - name: Check the complete local authority directory
+      - name: Check the complete local authority carousel
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
         env:
           SOURCE_REF: ${{ inputs.source_ref }}
         run: |
           if [ -n "$SOURCE_REF" ] && [ ! -f public/data/uk-local-authorities.json ]; then
-            echo "Older site content has no authority directory; focused gate does not apply."
+            echo "Older site content has no complete authority carousel; focused gate does not apply."
           else
             docker exec site-browser-checks python scripts/site-authorities.py
           fi

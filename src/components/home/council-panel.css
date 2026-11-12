@@ -1,22 +1,29 @@
 .council-panel .logo-marquee__track {
-  animation-duration: 60s;
+  animation-duration: var(--council-loop-duration);
 }
 .council-panel [data-council-paused="true"] .logo-marquee__track {
   animation-play-state: paused;
 }
-.council-directory-disclosure > summary::-webkit-details-marker {
-  display: none;
-}
-.council-disclosure-icon {
-  transition: transform 180ms ease-out;
-}
-.council-directory-disclosure[open] .council-disclosure-icon {
-  transform: rotate(180deg);
-}
 @media (hover: none) {
   .council-panel .logo-marquee__track {
-    animation-duration: 90s;
+    animation-duration: var(--council-touch-duration);
   }
+}
+/* Without JavaScript, all logos remain in one keyboard/touch-scrollable row. */
+.council-panel[data-council-interactive="false"] .logo-marquee {
+  overflow-x: auto;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+.council-panel[data-council-interactive="false"] .logo-marquee__track {
+  animation: none;
+  transform: none;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  white-space: nowrap;
+}
+.council-panel[data-council-interactive="false"] [data-clone="true"] {
+  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .council-panel .logo-marquee {
@@ -32,8 +39,5 @@
     flex-wrap: nowrap;
     justify-content: flex-start;
     white-space: nowrap;
-  }
-  .council-disclosure-icon {
-    transition: none;
   }
 }

@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "node scripts/build-authority-directory.mjs && vite build",
-    "build:dev": "node scripts/build-authority-directory.mjs && vite build --mode development",
-    "prepare:authorities": "node scripts/build-authority-directory.mjs",
+    "build": "node scripts/prepare-authority-carousel.mjs && vite build",
+    "build:dev": "node scripts/prepare-authority-carousel.mjs && vite build --mode development",
+    "prepare:authority-carousel": "node scripts/prepare-authority-carousel.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",

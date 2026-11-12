@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import type { LogoCredit } from "@/content/trust";
 import { intrinsic } from "@/lib/responsive-image";
@@ -26,6 +27,7 @@ export function LogoMarquee({
   plateClassName,
   imgClassName,
   focusable = false,
+  progressiveImages = false,
 }: {
   items: LogoCredit[];
   /** Accessible name for the list of credits behind the lane. */
@@ -37,11 +39,31 @@ export function LogoMarquee({
   imgClassName?: string;
   /** Allow keyboard scrolling when this lane uses a reduced-motion overflow view. */
   focusable?: boolean;
+  /** Decode upcoming images before transform-driven motion brings them into view. */
+  progressiveImages?: boolean;
 }) {
   // Duplicated once so the translate loops seamlessly. Keys carry the index
   // because every logo appears twice.
   const lane = [...items, ...items];
   const { ref, playing } = useVisibleMotion<HTMLDivElement>();
+
+  useEffect(() => {
+    if (!progressiveImages || !ref.current) return;
+    const images = ref.current.querySelectorAll<HTMLImageElement>("img");
+    if (typeof IntersectionObserver === "undefined") {
+      images.forEach((image) => { image.loading = "eager"; });
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        (entry.target as HTMLImageElement).loading = "eager";
+        observer.unobserve(entry.target);
+      }
+    }, { root: ref.current, rootMargin: "0px 1200px", threshold: 0 });
+    images.forEach((image) => observer.observe(image));
+    return () => observer.disconnect();
+  }, [progressiveImages, items, ref]);
 
   return (
     <div
@@ -70,7 +92,11 @@ export function LogoMarquee({
               plateClassName ?? "h-14 px-3 py-3",
             )}
           >
-            {/* ⚠ WAVE 490: `eager`, AND THAT IS NOT AN OPTIMISATION IN
+            {/* Long catalogues use the observer above to eagerly decode nearby
+                images before they slide in. Default short lanes retain the
+                original eager-loading behavior documented below.
+
+                ⚠ WAVE 490: `eager`, AND THAT IS NOT AN OPTIMISATION IN
                 REVERSE. Chrome decides `loading="lazy"` off an element's
                 LAYOUT position and knows nothing about the transform that is
                 moving it. This track is 3,082px wide at 390 inside a 390px
@@ -114,7 +140,7 @@ export function LogoMarquee({
             <img
               src={item.logo}
               alt=""
-              loading="eager"
+              loading={progressiveImages ? "lazy" : "eager"}
               fetchPriority="low"
               decoding="async"
               className={cn("object-contain", imgClassName ?? "h-full w-auto max-w-[9rem]")}
