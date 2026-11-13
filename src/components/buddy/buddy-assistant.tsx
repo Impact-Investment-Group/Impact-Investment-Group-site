@@ -194,7 +194,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   }, [open, readiness]);
 
   useEffect(() => {
-    if (open && scroll.current) scroll.current.scrollTop = readiness === "ready" ? scroll.current.scrollHeight : 0;
+    if (open && scroll.current) scroll.current.scrollTop = readiness === "ready" && (turns.length > 0 || busy || error) ? scroll.current.scrollHeight : 0;
   }, [turns, busy, error, open, readiness]);
 
   async function ask(question: Question, isRetry = false) {

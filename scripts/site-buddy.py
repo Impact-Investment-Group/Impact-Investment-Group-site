@@ -243,6 +243,7 @@ def floating_placement_and_minimise(page, fixtures):
     assert fixtures.chat_chunks, "Opening Buddy did not load its deferred chat module"
     expect(page.locator("[data-buddy-form]:visible")).to_have_count(1)
     assert not fixtures.requests, "Opening Buddy sent a question"
+    expect(chat.get_by_role("heading", name="What would you like to understand?", exact=True)).to_be_in_viewport()
     expect(chat).not_to_have_attribute("aria-modal", "true")
     outside_focused = False
     for _ in range(24):
