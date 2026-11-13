@@ -1,4 +1,4 @@
-import { TORNADO_TIMING } from "./buddy-motion.js";
+import { sampleTornadoSpin, TORNADO_TIMING } from "./buddy-motion.js";
 export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL, TORNADO_TIMING } from "./buddy-motion.js";
 /* Buddy character engine. Approved body and hand artwork with an articulated canvas rig. */
   const TAU=Math.PI*2, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
@@ -43,7 +43,7 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
     const a=t*speed,s=Math.sin(a*TAU),soft=Math.sin(a*2.1);
     // A resting wrist sits beside its own silhouette, not inside the wider £/heart body.
     const rest=[[-82,84,86,83],[-124,92,125,91],[-119,87,120,86]][form];
-    const p={x:0,y:soft*2.5*amp,rot:soft*.012*amp,sx:1,sy:1,eye:1,eyeL:1,eyeR:1,gazeX:0,gazeY:0,mouth:0,smile:1,browL:0,browR:0,browYL:0,browYR:0,roundMouth:0,mouthX:0,handMix:1,oldLH:-1,oldRH:-1,
+    const p={x:0,y:soft*2.5*amp,rot:soft*.012*amp,yaw:0,sx:1,sy:1,eye:1,eyeL:1,eyeR:1,gazeX:0,gazeY:0,mouth:0,smile:1,browL:0,browR:0,browYL:0,browYR:0,roundMouth:0,mouthX:0,handMix:1,oldLH:-1,oldRH:-1,
       lx:rest[0],ly:rest[1],lex:rest[0]-12,ley:rest[1]*.45,la:-.16,lh:5,rx:rest[2],ry:rest[3],rex:rest[2]+12,rey:rest[3]*.45,ra:.15,rh:5,frontL:0,frontR:0};
     switch(state){
       case 0:p.gazeX=Math.sin(a*.8)*2.4;p.gazeY=Math.sin(a*.55)*.7;p.rot=soft*.012;p.lx+=Math.sin(a*1.1)*1.4;p.rx+=Math.sin(a*1.1+.8)*1.4;p.ly+=Math.sin(a*1.7)*1.8;p.ry+=Math.sin(a*1.7+.7)*1.8;p.sx+=Math.sin(a*1.8)*.003;p.sy-=Math.sin(a*1.8)*.004;break;
@@ -144,7 +144,7 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
     const auto=[2,2,3,5,2,12,4,4,2,6,7,2,2,3,10,11,4,4,9,12,1,7,4,4,6,2,6,3,4];
     return expression(p,faceStyle||auto[state]||1,a);
   }
-  function blend(a,b,t){const p={};for(const k of Object.keys(b))p[k]=['lh','rh'].includes(k)?b[k]:['la','ra','rot'].includes(k)?mixAngle(a[k],b[k],t):mix(a[k],b[k],t);p.oldLH=a.lh;p.oldRH=a.rh;p.handMix=t;return p;}
+  function blend(a,b,t){const p={};for(const k of Object.keys(b))p[k]=['lh','rh'].includes(k)?b[k]:['la','ra','rot','yaw'].includes(k)?mixAngle(a[k],b[k],t):mix(a[k],b[k],t);p.oldLH=a.lh;p.oldRH=a.rh;p.handMix=t;return p;}
   function limb(s,w,lengths,side,preferred){
     const dx=w[0]-s[0],dy=w[1]-s[1],raw=Math.hypot(dx,dy)||1,d=clamp(raw,22,(lengths[0]+lengths[1])*.94),ux=dx/raw,uy=dy/raw;
     w=[s[0]+ux*d,s[1]+uy*d];const along=(lengths[0]**2-lengths[1]**2+d*d)/(2*d),h=Math.sqrt(Math.max(0,lengths[0]**2-along*along));
@@ -202,10 +202,14 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
       ctx.restore();
     }
     draw(ctx,form,p,x,y,scale=1,alpha=1,layers){
-      const n=anatomy[form];ctx.save();ctx.globalAlpha*=alpha;ctx.translate(x+p.x*scale,y+p.y*scale);ctx.scale(scale*p.sx,scale*p.sy);ctx.rotate(p.rot);
+      const n=anatomy[form],facing=Math.cos(p.yaw||0);ctx.save();ctx.globalAlpha*=alpha;ctx.translate(x+p.x*scale,y+p.y*scale);ctx.scale(scale*p.sx*(.065+.935*Math.abs(facing)),scale*p.sy);ctx.rotate(p.rot);
       const left=limb(n.shoulders[0],[p.lx,p.ly],n.limbs,-1,[p.lex,p.ley]),right=limb(n.shoulders[1],[p.rx,p.ry],n.limbs,1,[p.rex,p.rey]);
       this.arm(ctx,left);this.arm(ctx,right);
-      this.sprite(ctx,form,-n.w/2,-n.h/2,n.w,n.h);this.face(ctx,form,p);
+      this.sprite(ctx,form,-n.w/2,-n.h/2,n.w,n.h);
+      // The approved artwork is front-facing. Compress its silhouette at each
+      // turn, keep the lettering unmirrored, and hide the face on the rear half.
+      const faceAlpha=ease((facing-.03)/.48);
+      if(faceAlpha>0){ctx.save();ctx.globalAlpha*=faceAlpha;this.face(ctx,form,p);ctx.restore();}
       if(p.frontL>.001)this.arm(ctx,left,true,p.frontL);
       if(p.frontR>.001)this.arm(ctx,right,true,p.frontR);
       if(layers?.beforeHands){ctx.save();try{layers.beforeHands(ctx,{left,right,pose:p});}finally{ctx.restore();}}
@@ -214,9 +218,9 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
       ctx.restore();
     }
     tornado(ctx,t,x,y,scale=1,front=false){
-      const power=ease((t-.035)/.19)*(1-ease((t-.83)/.17));if(power<.001)return;
+      const power=ease((t-.14)/.16)*(1-ease((t-.82)/.18));if(power<.001)return;
       ctx.save();ctx.translate(x,y);ctx.scale(scale*(.65+.35*power),scale*(.65+.35*power));ctx.globalAlpha*=power;
-      const phase=TAU*(.1+3.65*ease(t)),turns=TAU*3.15;
+      const phase=.2+sampleTornadoSpin(t).angle,turns=TAU*3.15;
       if(!front){
         const core=ctx.createLinearGradient(0,-160,0,155);
         core.addColorStop(0,'rgba(101,185,179,.04)');core.addColorStop(.45,'rgba(37,141,138,.18)');core.addColorStop(1,'rgba(20,54,106,.04)');
@@ -252,15 +256,18 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
     transition(ctx,from,to,style,t,state,motionStyle,x,y,scale,sourcePose,targetPose){
       t=clamp(t);const p=pose(t<.5?from:to,state,.5,motionStyle);
       if(style==='Tornado'){
+        if(t===0||t===1){this.draw(ctx,t===0?from:to,(t===0?sourcePose:targetPose)||p,x,y,scale);return;}
         const incoming=t>=.5,q={...(incoming?targetPose:sourcePose)||p};
         const gather=ease((t-.07)/.33),reveal=ease((t-TORNADO_TIMING.revealStart)/(TORNADO_TIMING.revealEnd-TORNADO_TIMING.revealStart));
         const opacity=incoming?reveal:1-ease((t-TORNADO_TIMING.concealStart)/(TORNADO_TIMING.concealEnd-TORNADO_TIMING.concealStart));
+        const spin=sampleTornadoSpin(t);
+        q.yaw=(q.yaw||0)+spin.angle-(incoming?TAU*8:0);
         if(incoming){
-          q.sx*=.82+.18*reveal;q.sy*=.82+.18*reveal;
-          q.y+=(10-3*Math.sin(Math.PI*reveal))*(1-reveal);q.rot+=.08*(1-reveal);
+          q.sx*=.86+.14*reveal;q.sy*=.89+.11*reveal;
+          q.y+=(12-6*Math.sin(Math.PI*reveal))*(1-reveal);q.rot+=.12*(1-reveal)*Math.sin(spin.angle);
         }else{
-          q.x*=1-gather;q.y=mix(q.y,12,gather);q.sx*=1-.55*gather;q.sy*=1-.48*gather;
-          q.rot-=.13*Math.sin(Math.PI*ease(t/.45))+.28*gather;
+          q.x*=1-gather;q.y=mix(q.y,12,gather);q.sx*=1-.16*gather;q.sy*=1-.12*gather;
+          q.rot-=.12*Math.sin(Math.PI*ease(t/.17));q.rot+=.09*gather*Math.sin(spin.angle);
         }
         this.tornado(ctx,t,x,y,scale,false);
         if(opacity>0)this.draw(ctx,incoming?to:from,q,x,y,scale,opacity);

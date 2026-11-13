@@ -11,6 +11,22 @@ export const TORNADO_TIMING = Object.freeze({
   revealEnd: 0.92,
 });
 
+/** Integral of a smooth angular-velocity envelope: eight real turns, no phase reset. */
+export function sampleTornadoSpin(progress) {
+  const t = Math.max(0, Math.min(1, Number.isFinite(progress) ? progress : 0));
+  const ramp = .30, total = 1 - ramp;
+  const integral = u => u * u * u - .5 * u * u * u * u;
+  let area, speed;
+  if (t < ramp) {
+    const u = t / ramp;
+    area = ramp * integral(u); speed = u * u * (3 - 2 * u);
+  } else if (t > 1 - ramp) {
+    const u = (1 - t) / ramp;
+    area = total - ramp * integral(u); speed = u * u * (3 - 2 * u);
+  } else { area = t - ramp / 2; speed = 1; }
+  return { angle: Math.PI * 16 * area / total, velocity: Math.PI * 16 * speed / total };
+}
+
 const choices = [
   [1, 5, 6, 7, 8, 9, 11, 12, 13, 18, 19, 22, 23, 24, 25, 26],
   [1, 5, 6, 7, 8, 11, 12, 13, 14, 17, 18, 19, 24, 25, 26],

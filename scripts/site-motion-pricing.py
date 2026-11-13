@@ -47,7 +47,7 @@ with sync_playwright() as pw:
         page.on("pageerror", lambda error: errors.append(str(error)))
         try:
             page.goto(base + "/", wait_until="networkidle")
-            # Buddy is intentionally animated while visible. Use its real pause
+            # Buddy is intentionally animated while visible. Use its real minimize
             # control before measuring page idleness, retaining the same strict
             # RAF budget. site-buddy.py separately verifies the active widget,
             # minimized render cleanup and reduced-motion behaviour.

@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Character, blend, names, pose } from "../src/components/buddy/buddy-engine.js";
-import { createIdleDirector, TORNADO_DURATION_SECONDS, TORNADO_TIMING } from "../src/components/buddy/buddy-motion.js";
-import { drawPlayScene, PLAY_DURATIONS, PROPS_RECTS } from "../src/components/buddy/buddy-play.js";
+import { createIdleDirector, sampleTornadoSpin, TORNADO_DURATION_SECONDS, TORNADO_TIMING } from "../src/components/buddy/buddy-motion.js";
+import { createAmbientDirector } from "../src/components/buddy/buddy-ambient-director.js";
+import { AMBIENT_BOUNDS, AMBIENT_DURATIONS, drawAmbientScene, sampleAmbientScene, PROPS_RECTS } from "../src/components/buddy/buddy-play.js";
 
 const radians = (degrees) => (degrees * Math.PI) / 180;
 const angularDistance = (a, b) => Math.abs(Math.atan2(Math.sin(b - a), Math.cos(b - a)));
@@ -148,7 +149,7 @@ function transitionCanvas() {
     transform(...matrix) { multiply(matrix); },
     fillRect(...rectangle) { finite(...rectangle); this.paint("rectangle"); },
     rotate(angle) { finite(angle); multiply([Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0, 0]); },
-    beginPath() {}, closePath() {},
+    beginPath() {}, closePath() {}, rect: finite, clip() {},
     moveTo: finite, lineTo: finite, quadraticCurveTo: finite, bezierCurveTo: finite,
     ellipse(x, y, rx, ry, rotation, start, end) {
       finite(x, y, rx, ry, rotation, start, end);
@@ -168,7 +169,7 @@ function transitionCanvas() {
     },
     fill() { this.paint("fill"); },
     stroke() { this.paint("stroke"); },
-    drawImage(_image, ...coordinates) { finite(...coordinates); this.paint("image"); },
+    drawImage(_image, ...coordinates) { finite(...coordinates); this.paint("image"); paints[paints.length - 1].coordinates = coordinates; },
     assertRestored() {
       assert.equal(stack.length, 0, "Unclosed canvas save");
       assert.deepEqual(state, initial, "Transition leaked canvas state to the next frame");
@@ -319,46 +320,204 @@ test("tornado retargeting ends while concealed, with dense wind throughout that 
   }
 });
 
-test("play uses the complete approved atlas rectangles without reaching neighbouring cells", () => {
-  for (const rect of Object.values(PROPS_RECTS)) {
-    const [x, y, w, h] = rect;
+test("tornado spin has continuous angular momentum and a genuinely turning silhouette", () => {
+  assert.equal(sampleTornadoSpin(0).velocity, 0);
+  assert.equal(sampleTornadoSpin(1).velocity, 0);
+  assert.equal(sampleTornadoSpin(0).angle, 0);
+  assert.ok(sampleTornadoSpin(1).angle >= Math.PI * 8, "Transformation never completed several full turns");
+  let previous = sampleTornadoSpin(0);
+  for (let i = 1; i <= 1000; i += 1) {
+    const current = sampleTornadoSpin(i / 1000);
+    assert.ok(Object.values(current).every(Number.isFinite));
+    assert.ok(current.angle > previous.angle, "Angular phase reset or reversed");
+    assert.ok(current.angle - previous.angle < .1, "Angular phase jumped");
+    previous = current;
+  }
+  assert.ok(sampleTornadoSpin(.1).velocity < sampleTornadoSpin(.3).velocity);
+  assert.ok(sampleTornadoSpin(.9).velocity < sampleTornadoSpin(.7).velocity);
+  const rig = new RecordingCharacter();
+  let faces = 0;
+  rig.face = () => { faces += 1; };
+  for (const yaw of [0, Math.PI / 2, Math.PI, Math.PI * 1.5, Math.PI * 2]) {
+    const context = transitionCanvas();
+    rig.draw(context, 0, { ...pose(0, 0, .6), yaw }, 440, 220);
+    context.assertRestored();
+  }
+  assert.equal(faces, 2, "Rear and edge-on turns exposed the front-facing facial artwork");
+});
+
+test("ambient direction covers all scenes without immediate repeats or fixed pauses", () => {
+  const first = createAmbientDirector(seededRandom()), second = createAmbientDirector(seededRandom());
+  const recent = [], observed = new Set(), pauses = new Set();
+  let lastVariant;
+  for (let i = 0; i < 100; i += 1) {
+    const step = first.next();
+    assert.deepEqual(step, second.next());
+    assert.ok(Object.hasOwn(AMBIENT_DURATIONS, step.kind));
+    assert.equal(step.seconds, AMBIENT_DURATIONS[step.kind]);
+    assert.ok(!recent.includes(step.kind));
+    assert.notEqual(step.variant, lastVariant);
+    assert.ok([0, 1, 2].includes(step.variant));
+    assert.ok(step.restSeconds >= (i ? 10 : 8) && step.restSeconds <= (i ? 20 : 14));
+    recent.push(step.kind); if (recent.length > 2) recent.shift();
+    observed.add(step.kind); pauses.add(step.restSeconds); lastVariant = step.variant;
+  }
+  assert.equal(observed.size, 5);
+  assert.ok(pauses.size > 20);
+});
+
+test("ambient art stays in its approved cells and has no ball or toy-brick renderer", () => {
+  assert.equal("ball" in AMBIENT_DURATIONS, false);
+  assert.equal("ball" in PROPS_RECTS, false);
+  assert.equal("brick" in PROPS_RECTS, false);
+  for (const [x, y, w, h] of Object.values(PROPS_RECTS)) {
     assert.ok(x >= 0 && y >= 0 && w > 0 && h > 0);
     assert.ok(x + w <= 1536 && y + h <= 1024);
   }
-  assert.equal(PLAY_DURATIONS.home, 0);
 });
 
-for (const kind of Object.keys(PLAY_DURATIONS)) {
-  test(`${kind}: every form/variant is finite, restores caller state and finishes stably`, () => {
-    const duration = PLAY_DURATIONS[kind];
+for (const kind of Object.keys(AMBIENT_DURATIONS)) {
+  test(`${kind}: actual actor endpoints are preserved and every form/variant is bounded`, () => {
+    const duration = AMBIENT_DURATIONS[kind];
     for (let form = 0; form < 3; form += 1) {
+      const source = Object.freeze(blend(pose(form, 3, .2), pose(form, 0, .6), .4));
+      const target = Object.freeze(pose(form, 0, .9, 0, 7));
+      const saved = structuredClone({ source, target });
       for (let variant = 0; variant < 3; variant += 1) {
-        const rig = new Character({}, {});
+        for (const [t, expected, complete] of [[0, source, false], [duration, target, true], [duration + 50, target, true]]) {
+          const frame = sampleAmbientScene(form, kind, t, variant, source, target);
+          assert.deepEqual(frame, { pose: expected, x: AMBIENT_BOUNDS.anchorX, y: AMBIENT_BOUNDS.anchorY, scale: 1, complete });
+        }
+        let previous;
+        for (let frame = 0; frame <= Math.ceil(duration * 60); frame += 1) {
+          const current = sampleAmbientScene(form, kind, frame / 60, variant, source, target);
+          assert.ok(Object.values(current.pose).every(Number.isFinite));
+          assert.ok([current.x, current.y, current.scale].every(Number.isFinite));
+          assert.ok(current.x >= 100 && current.x <= 470 && current.y >= 120 && current.y <= 330);
+          assert.ok(current.scale >= .55 && current.scale <= 1);
+          if (previous) assert.ok(Math.hypot(current.x - previous.x, current.y - previous.y) < 26, "Actor teleported between frames");
+          previous = current;
+        }
         for (const atlas of [{}, undefined]) {
           for (let frame = 0; frame <= 24; frame += 1) {
             const context = transitionCanvas();
-            drawPlayScene(context, rig, atlas, form, kind, duration * frame / 24, 300, 220, 1, variant);
+            drawAmbientScene(context, new Character({}, {}), atlas, form, kind, duration * frame / 24, 0, 0, 1, variant, source, target);
             context.assertRestored();
-            assert.ok(context.paints.length, "Scene painted a blank frame");
+            assert.ok(context.paints.some(paint => paint.alpha > 0), "Scene painted a blank frame");
           }
           const final = transitionCanvas(), later = transitionCanvas();
-          drawPlayScene(final, rig, atlas, form, kind, duration, 300, 220, 1, variant);
-          drawPlayScene(later, rig, atlas, form, kind, duration + 100, 300, 220, 1, variant);
-          assert.deepEqual(later.paints, final.paints, "Completed scene continues changing");
-          final.assertRestored(); later.assertRestored();
+          drawAmbientScene(final, new Character({}, {}), atlas, form, kind, duration, 0, 0, 1, variant, source, target);
+          drawAmbientScene(later, new Character({}, {}), atlas, form, kind, duration + 10, 0, 0, 1, variant, source, target);
+          assert.deepEqual(final.paints, later.paints, "Completed ambient scene kept moving");
         }
       }
+      assert.deepEqual({ source, target }, saved, "Scene changed a captured pose");
     }
   });
 }
 
-test("hand-held props paint behind the actual gripping hands without changing the old draw contract", () => {
-  const rig = new RecordingCharacter();
-  const context = transitionCanvas();
+test("construction moves Buddy through the work rather than moving props around a stationary actor", () => {
+  for (let form = 0; form < 3; form += 1) {
+    const frames = Array.from({ length: 180 }, (_, i) => sampleAmbientScene(form, "build", i / 30));
+    const xs = frames.map(frame => frame.x), ys = frames.map(frame => frame.y);
+    assert.ok(Math.max(...xs) - Math.min(...xs) > 270, "Buddy did not leave the launcher anchor");
+    assert.ok(Math.max(...ys) - Math.min(...ys) > 65, "Buddy stayed on one horizontal track");
+    assert.ok(frames.some(frame => Math.abs(frame.pose.yaw) > Math.PI), "The dash never turned the actual body");
+    const lastWork = sampleAmbientScene(form, "build", 6.4);
+    const ending = sampleAmbientScene(form, "build", AMBIENT_DURATIONS.build);
+    assert.notEqual(lastWork.x, ending.x);
+  }
+});
+
+function imagePaints(context, rect) {
+  return context.paints.filter(paint => paint.kind === "image" && rect.every((n, i) => n === paint.coordinates[i]));
+}
+
+function worldPoint(matrix, x, y) {
+  return { x: matrix[0] * x + matrix[2] * y + matrix[4], y: matrix[1] * x + matrix[3] * y + matrix[5] };
+}
+
+function insidePolygon(x, y, points) {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const [ax, ay] = points[i], [bx, by] = points[j];
+    if ((ay > y) !== (by > y) && x < (bx - ax) * (y - ay) / (by - ay) + ax) inside = !inside;
+  }
+  return inside;
+}
+
+test("wall courses follow strikes; roof, complete window frames and door arrive later", () => {
+  const counts = [[.9, 0], [1.2, 1], [2, 3], [3.99, 8], [4.6, 9], [5.0, 10], [5.45, 11], [5.85, 12], [6.25, 13], [6.5, 1]];
+  for (const [time, expected] of counts) {
+    const context = transitionCanvas();
+    drawAmbientScene(context, new Character({}, {}), {}, 0, "build", time);
+    assert.equal(imagePaints(context, PROPS_RECTS.house).length, expected, `Wrong house stage at ${time}`);
+    context.assertRestored();
+  }
+  const beforeDoor = transitionCanvas(), afterDoor = transitionCanvas();
+  drawAmbientScene(beforeDoor, new Character({}, {}), {}, 0, "build", 5.9);
+  drawAmbientScene(afterDoor, new Character({}, {}), {}, 0, "build", 6.25);
+  assert.equal(imagePaints(beforeDoor, PROPS_RECTS.door).length, 0);
+  assert.equal(imagePaints(afterDoor, PROPS_RECTS.door).length, 1);
+});
+
+test("construction dust originates at the actual rig-attached hammer head at every course strike", () => {
+  const u = .01 / .48, dustWidth = 62 * (.55 + u * .65);
+  for (let form = 0; form < 3; form += 1) {
+    for (let i = 0; i < 8; i += 1) {
+      const context = transitionCanvas(), time = 1 + i * .4;
+      drawAmbientScene(context, new Character({}, {}), {}, form, "build", time);
+      const hammer = imagePaints(context, PROPS_RECTS.hammer);
+      assert.equal(hammer.length, 1, "Hammer detached or duplicated");
+      const contact = worldPoint(hammer[0].transform, -5, -62);
+      const scale = 230 / 481, localX = (contact.x - 7 - 35) / scale;
+      const localY = (contact.y - 11 - (386 - 479 * scale)) / scale;
+      assert.ok(insidePolygon(localX, localY, [[35, 221], [226, 72], [446, 221], [446, 479], [35, 479]]), `Hammer missed wall silhouette: form ${form}, course ${i}`);
+      for (const [x, y, w, h] of [[183, 126, 119, 124], [55, 286, 111, 127], [315, 286, 111, 127], [160, 263, 166, 216]]) {
+        assert.ok(!(localX >= x && localX <= x + w && localY >= y && localY <= y + h), `Hammer hit an unbuilt opening: form ${form}, course ${i}`);
+      }
+      const puff = imagePaints(context, PROPS_RECTS.dust).find(paint => Math.abs(paint.coordinates[6] - dustWidth) < 1e-7);
+      assert.ok(puff, "No strike puff at the workpoint");
+      const [, , , , x, y, w] = puff.coordinates;
+      const origin = worldPoint(puff.transform, x + w / 2, y + w * .37 + u * 15);
+      assert.ok(Math.hypot(contact.x - origin.x, contact.y - origin.y) < 1e-7, "Dust was detached from the transformed hammer");
+      context.assertRestored();
+    }
+  }
+});
+
+test("hammer stays in a closed sampled left hand, including the roof-guide and inspection transitions", () => {
+  for (let form = 0; form < 3; form += 1) {
+    for (const t of [.26, .7, 1.4, 3.8, 4.12, 4.48, 5.6, 6.0, 6.3, 6.49]) {
+      const frame = sampleAmbientScene(form, "build", t);
+      assert.equal(frame.pose.lh, 1);
+      assert.equal(frame.pose.handMix, 1, "A partly open old hand was still drawn over the handle");
+      const context = transitionCanvas(), rig = new TransitionCharacter();
+      drawAmbientScene(context, rig, {}, form, "build", t);
+      assert.deepEqual(rig.bodies.at(-1).value, frame.pose, "Rendered grip differs from the interruptible sampled pose");
+      assert.equal(imagePaints(context, PROPS_RECTS.hammer).length, 1);
+    }
+  }
+});
+
+test("all scene variants alter an authored movement or finish, without moving construction contacts", () => {
+  for (const [kind, time] of [["dance", 2], ["peek", 2.1], ["stretch", 2.7], ["polish", 2.6], ["build", 7.7]]) {
+    const variants = [0, 1, 2].map(variant => sampleAmbientScene(0, kind, time, variant));
+    assert.notDeepEqual(variants[0], variants[1], kind);
+    assert.notDeepEqual(variants[1], variants[2], kind);
+  }
+  for (let i = 0; i < 8; i += 1) {
+    const time = 1 + i * .4;
+    assert.deepEqual(sampleAmbientScene(0, "build", time, 0), sampleAmbientScene(0, "build", time, 2));
+  }
+});
+
+test("hand-held props remain behind the gripping hands without changing the draw contract", () => {
+  const rig = new RecordingCharacter(), context = transitionCanvas();
   let attachment;
-  rig.draw(context, 0, pose(0, 27, .4), 300, 220, 1, 1, {
+  rig.draw(context, 0, pose(0, 28, .4), 300, 220, 1, 1, {
     beforeHands(_context, parts) {
-      assert.equal(rig.drawnHands.length, 0, "Prop painted in front of the fingers");
+      assert.equal(rig.drawnHands.length, 0);
       attachment = parts.right.w;
     },
   });
@@ -367,25 +526,3 @@ test("hand-held props paint behind the actual gripping hands without changing th
   context.assertRestored();
 });
 
-
-test("finished build, closed home and door opening start share the exact pose and composition", () => {
-  class PlacedCharacter extends Character {
-    constructor() { super({}, {}); this.placements = []; }
-    draw(context, form, value, x, y, scale, ...rest) {
-      this.placements.push({ form, value: { ...value }, x, y, scale });
-      return super.draw(context, form, value, x, y, scale, ...rest);
-    }
-  }
-  for (let form = 0; form < 3; form += 1) {
-    for (const atlas of [{}, undefined]) {
-      const frames = [["build", PLAY_DURATIONS.build], ["home", 0], ["door", 0]].map(([kind, time]) => {
-        const context = transitionCanvas(), rig = new PlacedCharacter();
-        drawPlayScene(context, rig, atlas, form, kind, time, 300, 220, 1);
-        context.assertRestored();
-        return { paint: context.paints, placements: rig.placements };
-      });
-      assert.deepEqual(frames[0], frames[1], "Build completion jumped when changed to home");
-      assert.deepEqual(frames[1], frames[2], "Opening the door jumped before its animation began");
-    }
-  }
-});

@@ -39,16 +39,28 @@ V2_ATLAS_SIZE = 219614
 V2_ATLAS_SHA256 = "63ccd2d7b230b116b2f44225c546f07bab811551a175c7792ad58894fadc45b2"
 V2_ATLAS_PATH = "/images/buddy/atlas-v2.webp"
 BUDDY_FORM_CHANGE_MS = 3200
+# Exact presentation copy authorised in docs/WAVE1290_COPY.md.
+CHAT_COPY_ALLOWED = {
+    "greeting": "Hi, I'm Buddy. How can I help?",
+    "about": "About this chat",
+    "questions": ["How do you source properties?", "Who do you work with?", "How can I get started?"],
+}
 CORS = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS"}
 INIT = """(() => {
   window.__buddyDraws = 0;
   window.__buddyShowcaseDraws = 0;
-  window.__buddyPlayDraws = 0;
+  window.__buddyAmbientDraws = 0;
+  window.__buddyAmbientKinds = [];
   const clearRect = CanvasRenderingContext2D.prototype.clearRect;
   CanvasRenderingContext2D.prototype.clearRect = function (...args) {
     if (this.canvas.closest('[data-buddy-form]')) window.__buddyDraws++;
     if (this.canvas.closest('[data-buddy-showcase]')) window.__buddyShowcaseDraws++;
-    if (this.canvas.closest('[data-buddy-playground]')) window.__buddyPlayDraws++;
+    const companion = this.canvas.closest('[data-buddy-widget] [data-buddy-ambient]');
+    if (companion) {
+      window.__buddyAmbientDraws++;
+      const kind = companion.dataset.buddyAmbient;
+      if (window.__buddyAmbientKinds.at(-1) !== kind) window.__buddyAmbientKinds.push(kind);
+    }
     return clearRect.apply(this, args);
   };
   window.__buddyFetchOptions = [];
@@ -209,6 +221,49 @@ def no_overflow(page):
         assert send_box["y"] >= 0 and send_box["y"] + send_box["height"] <= page.viewport_size["height"] + 1, "Composer is clipped"
 
 
+def simple_chat_disclosure(page, fixtures):
+    visit(page)
+    chat = chat_open(page)
+    header = chat.locator("header")
+    expect(header.get_by_role("heading", name="Buddy", exact=True)).to_have_count(1)
+    assert header.bounding_box()["height"] <= 80, "The compact Buddy header grew beyond one row"
+    for retired in ["Homes & property", "Costs & investment", "Care & support"]:
+        expect(header.get_by_text(retired, exact=True)).to_have_count(0)
+    expect(chat.locator("[data-buddy-greeting]")).to_have_text(CHAT_COPY_ALLOWED["greeting"])
+    expect(chat.locator("[data-buddy-suggestions] button")).to_have_text(CHAT_COPY_ALLOWED["questions"])
+    about = chat.get_by_role("button", name=CHAT_COPY_ALLOWED["about"], exact=True)
+    expect(about).to_have_attribute("aria-controls", "buddy-notices")
+    expect(about).to_have_attribute("aria-expanded", "false")
+    expect(chat.locator("#buddy-notices")).to_be_hidden()
+    question = chat.get_by_label("Your question for Buddy", exact=True)
+    question.fill("Keep this unfinished question.")
+    about.focus()
+    page.keyboard.press("Enter")
+    expect(about).to_have_attribute("aria-expanded", "true")
+    expect(chat.locator("#buddy-privacy")).to_have_text("Keep personal details out of this chat. Sending a question or choosing a suggestion sends your conversation to our AI service.")
+    expect(chat.locator("#buddy-boundary")).to_have_text("AI answers can be mistaken. Check the linked information with our team before making a decision.")
+    expect(chat.locator("#buddy-notices")).to_be_visible()
+    expect(question).to_have_value("Keep this unfinished question.")
+    expect(about).to_be_focused()
+    assert not fixtures.requests, "Opening the notice submitted a draft"
+    page.keyboard.press("Space")
+    expect(about).to_have_attribute("aria-expanded", "false")
+    expect(chat.locator("#buddy-notices")).to_be_hidden()
+    for index, example in enumerate(CHAT_COPY_ALLOWED["questions"]):
+        answer = f"Fixture reply to compact example {index}."
+        fixtures.answer(answer)
+        chat.locator("[data-buddy-suggestions]").get_by_role("button", name=example, exact=True).click()
+        expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text(answer)
+        assert fixtures.requests[-1]["message"] == example, "A short chip submitted different words"
+        assert len(fixtures.requests) == index + 1, "A chip submitted more than one request"
+        expect(chat.locator("[data-buddy-turn]")).to_have_count(2)
+        expect(chat.locator("[data-buddy-suggestions]")).to_have_count(0)
+        if index < len(CHAT_COPY_ALLOWED["questions"]) - 1:
+            chat.get_by_role("button", name="New conversation", exact=True).click()
+    no_overflow(page)
+    chat.screenshot(path=str(OUT / f"simple-chat-{page.viewport_size['width']}.png"), animations="disabled")
+
+
 def floating_placement_and_minimise(page, fixtures):
     visit(page)
     # Keep the original homepage content and photo-led structure. Buddy belongs
@@ -249,7 +304,8 @@ def floating_placement_and_minimise(page, fixtures):
     assert fixtures.chat_chunks, "Opening Buddy did not load its deferred chat module"
     expect(page.locator("[data-buddy-form]:visible")).to_have_count(1)
     assert not fixtures.requests, "Opening Buddy sent a question"
-    expect(chat.get_by_role("heading", name="What would you like to understand?", exact=True)).to_be_in_viewport()
+    expect(chat.locator("[data-buddy-greeting]")).to_have_text(CHAT_COPY_ALLOWED["greeting"])
+    expect(chat.locator("[data-buddy-greeting]")).to_be_in_viewport()
     expect(chat).not_to_have_attribute("aria-modal", "true")
     outside_focused = False
     for _ in range(24):
@@ -267,7 +323,7 @@ def floating_placement_and_minimise(page, fixtures):
     close = chat.get_by_role("button", name="Close Buddy", exact=True)
     close.focus()
     page.keyboard.press("Tab")
-    expect(chat.get_by_role("button", name="How does Impact Investment Group source and connect suitable properties?", exact=True)).to_be_focused()
+    expect(chat.get_by_role("button", name=CHAT_COPY_ALLOWED["questions"][0], exact=True)).to_be_focused()
     close.focus()
     page.keyboard.press("Shift+Tab")
     assert page.evaluate("""(() => {
@@ -739,7 +795,7 @@ def readiness_gate(page, fixtures):
     expect(chat.get_by_role("link", name="Explore our services", exact=True)).to_have_attribute("href", "/platform")
     expect(chat.get_by_role("link", name="Contact our team", exact=True)).to_have_attribute("href", "/contact")
     expect(chat.get_by_role("group", name="Conversation topic")).to_have_count(0)
-    starter = chat.get_by_role("button", name="Pricing is coming soon. How can I discuss my requirements with your team?", exact=True)
+    starter = chat.get_by_role("button", name=CHAT_COPY_ALLOWED["questions"][2], exact=True)
     expect(starter).to_have_count(0)
     # Failure and truthy-but-not-true responses must not unlock the composer.
     for response in [{"status": 404}, {"status": 503}, {"body": {"configured": "true"}}, {"body": {}}]:
@@ -919,83 +975,82 @@ def scroll_context_and_retained_chat(page, fixtures):
     no_overflow(page)
 
 
-def play_open(page):
-    launcher = page.locator('[data-buddy-play-launcher]')
-    launcher.focus()
-    page.keyboard.press('Enter')
-    playground = page.locator('[data-buddy-playground]')
-    expect(playground).to_be_visible()
-    expect(playground).to_have_attribute('data-buddy-play-status', 'ready')
-    expect(playground.get_by_role('button', name='Throw ball', exact=True)).to_be_focused()
-    expect(page.locator('[data-buddy-chat]')).to_have_count(0)
-    return playground
+def no_animation_controls(page):
+    for label in ('Play with Buddy', 'Play', 'Pause Buddy', 'Resume Buddy', 'Throw ball',
+                  'Build a home', 'Dance', 'Surprise me', 'Open the door', 'Close play', 'Retry play'):
+        expect(page.get_by_role('button', name=label, exact=True)).to_have_count(0)
+    expect(page.locator('[data-buddy-playground], [data-buddy-play-launcher]')).to_have_count(0)
 
 
-def playground_controls(page, fixtures):
+def ambient_companion(page, fixtures):
+    # Pin only the decorative random source so construction is a predictable
+    # first scene. Real elapsed time and the real canvas controller still run.
+    page.add_init_script('Math.random = () => 0.999;')
+    prop_requests = []
+    page.on('request', lambda request: prop_requests.append(request.url) if 'play-props-v1.webp' in request.url else None)
     visit(page)
-    playground = play_open(page)
-    canvas = playground.locator('canvas')
-    expect(canvas).to_be_visible()
-    page.keyboard.press('Enter')
-    expect(playground).to_have_attribute('data-buddy-play-kind', 'ball')
-    expect(playground).to_have_attribute('data-buddy-play-motion', 'on')
-    playground.get_by_role('button', name='Pause Buddy', exact=True).click()
-    expect(playground).to_have_attribute('data-buddy-play-motion', 'off')
-    frozen = canvas.evaluate('n => n.toDataURL()')
-    draws = page.evaluate('window.__buddyPlayDraws')
-    page.wait_for_timeout(300)
-    assert canvas.evaluate('n => n.toDataURL()') == frozen, 'Pause changed the play pose instead of freezing it'
-    assert page.evaluate('window.__buddyPlayDraws') == draws, 'Paused play retained a drawing loop'
-    playground.get_by_role('button', name='Resume Buddy', exact=True).click()
-    expect(playground).to_have_attribute('data-buddy-play-kind', 'ball')
-    expect(playground).to_have_attribute('data-buddy-play-motion', 'on')
-    expect(playground).to_have_attribute('data-buddy-play-kind', 'idle', timeout=10000)
-    playground.get_by_role('button', name='Build a home', exact=True).click()
-    expect(playground).to_have_attribute('data-buddy-play-kind', 'build')
-    expect(playground).to_have_attribute('data-buddy-play-kind', 'home', timeout=12000)
-    expect(playground).to_have_attribute('data-buddy-play-motion', 'off')
-    door = playground.get_by_role('button', name='Open the door', exact=True)
-    expect(door).to_be_visible()
-    door.focus()
-    page.keyboard.press('Enter')
-    expect(playground).to_have_attribute('data-buddy-play-kind', 'door')
-    expect(playground).to_have_attribute('data-buddy-play-motion', 'off', timeout=8000)
-    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Buddy play overflows horizontally'
-    playground.screenshot(path=str(OUT / f'play-home-{page.viewport_size["width"]}.png'), animations='disabled')
-    playground.get_by_role('button', name='Close play', exact=True).click()
-    expect(playground).to_have_count(0)
-    expect(page.locator('[data-buddy-play-launcher]')).to_be_focused()
-    draws = page.evaluate('window.__buddyPlayDraws')
-    page.wait_for_timeout(300)
-    assert page.evaluate('window.__buddyPlayDraws') == draws, 'Closed play retained a drawing loop'
-    playground = play_open(page)
-    playground.get_by_role('button', name='Minimize Buddy', exact=True).click()
-    expect(playground).to_have_count(0)
+    no_animation_controls(page)
+    widget = page.locator('[data-buddy-widget]')
+    character = widget.locator('[data-buddy-form]')
+    canvas = assert_canvas_artwork(character)
+    expect(widget.locator('canvas')).to_have_count(1)
+    assert_fixed_widget(page)
+    page.wait_for_timeout(1500)
+    assert not prop_requests, 'Scenery loaded during the quiet initial page request'
+    expect(character).to_have_attribute('data-buddy-ambient', 'rest')
+    focused = page.evaluate('document.activeElement?.tagName')
+    expect(character).to_have_attribute('data-buddy-ambient', 'build', timeout=24000)
+    assert prop_requests, 'The autonomous construction did not request its supplied scenery'
+    page.wait_for_timeout(2800)
+    assert canvas.evaluate('n => getComputedStyle(n).pointerEvents') == 'none'
+    scene_box, button_box = canvas.bounding_box(), page.locator('[data-buddy-launcher]').bounding_box()
+    assert scene_box['x'] >= 0 and scene_box['x'] + scene_box['width'] <= page.viewport_size['width'] + 1, 'Ambient scenery leaves the viewport'
+    assert scene_box['width'] > button_box['width'], 'Scenery was squeezed into the character button'
+    assert page.evaluate("""({x,y}) => !document.elementFromPoint(x,y)?.closest('[data-buddy-widget]')""",
+                         {'x': scene_box['x'] + 8, 'y': scene_box['y'] + scene_box['height'] / 2}), 'Decorative scenery blocks the page outside Buddy'
+    assert page.evaluate('document.activeElement?.tagName') == focused, 'Ambient acting moved keyboard focus'
+    no_overflow(page)
+    canvas.screenshot(path=str(OUT / f'ambient-build-{page.viewport_size["width"]}.png'), animations='disabled')
+    expect(character).to_have_attribute('data-buddy-ambient', 'rest', timeout=12000)
+    assert 'ball' not in page.evaluate('window.__buddyAmbientKinds'), 'A retired ball scene was selected'
+    no_animation_controls(page)
+    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Ambient acting opened or contacted AI'
+    page.get_by_role('button', name='Minimize Buddy', exact=True).click()
     reopen = page.get_by_role('button', name='Show Buddy', exact=True)
     expect(reopen).to_be_focused()
+    page.wait_for_timeout(100)
+    draws = page.evaluate('window.__buddyAmbientDraws')
+    page.wait_for_timeout(300)
+    assert page.evaluate('window.__buddyAmbientDraws') == draws, 'Hidden Buddy retained ambient frames'
     page.keyboard.press('Enter')
     expect(page.locator('[data-buddy-launcher]')).to_be_focused()
     assert_fixed_widget(page)
-    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Play opened or contacted AI'
+    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Hide/reopen contacted AI'
+    chat_open(page)
+    expect(page.locator('[data-buddy-widget]:visible')).to_have_count(0)
+    assert not fixtures.requests, 'Opening the regular chat submitted an ambient action'
 
 
-def playground_reduced_motion(page, fixtures):
+def ambient_reduced_motion(page, fixtures):
+    prop_requests = []
+    page.on('request', lambda request: prop_requests.append(request.url) if 'play-props-v1.webp' in request.url else None)
     visit(page)
-    playground = play_open(page)
-    for label, result in [('Throw ball', 'idle'), ('Dance', 'idle'), ('Build a home', 'home'), ('Open the door', 'door')]:
-        playground.get_by_role('button', name=label, exact=True).click()
-        expect(playground).to_have_attribute('data-buddy-play-kind', result)
-        expect(playground).to_have_attribute('data-buddy-play-motion', 'off')
+    no_animation_controls(page)
+    character = page.locator('[data-buddy-widget] [data-buddy-form]')
+    assert_canvas_artwork(character)
+    expect(character).to_have_attribute('data-buddy-motion', 'off')
+    expect(character).to_have_attribute('data-buddy-ambient', 'rest')
     page.wait_for_timeout(250)
-    draws = page.evaluate('window.__buddyPlayDraws')
-    page.wait_for_timeout(500)
-    assert page.evaluate('window.__buddyPlayDraws') == draws, 'Reduced-motion play retained a drawing loop'
-    expect(playground.get_by_role('button', name='Ask Buddy', exact=True)).to_be_enabled()
-    playground.get_by_role('button', name='Close play', exact=True).focus()
-    page.keyboard.press('Escape')
-    expect(playground).to_have_count(0)
-    expect(page.locator('[data-buddy-play-launcher]')).to_be_focused()
-    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Reduced-motion play opened or contacted AI'
+    draws = page.evaluate('window.__buddyAmbientDraws')
+    page.wait_for_timeout(700)
+    assert page.evaluate('window.__buddyAmbientDraws') == draws, 'Reduced-motion Buddy retained ambient frames'
+    assert not prop_requests, 'Reduced motion fetched unused scenery'
+    page.get_by_role('button', name='Minimize Buddy', exact=True).click()
+    expect(page.get_by_role('button', name='Show Buddy', exact=True)).to_be_focused()
+    page.keyboard.press('Enter')
+    expect(page.locator('[data-buddy-launcher]')).to_be_focused()
+    expect(character).to_have_attribute('data-buddy-motion', 'off')
+    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Reduced-motion companion contacted AI'
 
 
 def reduced_motion(page, fixtures):
@@ -1035,7 +1090,7 @@ def short_viewport(page, fixtures):
     chat.screenshot(path=str(OUT / "chat-short-390.png"), animations="disabled")
 
     # A keyboard-sized viewport must still let native focus and scrolling reach
-    # the complete composer, its AI notice and the close control.
+    # the complete composer, the expandable AI notice and the close control.
     page.set_viewport_size({"width": 390, "height": 320})
     request_count = len(fixtures.requests)
     close = chat.get_by_role("button", name="Close Buddy", exact=True)
@@ -1050,6 +1105,12 @@ def short_viewport(page, fixtures):
     page.keyboard.press("Tab")
     expect(send_button).to_be_focused()
     expect(send_button).to_be_in_viewport(ratio=1)
+    page.keyboard.press("Tab")
+    about = chat.get_by_role("button", name=CHAT_COPY_ALLOWED["about"], exact=True)
+    expect(about).to_be_focused()
+    expect(about).to_be_in_viewport(ratio=1)
+    page.keyboard.press("Enter")
+    expect(about).to_have_attribute("aria-expanded", "true")
     chat_box = chat.bounding_box()
     page.mouse.move(chat_box["x"] + chat_box["width"] - 6, chat_box["y"] + chat_box["height"] - 8)
     page.mouse.wheel(0, 1000)
@@ -1092,6 +1153,7 @@ try:
         browser = playwright.chromium.launch()
         cases = [
             ("floating-placement-minimise", floating_placement_and_minimise, {}),
+            ("simple-chat-disclosure", simple_chat_disclosure, {}),
             ("services-only-showcase-keyboard", services_showcase_and_topics, {}),
             ("fetch-history-sources", real_fetch_contract, {}),
             ("invalid-response-topics", invalid_response_topics, {"reduced": True}),
@@ -1101,8 +1163,8 @@ try:
             ("scroll-context-retained-chat", scroll_context_and_retained_chat, {"reduced": True}),
             ("readiness-gate-recovery", readiness_gate, {"reduced": True}),
             ("readiness-cancel-timeout", readiness_cancel_timeout, {"reduced": True}),
-            ("playground-controls", playground_controls, {}),
-            ("playground-reduced-motion", playground_reduced_motion, {"reduced": True}),
+            ("ambient-companion", ambient_companion, {}),
+            ("ambient-reduced-motion", ambient_reduced_motion, {"reduced": True}),
             ("reduced-motion", reduced_motion, {"reduced": True}),
             ("artwork-fallback", missing_artwork, {"fail_atlas": True, "reduced": True}),
             ("short-viewport", short_viewport, {"reduced": True}),

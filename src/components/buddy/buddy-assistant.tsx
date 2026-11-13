@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowUpRight, Heart, House, PoundSterling, RotateCcw, Send, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, RotateCcw, Send, X } from "lucide-react";
 import { BUDDY_FORM_CHANGE_MS, BuddyCharacter } from "./buddy-character";
 import { BuddyWidget } from "./buddy-launcher";
 import { isBuddyTopic, type BuddyTopic } from "@/content/buddy";
@@ -14,7 +14,6 @@ type Turn = { role: "user" | "assistant"; content: string; sources?: Source[] };
 type Question = { message: string; history: Turn[]; topic: BuddyTopic };
 type Readiness = "loading" | "ready" | "unavailable";
 const control = "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:cursor-not-allowed disabled:opacity-50";
-const topicIcons = { property: House, investment: PoundSterling, support: Heart };
 
 function tabbableElements(root: Document | HTMLElement): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>(
@@ -66,6 +65,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   const [topic, setTopic] = useState<BuddyTopic>(initialTopic);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
+  const [noticeOpen, setNoticeOpen] = useState(false);
   const conversation = useRef({ open, topic, started: false });
   conversation.current = { open, topic, started: turns.length > 0 || Boolean(draft) };
   const [busy, setBusy] = useState(false);
@@ -250,26 +250,24 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
     <Dialog.Portal>
       <Dialog.Content ref={dialog} data-buddy-chat data-buddy-page-topic={contextTopic} data-buddy-readiness={readiness} data-buddy-activity={activity} onKeyDownCapture={leaveChatAtTabBoundary} onInteractOutside={event => event.preventDefault()} onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }} onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
         className="fixed bottom-0 right-0 z-50 flex h-[calc(100dvh-5rem)] max-h-[calc(100dvh-5rem)] w-full origin-bottom-right flex-col overflow-y-auto rounded-t-3xl border border-rule bg-page text-ink shadow-2xl duration-200 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-4 motion-reduce:animate-none sm:bottom-5 sm:right-5 sm:h-[min(46rem,calc(100dvh-2.5rem))] sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-md sm:rounded-3xl">
-        <header className="shrink-0 border-b border-rule bg-page px-4 pb-4 pt-3 [@media(max-height:600px)]:py-2">
-          <div className="flex items-center gap-3">
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-secondary [@media(max-height:600px)]:size-14">
-              <BuddyCharacter form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} animated={open} continuousIdle className="w-16 [@media(max-height:600px)]:w-12" />
+        <header className="shrink-0 border-b border-rule bg-page px-3 py-2">
+          <div className="flex items-center gap-2">
+            <div className="flex size-12 shrink-0 items-center justify-center">
+              <BuddyCharacter form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} animated={open} continuousIdle className="w-12" />
             </div>
             <div className="min-w-0 flex-1">
-              <Dialog.Title className="font-heading text-2xl font-bold tracking-tight">{buddyCopy.name}</Dialog.Title>
-              <span className="mt-1 inline-flex rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-teal-600">{current.label}</span>
+              <Dialog.Title className="font-heading text-lg font-bold">{buddyCopy.name}</Dialog.Title>
             </div>
-            <div className="flex self-start">
+            <div className="flex">
               <button type="button" aria-label={buddyCopy.clear} title={buddyCopy.clear} disabled={!turns.length && !draft} onClick={clearConversation} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page-alt")}><RotateCcw className="size-4" aria-hidden="true" /></button>
               <Dialog.Close aria-label={buddyCopy.close} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page-alt")}><X className="size-5" aria-hidden="true" /></Dialog.Close>
             </div>
           </div>
-          <Dialog.Description className="mt-3 text-sm leading-relaxed text-ink-muted [@media(max-height:600px)]:sr-only">{buddyCopy.description}</Dialog.Description>
+          <Dialog.Description className="sr-only">{buddyCopy.description}</Dialog.Description>
         </header>
-        <div ref={scroll} className="min-h-24 flex-1 overflow-y-auto overscroll-contain bg-page-alt px-4 py-5 sm:px-5">
+        <div ref={scroll} className="min-h-24 flex-1 overflow-y-auto overscroll-contain bg-page-alt px-3 py-4 sm:px-4">
           {readiness !== "ready" && <div data-buddy-connection className="rounded-2xl border border-rule bg-page-alt p-4">
-            <h3 className="font-heading text-xl font-bold">{buddyCopy.connectionHeading}</h3>
-            <p role="status" className="mt-2 text-sm leading-relaxed text-ink-muted">{readiness === "loading" ? buddyCopy.connectionLoading : buddyCopy.connectionUnavailable}</p>
+            <p role="status" className="text-sm leading-relaxed text-ink-muted">{readiness === "loading" ? buddyCopy.connectionLoading : buddyCopy.connectionUnavailable}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Link to={current.link} className={cn(control, "text-teal-600 underline underline-offset-4")}>{current.linkLabel}</Link>
               <Link to="/contact" className={cn(control, "text-teal-600 underline underline-offset-4")}>Contact our team</Link>
@@ -277,16 +275,10 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
             <button type="button" disabled={readiness === "loading"} onClick={() => { dialog.current?.focus(); setReadiness("loading"); setConnectionAttempt(previous => previous + 1); }} className={cn(control, "mt-2 text-teal-600 hover:bg-secondary")}><RotateCcw className="size-4" aria-hidden="true" />{buddyCopy.connectionRetry}</button>
           </div>}
           {readiness === "ready" && turns.length === 0 && <div className="pb-1">
-            <h3 className="text-balance font-heading text-2xl font-bold leading-tight tracking-tight">{buddyCopy.welcome}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-ink-muted">{buddyCopy.welcomeBody}</p>
-            <div className="mt-5 space-y-3">{buddyTopics.map(item => {
-              const Icon = topicIcons[item.id];
-              return <button key={item.id} type="button" aria-label={item.prompt} onClick={() => submit(item.prompt)} className="group flex min-h-11 w-full items-start gap-3 rounded-2xl border border-rule bg-page p-4 text-left shadow-sm transition-colors hover:border-teal-600 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-teal-600"><Icon className="size-4" aria-hidden="true" /></span>
-                <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-ink">{item.label}</span><span className="mt-1 block text-xs leading-relaxed text-ink-muted">{item.prompt}</span></span>
-                <ArrowUpRight aria-hidden="true" className="mt-2 size-4 shrink-0 text-teal-600" />
-              </button>;
-            })}</div>
+            <p data-buddy-greeting className="rounded-2xl rounded-tl-md border border-rule bg-page px-4 py-3 text-sm leading-relaxed">{buddyCopy.welcome}</p>
+            <div data-buddy-suggestions className="mt-3 flex flex-wrap gap-2">{buddyCopy.suggestions.map(question =>
+              <button key={question} type="button" onClick={() => submit(question)} className="inline-flex min-h-11 max-w-full items-center rounded-full border border-rule bg-page px-3 py-2 text-left text-sm leading-relaxed transition-colors hover:border-teal-600 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">{question}</button>
+            )}</div>
           </div>}
           <div role="log" aria-label="Conversation with Buddy" aria-live="polite" aria-relevant="additions" className="space-y-4">
             {turns.map((turn, index) => <div key={index} data-buddy-turn={turn.role} className={cn("rounded-2xl p-4 shadow-sm", turn.role === "user" ? "ml-8 rounded-br-md bg-ink text-white" : "mr-5 rounded-tl-md border border-rule bg-page text-ink")}>
@@ -298,19 +290,26 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
           {busy && <div role="status" className="mr-5 mt-4 flex items-center gap-3 rounded-2xl rounded-tl-md border border-rule bg-page p-4 shadow-sm"><span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-teal-600 motion-safe:animate-pulse" /><p className="text-sm font-medium text-teal-600">{buddyCopy.pending}</p></div>}
           {readiness === "ready" && error && <div role="alert" className="mt-4 rounded-2xl border border-rule bg-page-alt p-4"><p className="text-sm leading-relaxed">{error}</p>{retry && <button type="button" onClick={() => void ask(retry, true)} className={cn(control, "mt-2 text-teal-600 hover:bg-secondary")}><RotateCcw className="size-4" aria-hidden="true" />{buddyCopy.retry}</button>}<div className="mt-2 flex flex-wrap gap-3"><Link to={current.link} className={cn(control, "text-teal-600 underline underline-offset-4")}>{current.linkLabel}</Link><Link to="/contact" className={cn(control, "text-teal-600 underline underline-offset-4")}>Contact our team</Link></div></div>}
         </div>
-        <form hidden={readiness !== "ready"} onSubmit={event => { event.preventDefault(); submit(draft); }} className="shrink-0 border-t border-rule bg-page px-4 pt-3 sm:px-5" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}>
+        <footer className="shrink-0 border-t border-rule bg-page px-3 pt-2 sm:px-4" style={{ paddingBottom: "max(.25rem, env(safe-area-inset-bottom, 0px))" }}>
+        <form hidden={readiness !== "ready"} onSubmit={event => { event.preventDefault(); submit(draft); }}>
           <label htmlFor="buddy-question" className="sr-only">{buddyCopy.input}</label>
-          <div className="flex items-end gap-2 rounded-2xl border border-rule bg-page-alt p-2 shadow-sm transition-shadow focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-600/20">
-            <textarea id="buddy-question" ref={input} disabled={readiness !== "ready"} value={draft} maxLength={1000} rows={2} placeholder={buddyCopy.placeholder} aria-describedby="buddy-privacy buddy-boundary" onChange={event => changeDraft(event.target.value)} onFocus={event => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" })} onBlur={() => { window.clearTimeout(typingTimer.current); setTyping(false); }} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); submit(draft); } }} className="min-h-12 min-w-0 flex-1 scroll-my-3 resize-none rounded-lg border-0 bg-transparent p-2 text-base leading-relaxed text-ink outline-none" />
+          <div className="flex items-end gap-1 rounded-2xl border border-rule bg-page-alt p-1 transition-shadow focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-600/20">
+            <textarea id="buddy-question" ref={input} disabled={readiness !== "ready"} value={draft} maxLength={1000} rows={1} placeholder={buddyCopy.placeholder} aria-describedby={noticeOpen ? "buddy-privacy buddy-boundary" : undefined} onChange={event => changeDraft(event.target.value)} onFocus={event => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" })} onBlur={() => { window.clearTimeout(typingTimer.current); setTyping(false); }} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); submit(draft); } }} className="min-h-11 min-w-0 flex-1 scroll-my-3 resize-none rounded-lg border-0 bg-transparent p-2 text-base leading-relaxed text-ink outline-none" />
             <button type="submit" aria-label={buddyCopy.send} disabled={readiness !== "ready" || !draft.trim() || busy} className={cn(control, "size-11 shrink-0 bg-orange-600 px-0 text-white shadow-sm hover:bg-orange-700")}><Send className="size-4" aria-hidden="true" /></button>
           </div>
-          <div className="mt-1 flex items-center justify-between gap-2">
-            {busy && <button type="button" onClick={() => cancel()} className={cn(control, "text-teal-600")}>{buddyCopy.cancel}</button>}
-            <span aria-hidden="true" className="ml-auto py-2 font-mono text-xs tabular-nums text-ink-muted">{draft.length}/1000</span>
-          </div>
-          <p id="buddy-privacy" className="text-xs leading-relaxed text-ink-muted">{buddyCopy.privacy}</p>
-          <p id="buddy-boundary" className="mt-1 text-xs leading-relaxed text-ink-muted">{buddyCopy.boundary}</p>
         </form>
+          <div className="flex items-center justify-between gap-2">
+            <button type="button" aria-expanded={noticeOpen} aria-controls="buddy-notices" onClick={() => setNoticeOpen(previous => !previous)} className={cn(control, "gap-1 px-1 text-xs font-normal text-ink-muted hover:text-ink")}>
+              {buddyCopy.about}<ChevronDown className={cn("size-3", noticeOpen && "rotate-180")} aria-hidden="true" />
+            </button>
+            {busy && <button type="button" onClick={() => cancel()} className={cn(control, "text-teal-600")}>{buddyCopy.cancel}</button>}
+            {readiness === "ready" && <span aria-hidden="true" className="ml-auto py-2 font-mono text-xs tabular-nums text-ink-muted">{draft.length}/1000</span>}
+          </div>
+          <div id="buddy-notices" hidden={!noticeOpen} className="pb-2">
+            <p id="buddy-privacy" className="text-xs leading-relaxed text-ink-muted">{buddyCopy.privacy}</p>
+            <p id="buddy-boundary" className="mt-1 text-xs leading-relaxed text-ink-muted">{buddyCopy.boundary}</p>
+          </div>
+        </footer>
       </Dialog.Content>
     </Dialog.Portal>
   </Dialog.Root>;
