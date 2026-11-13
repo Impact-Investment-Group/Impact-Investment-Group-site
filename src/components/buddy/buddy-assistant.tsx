@@ -249,7 +249,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
     {!open && <BuddyWidget topic={contextTopic} onOpen={() => changeOpen(true)} setTrigger={node => { launcher.current = node; }} />}
     <Dialog.Portal>
       <Dialog.Content ref={dialog} data-buddy-chat data-buddy-page-topic={contextTopic} data-buddy-readiness={readiness} data-buddy-activity={activity} onKeyDownCapture={leaveChatAtTabBoundary} onInteractOutside={event => event.preventDefault()} onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }} onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
-        className="fixed bottom-0 right-0 z-50 flex h-[calc(100dvh-5rem)] max-h-[calc(100dvh-5rem)] w-full origin-bottom-right flex-col overflow-hidden rounded-t-3xl border border-rule bg-page text-ink shadow-2xl duration-200 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-4 motion-reduce:animate-none sm:bottom-5 sm:right-5 sm:h-[min(46rem,calc(100dvh-2.5rem))] sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-md sm:rounded-3xl">
+        className="fixed bottom-0 right-0 z-50 flex h-[calc(100dvh-5rem)] max-h-[calc(100dvh-5rem)] w-full origin-bottom-right flex-col overflow-y-auto rounded-t-3xl border border-rule bg-page text-ink shadow-2xl duration-200 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-4 motion-reduce:animate-none sm:bottom-5 sm:right-5 sm:h-[min(46rem,calc(100dvh-2.5rem))] sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-md sm:rounded-3xl">
         <header className="shrink-0 border-b border-rule bg-page px-4 pb-4 pt-3 [@media(max-height:600px)]:py-2">
           <div className="flex items-center gap-3">
             <div className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-secondary [@media(max-height:600px)]:size-14">
@@ -266,7 +266,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
           </div>
           <Dialog.Description className="mt-3 text-sm leading-relaxed text-ink-muted [@media(max-height:600px)]:sr-only">{buddyCopy.description}</Dialog.Description>
         </header>
-        <div ref={scroll} className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-page-alt px-4 py-5 sm:px-5">
+        <div ref={scroll} className="min-h-24 flex-1 overflow-y-auto overscroll-contain bg-page-alt px-4 py-5 sm:px-5">
           {readiness !== "ready" && <div data-buddy-connection className="rounded-2xl border border-rule bg-page-alt p-4">
             <h3 className="font-heading text-xl font-bold">{buddyCopy.connectionHeading}</h3>
             <p role="status" className="mt-2 text-sm leading-relaxed text-ink-muted">{readiness === "loading" ? buddyCopy.connectionLoading : buddyCopy.connectionUnavailable}</p>

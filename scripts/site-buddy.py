@@ -947,6 +947,33 @@ def short_viewport(page, fixtures):
     no_overflow(page)
     chat.screenshot(path=str(OUT / "chat-short-390.png"), animations="disabled")
 
+    # A keyboard-sized viewport must still let native focus and scrolling reach
+    # the complete composer, its AI notice and the close control.
+    page.set_viewport_size({"width": 390, "height": 320})
+    request_count = len(fixtures.requests)
+    close = chat.get_by_role("button", name="Close Buddy", exact=True)
+    question = chat.get_by_label("Your question for Buddy", exact=True)
+    send_button = chat.get_by_role("button", name="Send", exact=True)
+    close.focus()
+    expect(close).to_be_focused()
+    expect(close).to_be_in_viewport(ratio=1)
+    question.focus()
+    question.fill("An unfinished compact-screen question.")
+    expect(question).to_be_in_viewport(ratio=1)
+    page.keyboard.press("Tab")
+    expect(send_button).to_be_focused()
+    expect(send_button).to_be_in_viewport(ratio=1)
+    chat_box = chat.bounding_box()
+    page.mouse.move(chat_box["x"] + chat_box["width"] - 6, chat_box["y"] + chat_box["height"] - 8)
+    page.mouse.wheel(0, 1000)
+    expect(chat.locator("#buddy-boundary")).to_be_in_viewport(ratio=1)
+    chat.screenshot(path=str(OUT / "chat-short-390x320.png"), animations="disabled")
+    close.focus()
+    expect(close).to_be_focused()
+    expect(close).to_be_in_viewport(ratio=1)
+    assert len(fixtures.requests) == request_count, "Reaching short-screen controls submitted the draft"
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Short-screen Buddy overflows horizontally"
+
 
 def missing_artwork(page, fixtures):
     visit(page)
