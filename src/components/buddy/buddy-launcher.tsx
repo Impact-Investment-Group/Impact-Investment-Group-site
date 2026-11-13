@@ -22,39 +22,38 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
   const playTrigger = useRef<HTMLButtonElement>(null);
   const mounted = useRef(true);
   const playWanted = useRef(false);
-  const [Playground, setPlayground] = useState<typeof import("./buddy-playground").BuddyPlayground | null>(null);
+  const [PlaySession, setPlaySession] = useState<typeof import("./buddy-play-session").BuddyPlaySession | null>(null);
   const [playing, setPlaying] = useState(false);
   const [playPending, setPlayPending] = useState(false);
   const [playFailed, setPlayFailed] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [compact, setCompact] = useState(false);
   const [attention, setAttention] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     mounted.current = true;
-    const media = typeof window.matchMedia === "function" ? window.matchMedia("(max-height: 600px)") : null;
-    if (!media) return () => { mounted.current = false; };
-    const update = () => setCompact(media.matches);
-    update();
-    media.addEventListener?.("change", update);
-    return () => { mounted.current = false; media.removeEventListener?.("change", update); };
+    return () => { mounted.current = false; };
   }, []);
 
   function startPlay() {
     if (playPending) return;
     playWanted.current = true;
     setPlayFailed(false);
-    if (Playground) { setPlaying(true); return; }
+    if (PlaySession) { setPlaying(true); return; }
     setPlayPending(true);
-    void import("./buddy-playground").then(module => {
-      if (mounted.current) { setPlayground(() => module.BuddyPlayground); setPlaying(playWanted.current); setPlayPending(false); }
+    void import("./buddy-play-session").then(module => {
+      if (mounted.current) { setPlaySession(() => module.BuddyPlaySession); setPlaying(playWanted.current); setPlayPending(false); }
     }).catch(() => { if (mounted.current) { setPlayPending(false); setPlayFailed(true); } });
   }
 
   function closePlay() {
     playWanted.current = false;
     setPlaying(false);
-    requestAnimationFrame(() => { if (mounted.current) playTrigger.current?.focus(); });
+  }
+
+  function minimize() {
+    closePlay();
+    movedFocus.current = true;
+    setMinimized(true);
   }
 
   useEffect(() => {
@@ -81,15 +80,13 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
       </button>
       <button ref={playTrigger} type="button" data-buddy-play-launcher aria-label={playFailed ? "Retry play" : "Play with Buddy"} aria-busy={playPending} disabled={playPending} onClick={startPlay}
         className="pointer-events-auto absolute bottom-0 right-0 flex min-h-11 min-w-11 items-center justify-center rounded-full border border-rule bg-page px-3 text-xs font-semibold text-ink shadow-sm hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">{playFailed ? "Retry play" : "Play"}</button>
-      <button type="button" aria-label="Minimize Buddy" title="Minimize Buddy" onClick={() => { playWanted.current = false; movedFocus.current = true; setMinimized(true); }}
+      <button type="button" aria-label="Minimize Buddy" title="Minimize Buddy" onClick={minimize}
         className="pointer-events-auto absolute -right-2 -top-2 flex size-11 items-center justify-center rounded-full text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
         <span className="flex size-6 items-center justify-center rounded-full border border-rule bg-page/95 shadow-sm transition-colors hover:bg-secondary"><Minus aria-hidden="true" className="size-3.5" /></span>
       </button>
     </div>}
-    {playing && Playground && <Playground form={topic} paused={paused} onPause={() => setPaused(value => !value)} onClose={closePlay}
-      onMinimize={() => { playWanted.current = false; movedFocus.current = true; setPlaying(false); setMinimized(true); }}
-      onAsk={() => { setPlaying(false); requestAnimationFrame(() => { if (mounted.current) { trigger.current?.focus(); onOpen(); } }); }}
-      positionClassName={compact ? "fixed inset-y-3 right-3 z-50 overflow-y-auto" : "fixed bottom-3 right-3 z-50"} />}
+    {PlaySession && <PlaySession form={topic} playing={playing} paused={paused} onPause={() => setPaused(value => !value)} onClose={closePlay}
+      onMinimize={minimize} onAsk={onOpen} askTrigger={trigger} playTrigger={playTrigger} />}
     {playFailed && !playing && !minimized && <p role="alert" className="pointer-events-auto absolute bottom-full right-0 mb-3 w-64 rounded-2xl border border-rule bg-page p-4 text-sm text-ink shadow-lg">Buddy play could not load.</p>}
     {failed && !minimized && <p role="alert" className="pointer-events-auto absolute bottom-full right-0 mb-3 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-rule bg-page p-4 text-sm leading-relaxed text-ink shadow-lg">Buddy could not open. Try again or <a href="/contact" className="font-semibold underline">contact our team</a>.</p>}
   </div>;

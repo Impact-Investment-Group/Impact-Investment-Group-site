@@ -1,16 +1,12 @@
+import { getPartnerSummary, type PartnerSummary } from "./partner-summaries";
+export { partnerNavItems } from "./partner-summaries";
+
 export interface PartnerRelationship {
   partner: string;
   detail: string;
 }
 
-export interface PartnerProfile {
-  id: string;
-  label: string;
-  pluralLabel: string;
-  path: string;
-  icon: string;
-  stage: "need" | "property" | "delivery" | "outcome";
-  summary: string;
+export interface PartnerProfile extends PartnerSummary {
   whoTheyAre: string;
   rolePoints: [string, string, string, string];
   platformIntro: string;
@@ -59,13 +55,7 @@ export interface PartnerProfile {
  */
 export const partnerProfiles: PartnerProfile[] = [
   {
-    id: "investor",
-    label: "Property Investor",
-    pluralLabel: "Property Investors",
-    path: "/partner-with-investor",
-    icon: "CircleDollarSign",
-    stage: "property",
-    summary: "The capital that can turn verified housing demand into suitable homes.",
+    ...getPartnerSummary("investor"),
     whoTheyAre:
       "Property Investors may be individuals, companies, family offices or institutions. They provide the capital and ownership capacity needed to acquire, convert or improve property, connecting a commercial property decision with an evidenced housing requirement.",
     rolePoints: [
@@ -124,13 +114,7 @@ export const partnerProfiles: PartnerProfile[] = [
       "Every opportunity remains subject to independent legal, financial, property and regulatory due diligence. Demand, occupancy, lease income and returns are not guaranteed.",
   },
   {
-    id: "landlord",
-    label: "Property Landlord",
-    pluralLabel: "Property Landlords",
-    path: "/partner-with-landlord",
-    icon: "Home",
-    stage: "property",
-    summary: "The property partner who can make existing homes available where they are needed.",
+    ...getPartnerSummary("landlord"),
     whoTheyAre:
       "Property Landlords are individuals or organisations that already own accommodation. A suitable existing home can respond to verified demand quickly when its condition, location, lease route and management responsibilities are clearly understood.",
     rolePoints: [
@@ -190,13 +174,7 @@ export const partnerProfiles: PartnerProfile[] = [
       "Lease terms, responsibilities, occupancy and income depend on the individual agreements and all required legal, financial, property and regulatory checks.",
   },
   {
-    id: "developer",
-    label: "Property Developer",
-    pluralLabel: "Property Developers",
-    path: "/partner-with-developer",
-    icon: "HardHat",
-    stage: "property",
-    summary: "The delivery partner who can build, convert and adapt the homes communities need.",
+    ...getPartnerSummary("developer"),
     whoTheyAre:
       "Property Developers create new homes, convert buildings, refurbish empty property and deliver specialist adaptations. Within this ecosystem, the brief starts with verified demand—not construction alone.",
     rolePoints: [
@@ -252,14 +230,7 @@ export const partnerProfiles: PartnerProfile[] = [
       "All schemes remain subject to planning, technical, legal, financial and regulatory due diligence. Identified demand is not a purchase, lease or occupancy guarantee.",
   },
   {
-    id: "housing-association",
-    label: "Housing Association",
-    pluralLabel: "Housing Associations",
-    path: "/partner-with-housing-association",
-    icon: "Building2",
-    stage: "delivery",
-    summary:
-      "The housing partner that turns suitable properties into secure, professionally managed homes.",
+    ...getPartnerSummary("housing-association"),
     whoTheyAre:
       "Housing Associations and Registered Providers provide, lease and manage affordable, social, supported and specialist housing. They bring the tenancy structure, housing governance and long-term stewardship that turns a property into a home.",
     rolePoints: [
@@ -316,14 +287,7 @@ export const partnerProfiles: PartnerProfile[] = [
     motto: "PROVIDE HOUSING. CONNECT PARTNERS. SUPPORT PEOPLE. TRANSFORM LIVES.",
   },
   {
-    id: "local-authority",
-    label: "Local Authority",
-    pluralLabel: "Local Authorities",
-    path: "/partner-with-local-authority",
-    icon: "Landmark",
-    stage: "need",
-    summary:
-      "The strategic public partner that identifies need, coordinates funding and shapes local solutions.",
+    ...getPartnerSummary("local-authority"),
     whoTheyAre:
       "A Local Authority is not one department with one budget. Housing, homelessness, Housing Benefit, adult social care, children’s services, commissioning, planning and safeguarding each have distinct functions. Together they connect public need, local strategy, eligible funding and delivery.",
     rolePoints: [
@@ -383,13 +347,7 @@ export const partnerProfiles: PartnerProfile[] = [
       "Local Authorities administer Housing Benefit where eligible. Universal Credit is administered and paid by the Department for Work and Pensions. Personal care and support are generally assessed and funded separately from rent and housing costs.",
   },
   {
-    id: "care-provider",
-    label: "Care Provider",
-    pluralLabel: "Care Providers",
-    path: "/partner-with-care-provider",
-    icon: "HeartHandshake",
-    stage: "delivery",
-    summary: "The specialist partner who helps people live safely and with dignity.",
+    ...getPartnerSummary("care-provider"),
     whoTheyAre:
       "Care Providers deliver personal, regulated or specialist care to children, young people and adults. Depending on the activity and setting, services may require oversight by the CQC or Ofsted. Their insight is essential when a home must work around an individual’s assessed needs.",
     rolePoints: [
@@ -448,13 +406,7 @@ export const partnerProfiles: PartnerProfile[] = [
       "Each service must confirm its own registration, safeguarding, contractual and regulatory requirements before delivery.",
   },
   {
-    id: "support-provider",
-    label: "Support Provider",
-    pluralLabel: "Support Providers",
-    path: "/partner-with-support-provider",
-    icon: "Users",
-    stage: "delivery",
-    summary: "The practical partner who helps people build stability and independence.",
+    ...getPartnerSummary("support-provider"),
     whoTheyAre:
       "Support Providers help individuals and families maintain accommodation, develop life skills and participate in their community. Support may include tenancy sustainment, outreach, resettlement, mentoring or practical help and is distinct from regulated personal care.",
     rolePoints: [
@@ -513,14 +465,7 @@ export const partnerProfiles: PartnerProfile[] = [
       "Non-regulated support is still accountable. Providers must meet every applicable legal, safeguarding, contractual and service requirement.",
   },
   {
-    id: "social-worker",
-    label: "Social Worker",
-    pluralLabel: "Social Workers",
-    path: "/partner-with-social-worker",
-    icon: "UserRoundCheck",
-    stage: "need",
-    summary:
-      "The professional who brings the person’s needs, rights and voice into the housing journey.",
+    ...getPartnerSummary("social-worker"),
     whoTheyAre:
       "Social Workers assess need, safeguard people and coordinate plans across housing, care, health and support services. They often see first-hand where an unsuitable home creates risk or prevents progress.",
     rolePoints: [
@@ -577,13 +522,7 @@ export const partnerProfiles: PartnerProfile[] = [
     motto: "ASSESS NEED. PROTECT RIGHTS. CONNECT SERVICES. KEEP PEOPLE CENTRAL.",
   },
   {
-    id: "broker",
-    label: "Property & Housing Broker",
-    pluralLabel: "Property & Housing Brokers",
-    path: "/partner-with-broker",
-    icon: "Handshake",
-    stage: "property",
-    summary: "The connector who brings demand, property, capital and delivery partners together.",
+    ...getPartnerSummary("broker"),
     whoTheyAre:
       "Property and Housing Brokers connect owners, buyers, property opportunities and housing organisations. In a demand-led network, the broker’s value comes from understanding the requirement and introducing credible opportunities—not simply circulating listings.",
     rolePoints: [
@@ -639,14 +578,7 @@ export const partnerProfiles: PartnerProfile[] = [
       "Introductions remain subject to the relevant property, legal, financial, procurement and regulatory checks. A match is not a guarantee of a transaction or placement.",
   },
   {
-    id: "resident",
-    label: "Resident, Individual or Family",
-    pluralLabel: "Residents, Individuals & Families",
-    path: "/partner-with-resident",
-    icon: "User",
-    stage: "outcome",
-    summary:
-      "The person at the centre—needing the right home, in the right place, with the right help.",
+    ...getPartnerSummary("resident"),
     whoTheyAre:
       "I may be an individual, child, young person or family needing a safe and suitable home. I may need housing only, or care, support, adaptations or specialist services as well. I am not a supply category, placement or data point; my circumstances, choices and goals are why the network exists.",
     rolePoints: [
@@ -711,8 +643,6 @@ export const partnerProfiles: PartnerProfile[] = [
     },
   },
 ];
-
-export const partnerNavItems = partnerProfiles.map(({ label, path }) => ({ label, to: path }));
 
 export function getPartnerProfile(id: string) {
   const profile = partnerProfiles.find((partner) => partner.id === id);

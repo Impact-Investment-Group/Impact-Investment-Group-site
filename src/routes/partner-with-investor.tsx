@@ -1,11 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PartnerPage } from "@/components/partners/partner-page";
-import { getPartnerProfile } from "@/content/partners";
+import { getPartnerSummary } from "@/content/partner-summaries";
 
-const profile = getPartnerProfile("investor");
+const profile = getPartnerSummary("investor");
 
 export const Route = createFileRoute("/partner-with-investor")({
-  component: () => <PartnerPage profile={profile} />,
+  loader: async () => {
+    const { getPartnerProfile } = await import("@/content/partners");
+    return { profile: getPartnerProfile("investor") };
+  },
+  component: PartnerRoutePage,
   head: () => partnerHead(profile.label, profile.summary, profile.path),
 });
 
@@ -21,4 +25,9 @@ function partnerHead(label: string, description: string, path: string) {
     ],
     links: [{ rel: "canonical", href: path }],
   };
+}
+
+function PartnerRoutePage() {
+  const { profile } = Route.useLoaderData();
+  return <PartnerPage profile={profile} />;
 }

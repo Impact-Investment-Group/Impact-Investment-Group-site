@@ -24,52 +24,49 @@ export interface BuddyCharacterProps {
 }
 
 type Options = Required<Pick<BuddyCharacterProps, "form" | "action" | "expression" | "animated" | "continuousIdle" | "playfulIdle">> & Pick<BuddyCharacterProps, "attention">;
-type Engine = typeof import("./buddy-engine.js");
+type Engine = typeof import("./buddy-rig");
 type FormChange = { from: number; to: number; elapsed: number; action: number; style: number; sourcePose: Pose; targetPose: Pose };
 
 const formIndices: Record<BuddyForm, number> = { property: 0, investment: 1, support: 2 };
-const actionIndices: Record<BuddyAction, number> = { idle: 0, wave: 1, listen: 2, think: 3, talk: 4, explain: 5, reassure: 10, approve: 19, celebrate: 9, dance: 24 };
+// Rig action, resting expression, then bounded gesture seconds.
+const actions: Record<BuddyAction, readonly [number, number, number]> = {
+  idle: [0, 2, 0], wave: [1, 2, 2.2], listen: [2, 3, 4.5], think: [3, 5, 4.5],
+  talk: [4, 2, 3.2], explain: [5, 2, 3.2], reassure: [10, 7, 2.8],
+  approve: [19, 2, 1.8], celebrate: [9, 6, 2.4], dance: [24, 6, 3.2],
+};
 const expressionIndices: Record<BuddyExpression, number> = {
   automatic: 0, neutral: 1, warm: 2, curious: 3, focused: 4, thoughtful: 5, delighted: 6,
   reassuring: 7, concerned: 8, surprised: 9, unsure: 10, resting: 11, confident: 12,
 };
-const restingExpressions: Record<BuddyAction, number> = { idle: 2, wave: 2, listen: 3, think: 5, talk: 2, explain: 2, reassure: 7, approve: 2, celebrate: 6, dance: 6 };
 const fallbackImages: Record<BuddyForm, string> = {
   property: "/images/buddy/key-hero-v2.png",
   investment: "/images/buddy/pound-hero-v2.png",
   support: "/images/buddy/heart-hero-v2.png",
 };
 const blendSeconds = 0.45;
-const gestureSeconds: Record<BuddyAction, number> = {
-  idle: 0, wave: 2.2, listen: 4.5, think: 4.5, talk: 3.2, explain: 3.2, reassure: 2.8, approve: 1.8, celebrate: 2.4, dance: 3.2,
-};
 export const BUDDY_FORM_CHANGE_MS = TORNADO_DURATION_SECONDS * 1000;
 const transitionSeconds = TORNADO_DURATION_SECONDS;
 let atlasPromise: Promise<HTMLImageElement> | undefined;
 let handsPromise: Promise<HTMLImageElement> | undefined;
 
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.decoding = "async";
+    image.onload = () => { void image.decode().catch(() => undefined).then(() => resolve(image)); };
+    image.onerror = () => reject(new Error("Buddy artwork unavailable"));
+    image.src = src;
+  });
+}
+
 function loadHands(): Promise<HTMLImageElement | undefined> {
-  if (!handsPromise) {
-    handsPromise = new Promise<HTMLImageElement>((resolve, reject) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.onload = () => { void image.decode().catch(() => undefined).then(() => resolve(image)); };
-      image.onerror = () => reject(new Error("Buddy hands unavailable"));
-      image.src = "/images/buddy/hands-v3.webp";
-    });
-  }
+  handsPromise ??= loadImage("/images/buddy/hands-v3.webp");
   return handsPromise.catch(() => { handsPromise = undefined; return undefined; });
 }
 
 function loadAtlas(): Promise<HTMLImageElement> {
   if (!atlasPromise) {
-    atlasPromise = new Promise<HTMLImageElement>((resolve, reject) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.onload = () => { void image.decode().catch(() => undefined).then(() => resolve(image)); };
-      image.onerror = () => reject(new Error("Buddy artwork unavailable"));
-      image.src = "/images/buddy/atlas-v2.webp";
-    }).catch((error: unknown) => {
+    atlasPromise = loadImage("/images/buddy/atlas-v2.webp").catch((error: unknown) => {
       atlasPromise = undefined;
       throw error;
     });
@@ -111,7 +108,7 @@ export function BuddyCharacter({
     let rig: Character | undefined;
     let options = optionsRef.current;
     let currentForm = formIndices[options.form];
-    let currentAction = actionIndices[options.action];
+    let currentAction = actions[options.action][0];
     let currentExpression = expressionIndices[options.expression];
     let currentStyle = options.playfulIdle ? 1 : 0;
     let elapsed = 0;
@@ -139,7 +136,7 @@ export function BuddyCharacter({
     }
 
     function restingExpression() {
-      return options.expression === "automatic" ? restingExpressions[options.action] : expressionIndices[options.expression];
+      return options.expression === "automatic" ? actions[options.action][1] : expressionIndices[options.expression];
     }
 
     function attentionTarget() {
@@ -205,7 +202,7 @@ export function BuddyCharacter({
     function showStill() {
       stop();
       currentForm = formIndices[options.form];
-      currentAction = actionIndices[options.action];
+      currentAction = actions[options.action][0];
       currentExpression = expressionIndices[options.expression];
       currentStyle = options.playfulIdle ? 1 : 0;
       gaze = { x: 0, y: 0 };
@@ -243,7 +240,7 @@ export function BuddyCharacter({
       change = {
         from: currentForm, to, elapsed: 0, action: currentAction, style: currentStyle,
         sourcePose: attended(sourcePose),
-        targetPose: engine!.pose(to, actionIndices[options.action], 0.5, currentStyle, expressionIndices[options.expression]),
+        targetPose: engine!.pose(to, actions[options.action][0], 0.5, currentStyle, expressionIndices[options.expression]),
       };
       blendingFrom = undefined;
       completed = false;
@@ -261,7 +258,7 @@ export function BuddyCharacter({
           const revealed = change.targetPose;
           currentForm = change.to;
           change = undefined;
-          setAction(actionIndices[options.action], expressionIndices[options.expression], revealed);
+          setAction(actions[options.action][0], expressionIndices[options.expression], revealed);
           if (formIndices[options.form] !== currentForm) beginFormChange(formIndices[options.form]);
         }
       } else {
@@ -271,7 +268,7 @@ export function BuddyCharacter({
         if (blendingFrom && blendElapsed >= blendSeconds) blendingFrom = undefined;
         if (idleDuration !== undefined) {
           if (gestureElapsed >= idleDuration) advanceIdleStep();
-        } else if (!resting && gestureElapsed >= gestureSeconds[options.action]) {
+        } else if (!resting && gestureElapsed >= actions[options.action][2]) {
           // Finish the gesture where it was drawn, then ease into a calm rest.
           setAction(0, restingExpression(), lastPose);
         } else if (resting && !blendingFrom) {
@@ -314,13 +311,13 @@ export function BuddyCharacter({
           const progress = change.elapsed / transitionSeconds;
           if (progress < TORNADO_RETARGET_UNTIL) {
             change.to = target;
-            change.targetPose = engine.pose(target, actionIndices[next.action], 0.5, change.style, expressionIndices[next.expression]);
+            change.targetPose = engine.pose(target, actions[next.action][0], 0.5, change.style, expressionIndices[next.expression]);
           }
         } else if (target !== currentForm) beginFormChange(target, lastPose);
       }
-      if (gestureChanged && !change) setAction(actionIndices[next.action], expressionIndices[next.expression]);
+      if (gestureChanged && !change) setAction(actions[next.action][0], expressionIndices[next.expression]);
       if (!previous.animated && next.animated && !change) {
-        setAction(actionIndices[next.action], expressionIndices[next.expression]);
+        setAction(actions[next.action][0], expressionIndices[next.expression]);
       }
       if (!previous.continuousIdle && next.continuousIdle && completed) {
         setAction(0, restingExpression(), lastPose);
@@ -333,14 +330,14 @@ export function BuddyCharacter({
       if (loading || rig || disposed) return;
       loading = true;
       try {
-        const [module, atlas, hands] = await Promise.all([import("./buddy-engine.js"), loadAtlas(), loadHands()]);
+        const [module, atlas, hands] = await Promise.all([import("./buddy-rig"), loadAtlas(), loadHands()]);
         if (disposed) return;
         engine = module;
         rig = new module.Character(atlas, hands);
         setRefinedHands(Boolean(hands));
         options = optionsRef.current;
         currentForm = formIndices[options.form];
-        setAction(actionIndices[options.action], expressionIndices[options.expression], undefined);
+        setAction(actions[options.action][0], expressionIndices[options.expression], undefined);
         resize();
         setStatus("ready");
         resume();

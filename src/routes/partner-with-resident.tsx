@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PartnerPage } from "@/components/partners/partner-page";
-import { getPartnerProfile } from "@/content/partners";
+import { getPartnerSummary } from "@/content/partner-summaries";
 
-const profile = getPartnerProfile("resident");
+const profile = getPartnerSummary("resident");
 export const Route = createFileRoute("/partner-with-resident")({
-  component: () => <PartnerPage profile={profile} />,
+  loader: async () => {
+    const { getPartnerProfile } = await import("@/content/partners");
+    return { profile: getPartnerProfile("resident") };
+  },
+  component: PartnerRoutePage,
   head: () => ({
     meta: [
       { title: "Housing for Residents, Individuals & Families — Impact Investment Group" },
@@ -19,3 +23,8 @@ export const Route = createFileRoute("/partner-with-resident")({
     links: [{ rel: "canonical", href: profile.path }],
   }),
 });
+
+function PartnerRoutePage() {
+  const { profile } = Route.useLoaderData();
+  return <PartnerPage profile={profile} />;
+}

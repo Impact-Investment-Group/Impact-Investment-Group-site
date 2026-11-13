@@ -5,7 +5,7 @@ import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { PreReleaseBadge } from "@/components/ui/pre-release-badge";
 import { CharityFooter } from "@/components/charity/charity-impact";
-import { partnerProfiles } from "@/content/partners";
+import { partnerSummaries } from "@/content/partner-summaries";
 import { legalLinks } from "@/content/legal";
 import {
   closingBeats,
@@ -359,7 +359,7 @@ export function SiteFooter() {
             <nav aria-label="Partner pages" className="flex flex-col gap-2.5">
               <h2 className="eyebrow text-teal-600">Our Partners</h2>
               <ul className="grid grid-flow-col grid-cols-2 grid-rows-5 gap-x-5 gap-y-1 text-[13px]">
-                {partnerProfiles.map((partner) => (
+                {partnerSummaries.map((partner) => (
                   <li key={partner.id}>
                     <Link
                       to={partner.path}

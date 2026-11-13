@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PartnerPage } from "@/components/partners/partner-page";
-import { getPartnerProfile } from "@/content/partners";
+import { getPartnerSummary } from "@/content/partner-summaries";
 
-const profile = getPartnerProfile("local-authority");
+const profile = getPartnerSummary("local-authority");
 export const Route = createFileRoute("/partner-with-local-authority")({
-  component: () => <PartnerPage profile={profile} />,
+  loader: async () => {
+    const { getPartnerProfile } = await import("@/content/partners");
+    return { profile: getPartnerProfile("local-authority") };
+  },
+  component: PartnerRoutePage,
   head: () => ({
     meta: [
       { title: "Partner with a Local Authority — Impact Investment Group" },
@@ -19,3 +23,8 @@ export const Route = createFileRoute("/partner-with-local-authority")({
     links: [{ rel: "canonical", href: profile.path }],
   }),
 });
+
+function PartnerRoutePage() {
+  const { profile } = Route.useLoaderData();
+  return <PartnerPage profile={profile} />;
+}

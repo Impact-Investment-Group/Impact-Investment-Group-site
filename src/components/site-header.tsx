@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { partnerProfiles } from "@/content/partners";
+import { partnerSummaries } from "@/content/partner-summaries";
 import { primaryNav, registerRoute } from "@/content/site";
 import { cn } from "@/lib/utils";
 
@@ -379,7 +379,7 @@ export function SiteHeader() {
                             </div>
 
                             <div className="grid grid-cols-2 content-start gap-0.5 p-3">
-                              {partnerProfiles.map((partner, index) => (
+                              {partnerSummaries.map((partner, index) => (
                                 <DropdownMenuItem
                                   key={partner.id}
                                   asChild
@@ -614,7 +614,7 @@ export function SiteHeader() {
                                 Explore the ecosystem
                               </Link>
                             </li>
-                            {partnerProfiles.map((partner, partnerIndex) => (
+                            {partnerSummaries.map((partner, partnerIndex) => (
                               <li key={partner.id}>
                                 <Link
                                   to={partner.path}

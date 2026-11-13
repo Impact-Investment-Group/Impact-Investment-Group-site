@@ -79,7 +79,7 @@ export function BuddyPlayground({ form, paused, onPause, onClose, onAsk, onMinim
     let ready = false;
     let frame: number | undefined;
     let lastNow = 0;
-    let engine: typeof import("./buddy-engine.js") | undefined;
+    let engine: typeof import("./buddy-rig") | undefined;
     let play: typeof import("./buddy-play.js") | undefined;
     let rig: Character | undefined;
     let sceneRig: Character | undefined;
@@ -240,7 +240,7 @@ export function BuddyPlayground({ form, paused, onPause, onClose, onAsk, onMinim
     motion.addEventListener("change", sync);
     setStatus("loading");
     void Promise.all([
-      import("./buddy-engine.js"), import("./buddy-play.js"),
+      import("./buddy-rig"), import("./buddy-play.js"),
       loadImage(`${assetBase}/atlas-v2.webp`, abort.signal),
       loadImage(`${assetBase}/hands-v3.webp`, abort.signal).catch(() => undefined),
       loadImage(`${assetBase}/play-props-v1.webp`, abort.signal).catch(() => undefined),
