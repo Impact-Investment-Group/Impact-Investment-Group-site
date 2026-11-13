@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Character, Pose } from "./buddy-engine.js";
+import { createIdleDirector, TORNADO_DURATION_SECONDS, TORNADO_RETARGET_UNTIL } from "./buddy-motion.js";
 
 export type BuddyForm = "property" | "investment" | "support";
-export type BuddyAction = "idle" | "wave" | "listen" | "think" | "talk" | "explain" | "reassure" | "approve";
+export type BuddyAction = "idle" | "wave" | "listen" | "think" | "talk" | "explain" | "reassure" | "approve" | "celebrate" | "dance";
 export type BuddyExpression = "automatic" | "neutral" | "warm" | "curious" | "focused" | "thoughtful" | "delighted" | "reassuring" | "concerned" | "surprised" | "unsure" | "resting" | "confident";
 
 export interface BuddyCharacterProps {
@@ -15,22 +16,24 @@ export interface BuddyCharacterProps {
   continuousIdle?: boolean;
   /** Launcher only: alternate short supplied gestures with breathing pauses. */
   playfulIdle?: boolean;
+  /** Launcher only: gentle pointer attention, normalized to the stage's [-1, 1] bounds. */
+  attention?: { x: number; y: number };
   /** An intentional repeat of the same gesture, for example a fresh greeting. */
   replayKey?: string | number;
   className?: string;
 }
 
-type Options = Required<Pick<BuddyCharacterProps, "form" | "action" | "expression" | "animated" | "continuousIdle" | "playfulIdle">>;
+type Options = Required<Pick<BuddyCharacterProps, "form" | "action" | "expression" | "animated" | "continuousIdle" | "playfulIdle">> & Pick<BuddyCharacterProps, "attention">;
 type Engine = typeof import("./buddy-engine.js");
-type FormChange = { from: number; to: number; elapsed: number; action: number; sourcePose: Pose; targetPose: Pose };
+type FormChange = { from: number; to: number; elapsed: number; action: number; style: number; sourcePose: Pose; targetPose: Pose };
 
 const formIndices: Record<BuddyForm, number> = { property: 0, investment: 1, support: 2 };
-const actionIndices: Record<BuddyAction, number> = { idle: 0, wave: 1, listen: 2, think: 3, talk: 4, explain: 5, reassure: 10, approve: 19 };
+const actionIndices: Record<BuddyAction, number> = { idle: 0, wave: 1, listen: 2, think: 3, talk: 4, explain: 5, reassure: 10, approve: 19, celebrate: 9, dance: 24 };
 const expressionIndices: Record<BuddyExpression, number> = {
   automatic: 0, neutral: 1, warm: 2, curious: 3, focused: 4, thoughtful: 5, delighted: 6,
   reassuring: 7, concerned: 8, surprised: 9, unsure: 10, resting: 11, confident: 12,
 };
-const restingExpressions: Record<BuddyAction, number> = { idle: 2, wave: 2, listen: 3, think: 5, talk: 2, explain: 2, reassure: 7, approve: 2 };
+const restingExpressions: Record<BuddyAction, number> = { idle: 2, wave: 2, listen: 3, think: 5, talk: 2, explain: 2, reassure: 7, approve: 2, celebrate: 6, dance: 6 };
 const fallbackImages: Record<BuddyForm, string> = {
   property: "/images/buddy/key-hero-v2.png",
   investment: "/images/buddy/pound-hero-v2.png",
@@ -38,45 +41,10 @@ const fallbackImages: Record<BuddyForm, string> = {
 };
 const blendSeconds = 0.45;
 const gestureSeconds: Record<BuddyAction, number> = {
-  idle: 0, wave: 2.2, listen: 4.5, think: 4.5, talk: 3.2, explain: 3.2, reassure: 2.8, approve: 1.8,
+  idle: 0, wave: 2.2, listen: 4.5, think: 4.5, talk: 3.2, explain: 3.2, reassure: 2.8, approve: 1.8, celebrate: 2.4, dance: 3.2,
 };
-// Brief, form-specific gestures separated by natural rests.
-const idleSequences = [[
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 5, seconds: 2.8, expression: 3 },
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 8, seconds: 1.8, expression: 2 },
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 1, seconds: 2.2, expression: 2 },
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 24, seconds: 3.2, expression: 6 },
-  { action: 0, seconds: 3.5, expression: 2 },
-  { action: 19, seconds: 2, expression: 12 },
-], [
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 19, seconds: 2, expression: 12 },
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 18, seconds: 2.4, expression: 3 },
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 24, seconds: 3.2, expression: 6 },
-  { action: 0, seconds: 3.5, expression: 2 },
-  { action: 5, seconds: 2.8, expression: 2 },
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 1, seconds: 2.2, expression: 2 },
-], [
-  { action: 0, seconds: 3, expression: 7 },
-  { action: 21, seconds: 2.4, expression: 7 },
-  { action: 0, seconds: 3, expression: 7 },
-  { action: 10, seconds: 2.8, expression: 7 },
-  { action: 0, seconds: 3, expression: 2 },
-  { action: 1, seconds: 2.2, expression: 2 },
-  { action: 0, seconds: 3, expression: 7 },
-  { action: 24, seconds: 3.2, expression: 6 },
-  { action: 0, seconds: 3.5, expression: 7 },
-  { action: 8, seconds: 1.8, expression: 2 },
-]] as const;
-export const BUDDY_FORM_CHANGE_MS = 2100;
-const transitionSeconds = BUDDY_FORM_CHANGE_MS / 1000;
+export const BUDDY_FORM_CHANGE_MS = TORNADO_DURATION_SECONDS * 1000;
+const transitionSeconds = TORNADO_DURATION_SECONDS;
 let atlasPromise: Promise<HTMLImageElement> | undefined;
 let handsPromise: Promise<HTMLImageElement> | undefined;
 
@@ -117,12 +85,13 @@ export function BuddyCharacter({
   animated = false,
   continuousIdle = false,
   playfulIdle = false,
+  attention,
   replayKey,
   className,
 }: BuddyCharacterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const optionsRef = useRef<Options>({ form, action, expression, animated, continuousIdle, playfulIdle });
+  const optionsRef = useRef<Options>({ form, action, expression, animated, continuousIdle, playfulIdle, attention });
   const updateRef = useRef<((options: Options, replay: boolean) => void) | null>(null);
   const replayRef = useRef(replayKey);
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
@@ -144,6 +113,7 @@ export function BuddyCharacter({
     let currentForm = formIndices[options.form];
     let currentAction = actionIndices[options.action];
     let currentExpression = expressionIndices[options.expression];
+    let currentStyle = options.playfulIdle ? 1 : 0;
     let elapsed = 0;
     let gestureElapsed = 0;
     let blendElapsed = blendSeconds;
@@ -154,11 +124,14 @@ export function BuddyCharacter({
     let lastNow = 0;
     let resting = currentAction === 0;
     let completed = false;
-    let idleStep = -1;
+    const idleDirector = createIdleDirector();
+    let idleDuration: number | undefined;
+    let gaze = { x: 0, y: 0 };
 
     function stop() {
       if (frame !== undefined) window.cancelAnimationFrame(frame);
       frame = undefined;
+      container!.dataset.buddyMotion = "off";
     }
 
     function canAnimate() {
@@ -169,9 +142,32 @@ export function BuddyCharacter({
       return options.expression === "automatic" ? restingExpressions[options.action] : expressionIndices[options.expression];
     }
 
+    function attentionTarget() {
+      const clampAxis = (value: number | undefined) => Number.isFinite(value) ? Math.max(-1, Math.min(1, value!)) : 0;
+      return change ? { x: 0, y: 0 } : { x: clampAxis(options.attention?.x), y: clampAxis(options.attention?.y) };
+    }
+
+    function attentionMoving() {
+      const target = attentionTarget();
+      return Math.abs(target.x - gaze.x) > 0.001 || Math.abs(target.y - gaze.y) > 0.001;
+    }
+
+    function followAttention(delta: number) {
+      const target = attentionTarget();
+      const amount = 1 - Math.exp(-delta * 7);
+      gaze = { x: gaze.x + (target.x - gaze.x) * amount, y: gaze.y + (target.y - gaze.y) * amount };
+      if (!attentionMoving()) gaze = target;
+    }
+
+    function attended(pose: Pose) {
+      if (!gaze.x && !gaze.y) return pose;
+      return { ...pose, gazeX: pose.gazeX + gaze.x * 4, gazeY: pose.gazeY + gaze.y * 3,
+        rot: pose.rot + gaze.x * 0.018, x: pose.x + gaze.x * 2 };
+    }
+
     function currentPose() {
       if (!engine) return undefined;
-      const next = engine.pose(currentForm, currentAction, elapsed, options.playfulIdle ? 1 : 0, currentExpression);
+      const next = engine.pose(currentForm, currentAction, elapsed, currentStyle, currentExpression);
       return blendingFrom && blendElapsed < blendSeconds
         ? engine.blend(blendingFrom, next, engine.ease(blendElapsed / blendSeconds))
         : next;
@@ -186,10 +182,10 @@ export function BuddyCharacter({
       const scale = Math.min(width, height) / 400 * 0.94;
       if (change) {
         rig.transition(context!, change.from, change.to, "Tornado", change.elapsed / transitionSeconds,
-          change.action, 0, width / 2, height / 2, scale, change.sourcePose, change.targetPose);
+          change.action, change.style, width / 2, height / 2, scale, change.sourcePose, change.targetPose);
       } else {
         lastPose = currentPose();
-        if (lastPose) rig.draw(context!, currentForm, lastPose, width / 2, height / 2, scale);
+        if (lastPose) rig.draw(context!, currentForm, attended(lastPose), width / 2, height / 2, scale);
       }
     }
 
@@ -211,42 +207,43 @@ export function BuddyCharacter({
       currentForm = formIndices[options.form];
       currentAction = actionIndices[options.action];
       currentExpression = expressionIndices[options.expression];
+      currentStyle = options.playfulIdle ? 1 : 0;
+      gaze = { x: 0, y: 0 };
       elapsed = 0.55;
       gestureElapsed = 0;
       blendingFrom = undefined;
       blendElapsed = blendSeconds;
       change = undefined;
-      idleStep = -1;
+      idleDuration = undefined;
       resting = currentAction === 0;
       completed = true;
       draw();
     }
 
-    function setAction(nextAction: number, nextExpression: number, from = lastPose) {
+    function setAction(nextAction: number, nextExpression: number, from = lastPose, style = options.playfulIdle ? 1 : 0) {
       blendingFrom = from;
       blendElapsed = from ? 0 : blendSeconds;
       currentAction = nextAction;
       currentExpression = nextExpression;
+      currentStyle = style;
       elapsed = 0;
       gestureElapsed = 0;
       resting = nextAction === 0;
       completed = false;
-      idleStep = -1;
+      idleDuration = undefined;
     }
 
-    function advanceIdleStep(index: number) {
-      const idleSequence = idleSequences[currentForm] ?? idleSequences[0];
-      const next = index % idleSequence.length;
-      const step = idleSequence[next]!;
-      setAction(step.action, step.expression);
-      idleStep = next;
+    function advanceIdleStep() {
+      const step = idleDirector.next(currentForm);
+      setAction(step.action, step.expression, lastPose, step.style);
+      idleDuration = step.seconds;
     }
 
     function beginFormChange(to: number, sourcePose = currentPose()!) {
       change = {
-        from: currentForm, to, elapsed: 0, action: currentAction,
-        sourcePose,
-        targetPose: engine!.pose(to, actionIndices[options.action], 0.5, options.playfulIdle ? 1 : 0, expressionIndices[options.expression]),
+        from: currentForm, to, elapsed: 0, action: currentAction, style: currentStyle,
+        sourcePose: attended(sourcePose),
+        targetPose: engine!.pose(to, actionIndices[options.action], 0.5, currentStyle, expressionIndices[options.expression]),
       };
       blendingFrom = undefined;
       completed = false;
@@ -254,9 +251,10 @@ export function BuddyCharacter({
 
     function tick(now: number) {
       frame = undefined;
-      if (disposed || !canAnimate()) return;
+      if (disposed || !canAnimate()) { container!.dataset.buddyMotion = "off"; return; }
       const delta = Math.min(0.08, Math.max(0, (now - lastNow) / 1000));
       lastNow = now;
+      followAttention(delta);
       if (change) {
         change.elapsed += delta;
         if (change.elapsed >= transitionSeconds) {
@@ -271,31 +269,34 @@ export function BuddyCharacter({
         gestureElapsed += delta;
         blendElapsed += delta;
         if (blendingFrom && blendElapsed >= blendSeconds) blendingFrom = undefined;
-        if (idleStep >= 0) {
-          const idleSequence = idleSequences[currentForm] ?? idleSequences[0];
-          if (gestureElapsed >= idleSequence[idleStep]!.seconds) advanceIdleStep(idleStep + 1);
+        if (idleDuration !== undefined) {
+          if (gestureElapsed >= idleDuration) advanceIdleStep();
         } else if (!resting && gestureElapsed >= gestureSeconds[options.action]) {
           // Finish the gesture where it was drawn, then ease into a calm rest.
           setAction(0, restingExpression(), lastPose);
         } else if (resting && !blendingFrom) {
-          if (options.continuousIdle && options.playfulIdle) advanceIdleStep(0);
+          if (options.continuousIdle && options.playfulIdle) advanceIdleStep();
           else if (!options.continuousIdle) completed = true;
         }
       }
       draw();
-      if (!completed) frame = window.requestAnimationFrame(tick);
+      if (!completed || attentionMoving()) {
+        frame = window.requestAnimationFrame(tick);
+        container!.dataset.buddyMotion = "on";
+      } else container!.dataset.buddyMotion = "off";
     }
 
     function resume() {
       if (disposed || !rig) return;
       if (!options.animated || reducedMotion.matches) { showStill(); return; }
       if (!canAnimate() || frame !== undefined) return;
-      if (completed && !options.continuousIdle) { draw(); return; }
-      if (completed) {
+      if (completed && !options.continuousIdle && !attentionMoving()) { draw(); return; }
+      if (completed && options.continuousIdle) {
         setAction(0, restingExpression(), lastPose);
       }
       lastNow = performance.now();
       frame = window.requestAnimationFrame(tick);
+      container!.dataset.buddyMotion = "on";
     }
 
     function apply(next: Options, replay: boolean) {
@@ -311,9 +312,9 @@ export function BuddyCharacter({
         if (change) {
           // Retarget only while artwork is concealed; an already revealed form finishes first.
           const progress = change.elapsed / transitionSeconds;
-          if (progress < 0.72) {
+          if (progress < TORNADO_RETARGET_UNTIL) {
             change.to = target;
-            change.targetPose = engine.pose(target, actionIndices[next.action], 0.5, next.playfulIdle ? 1 : 0, expressionIndices[next.expression]);
+            change.targetPose = engine.pose(target, actionIndices[next.action], 0.5, change.style, expressionIndices[next.expression]);
           }
         } else if (target !== currentForm) beginFormChange(target, lastPose);
       }
@@ -389,15 +390,15 @@ export function BuddyCharacter({
   }, []);
 
   useEffect(() => {
-    const options = { form, action, expression, animated, continuousIdle, playfulIdle };
+    const options = { form, action, expression, animated, continuousIdle, playfulIdle, attention };
     const replay = replayRef.current !== replayKey;
     replayRef.current = replayKey;
     optionsRef.current = options;
     updateRef.current?.(options, replay);
-  }, [form, action, expression, animated, continuousIdle, playfulIdle, replayKey]);
+  }, [form, action, expression, animated, continuousIdle, playfulIdle, replayKey, attention?.x, attention?.y]);
 
   return (
-    <div ref={containerRef} aria-hidden="true" data-buddy-form={form} data-buddy-version="v2-refined" data-buddy-artwork="v2" data-buddy-hands={refinedHands ? "v3" : "v2"} data-buddy-status={status}
+    <div ref={containerRef} aria-hidden="true" data-buddy-form={form} data-buddy-version="v2-refined" data-buddy-artwork="v2" data-buddy-hands={refinedHands ? "v3" : "v2"} data-buddy-status={status} data-buddy-motion="off"
       className={cn("relative isolate aspect-square w-full shrink-0", className)}>
       {status === "failed" && <img src={fallbackImages[form]} alt="" width={1600} height={1600} loading="lazy" decoding="async"
         className="absolute inset-0 h-full w-full object-contain" />}

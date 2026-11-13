@@ -38,14 +38,17 @@ if ARGS.case or ARGS.width:
 V2_ATLAS_SIZE = 219614
 V2_ATLAS_SHA256 = "63ccd2d7b230b116b2f44225c546f07bab811551a175c7792ad58894fadc45b2"
 V2_ATLAS_PATH = "/images/buddy/atlas-v2.webp"
+BUDDY_FORM_CHANGE_MS = 3200
 CORS = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS"}
 INIT = """(() => {
   window.__buddyDraws = 0;
   window.__buddyShowcaseDraws = 0;
+  window.__buddyPlayDraws = 0;
   const clearRect = CanvasRenderingContext2D.prototype.clearRect;
   CanvasRenderingContext2D.prototype.clearRect = function (...args) {
     if (this.canvas.closest('[data-buddy-form]')) window.__buddyDraws++;
     if (this.canvas.closest('[data-buddy-showcase]')) window.__buddyShowcaseDraws++;
+    if (this.canvas.closest('[data-buddy-playground]')) window.__buddyPlayDraws++;
     return clearRect.apply(this, args);
   };
   window.__buddyFetchOptions = [];
@@ -170,7 +173,10 @@ def assert_fixed_widget(page):
     assert box["x"] >= 0 and box["y"] >= 0, "Buddy is clipped above or left of the viewport"
     assert 0 <= width - box["x"] - box["width"] <= 40, "Buddy is not at the right edge"
     assert 0 <= height - box["y"] - box["height"] <= 120, "Buddy is not near the bottom edge"
-    assert box["width"] <= 210 and box["height"] <= 250, "Floating Buddy has become a page-sized placement"
+    assert box["width"] <= 210 and box["height"] <= 300, "Floating Buddy has become a page-sized placement"
+    character = widget.locator('[data-buddy-launcher] [data-buddy-form]').bounding_box()
+    expected_width = 96 if height <= 500 else 160 if width < 640 else 192
+    assert abs(character["width"] - expected_width) <= 1, "Floating Buddy does not use its requested responsive size"
     for control in widget.get_by_role("button").all():
         control_box = control.bounding_box()
         assert control_box["width"] >= 44 and control_box["height"] >= 44, "Buddy control misses the 44px touch target"
@@ -313,9 +319,11 @@ def services_showcase_and_topics(page, fixtures):
     showcase.scroll_into_view_if_needed()
     character = showcase.locator("[data-buddy-form]")
     canvas = assert_canvas_artwork(character)
-    float_box = page.locator("[data-buddy-widget] [data-buddy-form]").bounding_box()
     stage = character.bounding_box()
-    assert stage["width"] > float_box["width"] * 1.3, "Services Buddy is not the single larger showcase"
+    # The larger floating Buddy can now match the phone showcase. The in-page
+    # stage still has a useful bounded size and exists only on Services.
+    expected_stage = 160 if page.viewport_size['width'] < 640 else 210
+    assert abs(stage["width"] - expected_stage) <= 1, "Services Buddy lost its reserved showcase size"
     page.evaluate("window.__initialBuddyCanvas = document.querySelector('[data-buddy-showcase] canvas')")
     initial_pixels = canvas.evaluate("n => n.toDataURL()")
     controls = showcase.get_by_role("group", name="Explore Buddy's forms")
@@ -325,7 +333,7 @@ def services_showcase_and_topics(page, fixtures):
     page.keyboard.press("Enter")
     expect(costs).to_have_attribute("aria-pressed", "true")
     expect(character).to_have_attribute("data-buddy-form", "investment")
-    page.wait_for_timeout(2400)
+    page.wait_for_timeout(BUDDY_FORM_CHANGE_MS + 300)
     assert canvas.evaluate("n => n.toDataURL()") != initial_pixels, "Changing form did not change the rendered artwork"
     assert page.evaluate("window.__initialBuddyCanvas === document.querySelector('[data-buddy-showcase] canvas')"), "Selecting a form replaced the character canvas"
     assert abs(character.bounding_box()["height"] - stage["height"]) < 1, "Changing form shifted the reserved character stage"
@@ -406,9 +414,9 @@ def real_fetch_contract(page, fixtures):
     expect(chat.get_by_role("link", name="Untrusted", exact=True)).to_have_count(0)
     expect(chat.get_by_role("link", name="Unsafe", exact=True)).to_have_count(0)
     expect(chat.get_by_role("status")).to_have_count(0)
-    # The 2.1-second morph completes before the accepted answer's speaking
+    # The 3.2-second morph completes before the accepted answer's speaking
     # gesture settles. Talk must still be active after the new form arrives.
-    page.wait_for_timeout(2400)
+    page.wait_for_timeout(BUDDY_FORM_CHANGE_MS + 300)
     expect(chat).to_have_attribute('data-buddy-activity', 'talk')
     expect(chat).to_have_attribute('data-buddy-activity', 'idle', timeout=5000)
     page.wait_for_timeout(600)
@@ -911,6 +919,85 @@ def scroll_context_and_retained_chat(page, fixtures):
     no_overflow(page)
 
 
+def play_open(page):
+    launcher = page.locator('[data-buddy-play-launcher]')
+    launcher.focus()
+    page.keyboard.press('Enter')
+    playground = page.locator('[data-buddy-playground]')
+    expect(playground).to_be_visible()
+    expect(playground).to_have_attribute('data-buddy-play-status', 'ready')
+    expect(playground.get_by_role('button', name='Throw ball', exact=True)).to_be_focused()
+    expect(page.locator('[data-buddy-chat]')).to_have_count(0)
+    return playground
+
+
+def playground_controls(page, fixtures):
+    visit(page)
+    playground = play_open(page)
+    canvas = playground.locator('canvas')
+    expect(canvas).to_be_visible()
+    page.keyboard.press('Enter')
+    expect(playground).to_have_attribute('data-buddy-play-kind', 'ball')
+    expect(playground).to_have_attribute('data-buddy-play-motion', 'on')
+    playground.get_by_role('button', name='Pause Buddy', exact=True).click()
+    expect(playground).to_have_attribute('data-buddy-play-motion', 'off')
+    frozen = canvas.evaluate('n => n.toDataURL()')
+    draws = page.evaluate('window.__buddyPlayDraws')
+    page.wait_for_timeout(300)
+    assert canvas.evaluate('n => n.toDataURL()') == frozen, 'Pause changed the play pose instead of freezing it'
+    assert page.evaluate('window.__buddyPlayDraws') == draws, 'Paused play retained a drawing loop'
+    playground.get_by_role('button', name='Resume Buddy', exact=True).click()
+    expect(playground).to_have_attribute('data-buddy-play-kind', 'ball')
+    expect(playground).to_have_attribute('data-buddy-play-motion', 'on')
+    expect(playground).to_have_attribute('data-buddy-play-kind', 'idle', timeout=10000)
+    playground.get_by_role('button', name='Build a home', exact=True).click()
+    expect(playground).to_have_attribute('data-buddy-play-kind', 'build')
+    expect(playground).to_have_attribute('data-buddy-play-kind', 'home', timeout=12000)
+    expect(playground).to_have_attribute('data-buddy-play-motion', 'off')
+    door = playground.get_by_role('button', name='Open the door', exact=True)
+    expect(door).to_be_visible()
+    door.focus()
+    page.keyboard.press('Enter')
+    expect(playground).to_have_attribute('data-buddy-play-kind', 'door')
+    expect(playground).to_have_attribute('data-buddy-play-motion', 'off', timeout=8000)
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Buddy play overflows horizontally'
+    playground.screenshot(path=str(OUT / f'play-home-{page.viewport_size["width"]}.png'), animations='disabled')
+    playground.get_by_role('button', name='Close play', exact=True).click()
+    expect(playground).to_have_count(0)
+    expect(page.locator('[data-buddy-play-launcher]')).to_be_focused()
+    draws = page.evaluate('window.__buddyPlayDraws')
+    page.wait_for_timeout(300)
+    assert page.evaluate('window.__buddyPlayDraws') == draws, 'Closed play retained a drawing loop'
+    playground = play_open(page)
+    playground.get_by_role('button', name='Minimize Buddy', exact=True).click()
+    expect(playground).to_have_count(0)
+    reopen = page.get_by_role('button', name='Show Buddy', exact=True)
+    expect(reopen).to_be_focused()
+    page.keyboard.press('Enter')
+    expect(page.locator('[data-buddy-launcher]')).to_be_focused()
+    assert_fixed_widget(page)
+    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Play opened or contacted AI'
+
+
+def playground_reduced_motion(page, fixtures):
+    visit(page)
+    playground = play_open(page)
+    for label, result in [('Throw ball', 'idle'), ('Dance', 'idle'), ('Build a home', 'home'), ('Open the door', 'door')]:
+        playground.get_by_role('button', name=label, exact=True).click()
+        expect(playground).to_have_attribute('data-buddy-play-kind', result)
+        expect(playground).to_have_attribute('data-buddy-play-motion', 'off')
+    page.wait_for_timeout(250)
+    draws = page.evaluate('window.__buddyPlayDraws')
+    page.wait_for_timeout(500)
+    assert page.evaluate('window.__buddyPlayDraws') == draws, 'Reduced-motion play retained a drawing loop'
+    expect(playground.get_by_role('button', name='Ask Buddy', exact=True)).to_be_enabled()
+    playground.get_by_role('button', name='Close play', exact=True).focus()
+    page.keyboard.press('Escape')
+    expect(playground).to_have_count(0)
+    expect(page.locator('[data-buddy-play-launcher]')).to_be_focused()
+    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Reduced-motion play opened or contacted AI'
+
+
 def reduced_motion(page, fixtures):
     visit(page, "/platform/")
     showcase = page.locator("[data-buddy-showcase]")
@@ -1014,6 +1101,8 @@ try:
             ("scroll-context-retained-chat", scroll_context_and_retained_chat, {"reduced": True}),
             ("readiness-gate-recovery", readiness_gate, {"reduced": True}),
             ("readiness-cancel-timeout", readiness_cancel_timeout, {"reduced": True}),
+            ("playground-controls", playground_controls, {}),
+            ("playground-reduced-motion", playground_reduced_motion, {"reduced": True}),
             ("reduced-motion", reduced_motion, {"reduced": True}),
             ("artwork-fallback", missing_artwork, {"fail_atlas": True, "reduced": True}),
             ("short-viewport", short_viewport, {"reduced": True}),

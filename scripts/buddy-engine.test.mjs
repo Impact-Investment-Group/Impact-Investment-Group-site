@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Character, blend, names, pose } from "../src/components/buddy/buddy-engine.js";
+import { createIdleDirector, TORNADO_DURATION_SECONDS, TORNADO_TIMING } from "../src/components/buddy/buddy-motion.js";
+import { drawPlayScene, PLAY_DURATIONS, PROPS_RECTS } from "../src/components/buddy/buddy-play.js";
 
 const radians = (degrees) => (degrees * Math.PI) / 180;
 const angularDistance = (a, b) => Math.abs(Math.atan2(Math.sin(b - a), Math.cos(b - a)));
@@ -143,6 +145,8 @@ function transitionCanvas() {
     restore() { assert.ok(stack.length, "Unbalanced canvas restore"); state = stack.pop(); },
     translate(x, y) { multiply([1, 0, 0, 1, x, y]); },
     scale(x, y) { multiply([x, 0, 0, y, 0, 0]); },
+    transform(...matrix) { multiply(matrix); },
+    fillRect(...rectangle) { finite(...rectangle); this.paint("rectangle"); },
     rotate(angle) { finite(angle); multiply([Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0, 0]); },
     beginPath() {}, closePath() {},
     moveTo: finite, lineTo: finite, quadraticCurveTo: finite, bezierCurveTo: finite,
@@ -150,13 +154,17 @@ function transitionCanvas() {
       finite(x, y, rx, ry, rotation, start, end);
       assert.ok(rx >= 0 && ry >= 0, "Negative ellipse radius");
     },
+    createRadialGradient(...points) {
+      finite(...points);
+      return { addColorStop(offset) { assert.ok(Number.isFinite(offset) && offset >= 0 && offset <= 1); } };
+    },
     createLinearGradient(...points) {
       finite(...points);
       return { addColorStop(offset) { assert.ok(Number.isFinite(offset) && offset >= 0 && offset <= 1); } };
     },
     paint(kind) {
       assert.ok(state.globalAlpha >= 0 && state.globalAlpha <= initial.globalAlpha + 1e-12, "Paint ignored inherited opacity");
-      paints.push({ layer: this.layer, kind, alpha: state.globalAlpha });
+      paints.push({ layer: this.layer, kind, alpha: state.globalAlpha, transform: [...state.transform] });
     },
     fill() { this.paint("fill"); },
     stroke() { this.paint("stroke"); },
@@ -236,7 +244,7 @@ for (let from = 0; from < 3; from += 1) {
         assert.equal(character.bodies.length, 1);
         assert.equal(character.bodies[0].form, progress < 0.5 ? from : to);
       }
-      for (const progress of [0, 0.1, 0.3, 0.479, 0.5, 0.6, 0.719999, 0.72]) {
+      for (const progress of [0, 0.1, 0.3, 0.459, 0.5, TORNADO_TIMING.retargetUntil, TORNADO_TIMING.revealStart - 0.000001, TORNADO_TIMING.revealStart]) {
         const { context, character } = transitionFrame(from, to, progress, source, target);
         assert.ok(character.bodies.every(body => body.form !== to), `Target exposed before safe retargeting ended at ${progress}`);
         if (progress >= 0.5) {
@@ -256,5 +264,128 @@ test("tornado keeps the original call contract when endpoint poses are omitted",
   for (const [progress, form] of [[0, 0], [1, 2]]) {
     const { character } = transitionFrame(0, 2, progress);
     assert.deepEqual(character.bodies, [{ form, value: pose(form, 3, 0.5, 0), alpha: 1 }]);
+  }
+});
+
+
+function seededRandom(seed = 1879) {
+  return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+}
+
+test("idle direction has bounded varied poses, recent-repeat protection and deterministic sampling", () => {
+  const left = createIdleDirector(seededRandom()), right = createIdleDirector(seededRandom());
+  const recent = [], observed = new Set(), styles = new Set(), pauses = new Set();
+  for (let index = 0; index < 180; index += 1) {
+    const form = Math.floor(index / 12) % 3;
+    const step = left.next(form);
+    assert.deepEqual(step, right.next(form), "Same seed and page forms changed choreography");
+    assert.ok(step.action >= 0 && step.action < names.length);
+    assert.ok(step.expression >= 1 && step.expression <= 12);
+    assert.ok(step.seconds >= 1 && step.seconds <= 5);
+    assert.ok([0, 1, 2].includes(step.style));
+    if (step.action === 0) { pauses.add(step.seconds); continue; }
+    assert.ok(!recent.includes(step.action), "A recently performed gesture repeated");
+    recent.push(step.action); if (recent.length > 4) recent.shift();
+    observed.add(step.action); styles.add(step.style);
+  }
+  assert.ok(observed.size >= 12, "The director collapsed into a small repeating loop");
+  assert.equal(styles.size, 3, "Calm, bouncy and expressive treatments must all remain available");
+  assert.ok(pauses.size > 10, "Every pause used the same timing");
+});
+
+test("unreliable injected randomness cannot create missing or unbounded idle steps", () => {
+  for (const value of [NaN, Infinity, -5, 1, 20]) {
+    const director = createIdleDirector(() => value);
+    for (let index = 0; index < 50; index += 1) {
+      const step = director.next(index % 3);
+      assert.ok(Object.values(step).every(Number.isFinite));
+      assert.ok(step.action >= 0 && step.action < names.length);
+      assert.ok(step.seconds >= 1 && step.seconds <= 5);
+    }
+  }
+});
+
+test("tornado retargeting ends while concealed, with dense wind throughout that interval", () => {
+  assert.equal(TORNADO_DURATION_SECONDS, 3.2);
+  assert.ok(TORNADO_TIMING.concealEnd < TORNADO_TIMING.retargetUntil);
+  assert.ok(TORNADO_TIMING.retargetUntil < TORNADO_TIMING.revealStart);
+  assert.ok((TORNADO_TIMING.revealStart - TORNADO_TIMING.concealEnd) * TORNADO_DURATION_SECONDS < .5);
+  for (let i = 0; i <= 20; i += 1) {
+    const t = TORNADO_TIMING.concealEnd + (TORNADO_TIMING.revealStart - TORNADO_TIMING.concealEnd) * i / 20;
+    const { context, character } = transitionFrame(0, 2, t);
+    assert.equal(character.bodies.length, 0);
+    assert.ok(context.paints.some(paint => paint.layer === "rear wind" && paint.alpha > .1));
+    assert.ok(context.paints.some(paint => paint.layer === "front wind" && paint.alpha > .1));
+  }
+});
+
+test("play uses the complete approved atlas rectangles without reaching neighbouring cells", () => {
+  for (const rect of Object.values(PROPS_RECTS)) {
+    const [x, y, w, h] = rect;
+    assert.ok(x >= 0 && y >= 0 && w > 0 && h > 0);
+    assert.ok(x + w <= 1536 && y + h <= 1024);
+  }
+  assert.equal(PLAY_DURATIONS.home, 0);
+});
+
+for (const kind of Object.keys(PLAY_DURATIONS)) {
+  test(`${kind}: every form/variant is finite, restores caller state and finishes stably`, () => {
+    const duration = PLAY_DURATIONS[kind];
+    for (let form = 0; form < 3; form += 1) {
+      for (let variant = 0; variant < 3; variant += 1) {
+        const rig = new Character({}, {});
+        for (const atlas of [{}, undefined]) {
+          for (let frame = 0; frame <= 24; frame += 1) {
+            const context = transitionCanvas();
+            drawPlayScene(context, rig, atlas, form, kind, duration * frame / 24, 300, 220, 1, variant);
+            context.assertRestored();
+            assert.ok(context.paints.length, "Scene painted a blank frame");
+          }
+          const final = transitionCanvas(), later = transitionCanvas();
+          drawPlayScene(final, rig, atlas, form, kind, duration, 300, 220, 1, variant);
+          drawPlayScene(later, rig, atlas, form, kind, duration + 100, 300, 220, 1, variant);
+          assert.deepEqual(later.paints, final.paints, "Completed scene continues changing");
+          final.assertRestored(); later.assertRestored();
+        }
+      }
+    }
+  });
+}
+
+test("hand-held props paint behind the actual gripping hands without changing the old draw contract", () => {
+  const rig = new RecordingCharacter();
+  const context = transitionCanvas();
+  let attachment;
+  rig.draw(context, 0, pose(0, 27, .4), 300, 220, 1, 1, {
+    beforeHands(_context, parts) {
+      assert.equal(rig.drawnHands.length, 0, "Prop painted in front of the fingers");
+      attachment = parts.right.w;
+    },
+  });
+  assert.ok(attachment.every(Number.isFinite));
+  assert.equal(rig.drawnHands.length, 2);
+  context.assertRestored();
+});
+
+
+test("finished build, closed home and door opening start share the exact pose and composition", () => {
+  class PlacedCharacter extends Character {
+    constructor() { super({}, {}); this.placements = []; }
+    draw(context, form, value, x, y, scale, ...rest) {
+      this.placements.push({ form, value: { ...value }, x, y, scale });
+      return super.draw(context, form, value, x, y, scale, ...rest);
+    }
+  }
+  for (let form = 0; form < 3; form += 1) {
+    for (const atlas of [{}, undefined]) {
+      const frames = [["build", PLAY_DURATIONS.build], ["home", 0], ["door", 0]].map(([kind, time]) => {
+        const context = transitionCanvas(), rig = new PlacedCharacter();
+        drawPlayScene(context, rig, atlas, form, kind, time, 300, 220, 1);
+        context.assertRestored();
+        return { paint: context.paints, placements: rig.placements };
+      });
+      assert.deepEqual(frames[0], frames[1], "Build completion jumped when changed to home");
+      assert.deepEqual(frames[1], frames[2], "Opening the door jumped before its animation began");
+    }
   }
 });

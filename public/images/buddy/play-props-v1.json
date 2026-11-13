@@ -1,0 +1,94 @@
+{
+  "version": "play-props-v1",
+  "generated": "2026-11-13",
+  "image": "/images/buddy/play-props-v1.webp",
+  "width": 1536,
+  "height": 1024,
+  "bytes": 117140,
+  "sha256": "b9bf443ce24e1ea441ef36415ee806d791e82e49f0d8b4d65af0df6fe60b567a",
+  "transparent": true,
+  "provider": "imagegen",
+  "provenanceClass": "AI-generated fictional illustration",
+  "styleReference": "/images/buddy/key-hero-v2.png",
+  "referenceDescription": "Approved Buddy key artwork; matching navy, orange and teal toy-like material treatment.",
+  "source": {
+    "artifact": "05-Artifacts/buddy-play-2026-11-13/buddy-play-props-source-v1.png",
+    "sha256": "5cd7cae83af46d8afcae4fba40efbbb5aa9bfaa89cb1eb1822679f0b0ddbef6f",
+    "bytes": 1688043,
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      254
+    ]
+  },
+  "generationRecord": {
+    "outputId": "exec-c7951279-4f26-48c4-879f-0391586344e2",
+    "promptStatus": "Exact generation and cleanup prompts retained in 05-Artifacts/buddy-play-2026-11-13/IMAGEGEN_PROMPTS.md."
+  },
+  "partOrder": [
+    "house",
+    "door",
+    "hammer",
+    "brick",
+    "ball",
+    "dust"
+  ],
+  "rects": {
+    "house": [
+      49,
+      49,
+      481,
+      479
+    ],
+    "door": [
+      638,
+      95,
+      267,
+      435
+    ],
+    "hammer": [
+      1109,
+      68,
+      305,
+      467
+    ],
+    "brick": [
+      82,
+      688,
+      394,
+      225
+    ],
+    "ball": [
+      579,
+      606,
+      361,
+      365
+    ],
+    "dust": [
+      1025,
+      621,
+      457,
+      341
+    ]
+  },
+  "coordinateConvention": "Source pixels, x right and y down. Rectangles are [x,y,width,height]. Atlas geometry is unchanged by WebP encoding.",
+  "houseDoorway": {
+    "sourceBounds": [
+      229,
+      329,
+      123,
+      192
+    ],
+    "withinHouse": [
+      180,
+      280,
+      123,
+      192
+    ],
+    "hinge": "left"
+  },
+  "usage": "Decorative props for local Buddy play. The house is fictional and is not a property listing, construction specification or evidence of a service outcome.",
+  "rightsNote": "Generated through imagegen using the approved Buddy reference. No external source, endorsement or third-party licence claim is made."
+}

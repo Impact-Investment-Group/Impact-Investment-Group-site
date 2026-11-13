@@ -19,6 +19,43 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
   const trigger = useRef<HTMLButtonElement>(null);
   const reopen = useRef<HTMLButtonElement>(null);
   const movedFocus = useRef(false);
+  const playTrigger = useRef<HTMLButtonElement>(null);
+  const mounted = useRef(true);
+  const playWanted = useRef(false);
+  const [Playground, setPlayground] = useState<typeof import("./buddy-playground").BuddyPlayground | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [playPending, setPlayPending] = useState(false);
+  const [playFailed, setPlayFailed] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const [attention, setAttention] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    mounted.current = true;
+    const media = typeof window.matchMedia === "function" ? window.matchMedia("(max-height: 600px)") : null;
+    if (!media) return () => { mounted.current = false; };
+    const update = () => setCompact(media.matches);
+    update();
+    media.addEventListener?.("change", update);
+    return () => { mounted.current = false; media.removeEventListener?.("change", update); };
+  }, []);
+
+  function startPlay() {
+    if (playPending) return;
+    playWanted.current = true;
+    setPlayFailed(false);
+    if (Playground) { setPlaying(true); return; }
+    setPlayPending(true);
+    void import("./buddy-playground").then(module => {
+      if (mounted.current) { setPlayground(() => module.BuddyPlayground); setPlaying(playWanted.current); setPlayPending(false); }
+    }).catch(() => { if (mounted.current) { setPlayPending(false); setPlayFailed(true); } });
+  }
+
+  function closePlay() {
+    playWanted.current = false;
+    setPlaying(false);
+    requestAnimationFrame(() => { if (mounted.current) playTrigger.current?.focus(); });
+  }
 
   useEffect(() => {
     if (movedFocus.current) (minimized ? reopen.current : trigger.current)?.focus();
@@ -30,17 +67,30 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
       onClick={() => { movedFocus.current = true; setMinimized(false); }}
       className="pointer-events-auto min-h-11 min-w-16 rounded-full border border-rule bg-page px-3 font-heading text-sm font-semibold text-ink shadow-md transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600">
       Buddy
-    </button> : <div className="relative">
+    </button> : <div className={playing ? "hidden" : "relative pb-12"}>
       <button ref={node => { trigger.current = node; setTrigger?.(node); }} type="button" data-buddy-launcher aria-label={buddyLauncherLabel} aria-haspopup="dialog" aria-busy={loading} disabled={loading} onClick={onOpen}
-        className="pointer-events-auto flex min-h-11 w-28 flex-col items-center rounded-2xl bg-transparent p-0 text-ink transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 motion-reduce:transform-none sm:w-32 [@media(max-height:500px)]:w-24">
-        <BuddyCharacter form={topic} action={loading ? "listen" : "wave"} expression="warm" animated continuousIdle playfulIdle={!loading} className="w-full" />
+        className="pointer-events-auto flex min-h-11 w-40 flex-col items-center rounded-2xl bg-transparent p-0 text-ink transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 motion-reduce:transform-none sm:w-48 [@media(max-height:500px)]:w-24">
+        <span className="block w-full" onPointerMove={event => {
+          if (event.pointerType === "touch") return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          setAttention({ x: (event.clientX - rect.left) / rect.width * 2 - 1, y: (event.clientY - rect.top) / rect.height * 2 - 1 });
+        }} onPointerLeave={() => setAttention({ x: 0, y: 0 })}>
+          <BuddyCharacter form={topic} action={loading ? "listen" : "wave"} expression="warm" animated={!paused && !playing} attention={attention} continuousIdle playfulIdle={!loading} className="w-full" />
+        </span>
         <span className="-mt-1 whitespace-nowrap rounded-full border border-rule bg-page/95 px-3 py-1 text-xs font-semibold leading-5 shadow-sm">{loading ? "Opening..." : buddyLauncherLabel}</span>
       </button>
-      <button type="button" aria-label="Minimize Buddy" title="Minimize Buddy" onClick={() => { movedFocus.current = true; setMinimized(true); }}
+      <button ref={playTrigger} type="button" data-buddy-play-launcher aria-label={playFailed ? "Retry play" : "Play with Buddy"} aria-busy={playPending} disabled={playPending} onClick={startPlay}
+        className="pointer-events-auto absolute bottom-0 right-0 flex min-h-11 min-w-11 items-center justify-center rounded-full border border-rule bg-page px-3 text-xs font-semibold text-ink shadow-sm hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">{playFailed ? "Retry play" : "Play"}</button>
+      <button type="button" aria-label="Minimize Buddy" title="Minimize Buddy" onClick={() => { playWanted.current = false; movedFocus.current = true; setMinimized(true); }}
         className="pointer-events-auto absolute -right-2 -top-2 flex size-11 items-center justify-center rounded-full text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
         <span className="flex size-6 items-center justify-center rounded-full border border-rule bg-page/95 shadow-sm transition-colors hover:bg-secondary"><Minus aria-hidden="true" className="size-3.5" /></span>
       </button>
     </div>}
+    {playing && Playground && <Playground form={topic} paused={paused} onPause={() => setPaused(value => !value)} onClose={closePlay}
+      onMinimize={() => { playWanted.current = false; movedFocus.current = true; setPlaying(false); setMinimized(true); }}
+      onAsk={() => { setPlaying(false); requestAnimationFrame(() => { if (mounted.current) { trigger.current?.focus(); onOpen(); } }); }}
+      positionClassName={compact ? "fixed inset-y-3 right-3 z-50 overflow-y-auto" : "fixed bottom-3 right-3 z-50"} />}
+    {playFailed && !playing && !minimized && <p role="alert" className="pointer-events-auto absolute bottom-full right-0 mb-3 w-64 rounded-2xl border border-rule bg-page p-4 text-sm text-ink shadow-lg">Buddy play could not load.</p>}
     {failed && !minimized && <p role="alert" className="pointer-events-auto absolute bottom-full right-0 mb-3 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-rule bg-page p-4 text-sm leading-relaxed text-ink shadow-lg">Buddy could not open. Try again or <a href="/contact" className="font-semibold underline">contact our team</a>.</p>}
   </div>;
 }
