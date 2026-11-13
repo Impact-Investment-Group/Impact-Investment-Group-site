@@ -123,10 +123,13 @@ function HomePage() {
             </h3>
             <ul
               aria-labelledby="data-sources-heading"
-              className="mx-auto mt-6 flex max-w-[1200px] flex-wrap items-center justify-center gap-x-6 gap-y-8 sm:gap-x-10"
+              className="mx-auto mt-6 flex max-w-7xl flex-wrap items-center justify-center gap-x-4 gap-y-4 sm:gap-y-6"
             >
               {dataSources.map((source) => (
-                <li key={source.id} className="flex h-16 w-40 items-center justify-center sm:w-44">
+                <li
+                  key={source.id}
+                  className="flex h-24 w-52 max-w-full items-center justify-center sm:h-28 sm:w-56"
+                >
                   <img
                     src={source.logo}
                     alt={source.name + ": " + source.blurb}
@@ -134,7 +137,7 @@ function HomePage() {
                     height={source.artwork.h}
                     loading="lazy"
                     decoding="async"
-                    className="h-auto max-h-14 w-auto max-w-full object-contain"
+                    className="h-auto max-h-24 w-auto max-w-full object-contain sm:max-h-28"
                   />
                 </li>
               ))}

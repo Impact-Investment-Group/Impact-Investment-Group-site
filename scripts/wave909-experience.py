@@ -546,7 +546,7 @@ with sync_playwright() as pw:
             check(sources.locator("h3").evaluate("n => getComputedStyle(n).textAlign") == "center", "Data heading is not centred")
             check(sources.locator("p").evaluate("n => getComputedStyle(n).textAlign") == "center", "Data attribution is not centred")
             check(sources.locator("li").evaluate_all("nodes => new Set(nodes.map(n => {const b=n.getBoundingClientRect();return `${b.width},${b.height}`;})).size === 1"), "Data logo display areas are inconsistent")
-            check(sources.locator("img").evaluate_all("nodes => nodes.every(n => {const b=n.getBoundingClientRect();return b.width >= 75 && b.width <= 176 && b.height >= 24 && b.height <= 56 && Math.abs(b.width/b.height-n.naturalWidth/n.naturalHeight)<0.03;})"), "Data logos are oversized or distorted")
+            check(sources.locator("img").evaluate_all("nodes => nodes.every(n => {const b=n.getBoundingClientRect();return b.width >= 180 && b.width <= 224 && b.height >= 40 && b.height <= 112 && Math.abs(b.width/b.height-n.naturalWidth/n.naturalHeight)<0.03;})"), "Data logos are too small, oversized or distorted")
             check(sources.locator("ul").evaluate("n => {const b=n.getBoundingClientRect(), rows=new Map(); for(const li of n.children){const r=li.getBoundingClientRect(), k=Math.round(r.top); const row=rows.get(k)||[]; row.push(r); rows.set(k,row);} return [...rows.values()].every(row => Math.abs((Math.min(...row.map(r=>r.left))+Math.max(...row.map(r=>r.right)))/2-(b.left+b.right)/2)<2);}"), "Data logo rows are not centred")
             check_crafted_state("restored-home")
 
