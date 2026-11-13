@@ -113,13 +113,34 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
     // Resolve each wrist independently before interpolation. A forward right arm
     // must never snap the lowered left hand upright (or vice versa).
     const n=anatomy[form];
+    const directedWrist=state>=25&&state<=28;
+    if(directedWrist){
+      // New full-arm gestures keep one bend side through the whole lift. A
+      // fixed world-space elbow hint can cross the two inverse-kinematic
+      // candidates as the wrist rises, turning a supported palm inside out.
+      const guide=(shoulder,wx,wy,side)=>{
+        const dx=wx-shoulder[0],dy=wy-shoulder[1],raw=Math.hypot(dx,dy)||1;
+        const reach=clamp(raw,22,(n.limbs[0]+n.limbs[1])*.94),ux=dx/raw,uy=dy/raw;
+        return [shoulder[0]+ux*reach*.5-uy*side*80,shoulder[1]+uy*reach*.5+ux*side*80];
+      };
+      [p.lex,p.ley]=guide(n.shoulders[0],p.lx,p.ly,-1);
+      [p.rex,p.rey]=guide(n.shoulders[1],p.rx,p.ry,1);
+    }
     const left=limb(n.shoulders[0],[p.lx,p.ly],n.limbs,-1,[p.lex,p.ley]);
     const right=limb(n.shoulders[1],[p.rx,p.ry],n.limbs,1,[p.rex,p.rey]);
     const wrist=(arm,kind,wanted,front)=>{
       const desired=kind===1||kind===5?mixAngle(arm.angle,wanted,clamp(front)):wanted;
       return arm.angle+clamp(angleDelta(arm.angle,desired),-1.35,1.35);
     };
-    p.la=wrist(left,p.lh,p.la,p.frontL);p.ra=wrist(right,p.rh,p.ra,p.frontR);
+    if(directedWrist){
+      // Author the cuff relative to its forearm. Keeping a palm at an absolute
+      // angle lets the shortest-arc clamp jump between opposite limits when
+      // arm and palm are antiparallel; these small offsets have no such seam.
+      const offsets=state===25?[-.08,.08]:state===26?[-.12,.12]:state===27?[-.10,-.30]:[-.10,.12-(1-Math.cos(a*5.2))*.12];
+      p.la=left.angle+offsets[0];p.ra=right.angle+offsets[1];
+    }else{
+      p.la=wrist(left,p.lh,p.la,p.frontL);p.ra=wrist(right,p.rh,p.ra,p.frontR);
+    }
     const auto=[2,2,3,5,2,12,4,4,2,6,7,2,2,3,10,11,4,4,9,12,1,7,4,4,6,2,6,3,4];
     return expression(p,faceStyle||auto[state]||1,a);
   }
