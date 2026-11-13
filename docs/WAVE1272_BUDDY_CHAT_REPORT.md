@@ -7,3 +7,5 @@ The chat uses the existing Tailwind framework and bone-white brand tokens. Buddy
 The five original source logos are larger in equal display areas, preserving their natural aspect ratios. The heading, licence statement and source attribution are unchanged. The existing browser size assertion now checks the larger requested treatment while retaining its count, centring and distortion checks.
 
 Validation is pending in GitHub Actions. No local test, build or audit was run. Live desktop and phone evidence will be recorded after deployment.
+
+The first complete run passed the existing page, navigation, motion, contrast and carousel checks. A new keyboard-height chat case caught Chromium revealing the caret while clipping the textarea's top edge. Focusing the field now reveals its full box with native nearest scrolling and scroll margin; the strict viewport assertions remain. The empty conversation still starts at the welcome heading, and short screens retain access to the close control and AI notice through outer scrolling.
