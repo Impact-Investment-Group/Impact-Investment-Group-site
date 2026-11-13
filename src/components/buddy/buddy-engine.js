@@ -167,21 +167,58 @@
       drawHand(left,p.lh,p.la,true,p.oldLH);drawHand(right,p.rh,p.ra,false,p.oldRH);
       ctx.restore();
     }
-    tornado(ctx,t,x,y,scale=1){
-      const power=ease((t-.08)/.23)*(1-ease((t-.70)/.25));if(power<.001)return;
-      ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=power;
-      const colours=['#14366A','#E15E31','#258D8A'],phase=t*TAU*5.6;
-      for(const front of [false,true])for(let c=0;c<3;c++){
-        let strip=[];const draw=()=>{if(strip.length<2){strip=[];return;}const g=ctx.createLinearGradient(-170,0,170,0);g.addColorStop(0,colours[c]);g.addColorStop(.45,front?['#56779B','#F59A66','#65B9B3'][c]:colours[c]);g.addColorStop(1,colours[c]);ctx.fillStyle=g;ctx.beginPath();strip.forEach((p,i)=>i?ctx.lineTo(p.x,p.y-p.w):ctx.moveTo(p.x,p.y-p.w));[...strip].reverse().forEach(p=>ctx.lineTo(p.x,p.y+p.w));ctx.closePath();ctx.fill();strip=[];};
-        for(let i=0;i<=480;i++){const u=i/480,a=phase+u*TAU*4.7+c*TAU/3,r=(13+153*Math.pow(u,.8))*power,z=Math.cos(a);if((z>=0)===front)strip.push({x:Math.sin(a)*r+Math.sin(u*4-phase*.2)*7,y:174-u*344*power+z*r*.11,w:(7+13*u)*power});else draw();}draw();
+    tornado(ctx,t,x,y,scale=1,front=false){
+      const power=ease((t-.06)/.25)*(1-ease((t-.70)/.27));if(power<.001)return;
+      ctx.save();ctx.translate(x,y);ctx.scale(scale*(.65+.35*power),scale*(.65+.35*power));ctx.globalAlpha*=power;
+      const phase=TAU*(.1+2.1*ease(t)),turns=TAU*2.45;
+      if(!front){
+        const core=ctx.createLinearGradient(0,-160,0,155);
+        core.addColorStop(0,'rgba(101,185,179,.04)');core.addColorStop(.45,'rgba(37,141,138,.18)');core.addColorStop(1,'rgba(20,54,106,.04)');
+        ctx.fillStyle=core;ctx.beginPath();ctx.moveTo(-136,-150);ctx.bezierCurveTo(-110,-30,-30,85,-10,149);ctx.quadraticCurveTo(0,157,10,149);ctx.bezierCurveTo(30,85,110,-30,136,-150);ctx.quadraticCurveTo(0,-119,-136,-150);ctx.fill();
+        ctx.fillStyle='rgba(20,54,106,.08)';ctx.beginPath();ctx.ellipse(0,165,43,6,0,0,TAU);ctx.fill();
+      }
+      // Broad satin ribbons share a tapered helix. Exact half-turn boundaries
+      // join at the sides; rear and front faces genuinely wrap around Buddy.
+      const bands=[['#185D65','#80CAC0',12,0],['#14366A','#6485A7',7,2.2],['#D95B30','#F6B183',3.4,4.2]];
+      for(const [base,shine,width,offset] of bands){
+        const start=phase+offset,end=start+turns;
+        const shade=ctx.createLinearGradient(-140,0,140,0);
+        shade.addColorStop(0,base);shade.addColorStop(.38,front?shine:base);shade.addColorStop(.66,base);shade.addColorStop(1,front?shine:base);
+        ctx.fillStyle=shade;ctx.strokeStyle=shine;ctx.lineWidth=1.25;ctx.lineJoin='round';
+        for(let k=Math.floor((start-Math.PI/2)/Math.PI);Math.PI/2+k*Math.PI<end;k++){
+          const a0=Math.max(start,Math.PI/2+k*Math.PI),a1=Math.min(end,Math.PI/2+(k+1)*Math.PI);
+          if((Math.cos((a0+a1)/2)>=0)!==front)continue;
+          const strip=[],steps=Math.max(2,Math.ceil((a1-a0)*13));
+          for(let j=0;j<=steps;j++){
+            const a=mix(a0,a1,j/steps),u=(a-start)/turns,r=10+126*Math.pow(u,.82),z=Math.cos(a);
+            const taper=ease(u/.07)*ease((1-u)/.07);
+            strip.push({x:Math.sin(a)*r+Math.sin(u*Math.PI)*5,y:148-u*296+z*r*.16,w:width*(.45+.55*u)*taper});
+          }
+          ctx.save();ctx.globalAlpha*=front?.96:.46;ctx.beginPath();
+          strip.forEach((p,i)=>i?ctx.lineTo(p.x,p.y-p.w):ctx.moveTo(p.x,p.y-p.w));
+          for(let j=strip.length-1;j>=0;j--)ctx.lineTo(strip[j].x,strip[j].y+strip[j].w);
+          ctx.closePath();ctx.fill();
+          if(front){ctx.globalAlpha*=.50;ctx.beginPath();strip.forEach((p,i)=>i?ctx.lineTo(p.x,p.y-p.w):ctx.moveTo(p.x,p.y-p.w));ctx.stroke();}
+          ctx.restore();
+        }
       }ctx.restore();
     }
-    transition(ctx,from,to,style,t,state,motionStyle,x,y,scale){
+    transition(ctx,from,to,style,t,state,motionStyle,x,y,scale,sourcePose,targetPose){
       t=clamp(t);const p=pose(t<.5?from:to,state,.5,motionStyle);
       if(style==='Tornado'){
-        const opacity=t<.5?1-ease((t-.14)/.20):ease((t-.72)/.23);
-        p.sx=t<.5?.15+.85*Math.abs(Math.cos(t*t*70)):.8+.2*ease((t-.72)/.23);
-        p.rot=t<.5?-.09:0;this.draw(ctx,t<.5?from:to,p,x,y,scale,opacity);this.tornado(ctx,t,x,y,scale);
+        const incoming=t>=.5,q={...(incoming?targetPose:sourcePose)||p};
+        const gather=ease((t-.10)/.36),reveal=ease((t-.72)/.23);
+        const opacity=incoming?reveal:1-ease((t-.24)/.24);
+        if(incoming){
+          q.sx*=.82+.18*reveal;q.sy*=.82+.18*reveal;
+          q.y+=(10-3*Math.sin(Math.PI*reveal))*(1-reveal);q.rot+=.08*(1-reveal);
+        }else{
+          q.x*=1-gather;q.y=mix(q.y,12,gather);q.sx*=1-.55*gather;q.sy*=1-.48*gather;
+          q.rot-=.13*Math.sin(Math.PI*ease(t/.45))+.28*gather;
+        }
+        this.tornado(ctx,t,x,y,scale,false);
+        if(opacity>0)this.draw(ctx,incoming?to:from,q,x,y,scale,opacity);
+        this.tornado(ctx,t,x,y,scale,true);
       }else if(style==='Spin'){
         p.sx=Math.max(.025,Math.abs(Math.cos(t*Math.PI)));p.rot=Math.sin(t*TAU)*.13;p.y-=Math.sin(t*Math.PI)*20;
         this.draw(ctx,t<.5?from:to,p,x,y,scale);

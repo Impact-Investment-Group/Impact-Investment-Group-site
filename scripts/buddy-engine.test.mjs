@@ -115,3 +115,146 @@ test("all forms and movement styles have finite, temporally continuous poses inc
     }
   }
 });
+
+// Keep the actual wind paths, body, face, arms and hand dispatch in these tests.
+// The canvas records paint order and rejects invalid numbers rather than drawing
+// pixels; browser visual checks remain responsible for the finished appearance.
+function transitionCanvas() {
+  const initial = {
+    globalAlpha: 0.63, fillStyle: "initial fill", strokeStyle: "initial stroke",
+    lineWidth: 3, lineCap: "butt", lineJoin: "miter",
+    transform: [1, 0, 0, 1, 7, 11],
+  };
+  let state = structuredClone(initial);
+  const stack = [];
+  const paints = [];
+  const finite = (...values) => assert.ok(values.every(Number.isFinite), `Invalid canvas coordinates: ${values}`);
+  const multiply = (next) => {
+    finite(...next);
+    const [a, b, c, d, e, f] = state.transform;
+    const [g, h, i, j, k, l] = next;
+    state.transform = [a*g+c*h, b*g+d*h, a*i+c*j, b*i+d*j, a*k+c*l+e, b*k+d*l+f];
+    finite(...state.transform);
+  };
+  const context = {
+    layer: "outside",
+    paints,
+    save() { stack.push({ ...state, transform: [...state.transform] }); },
+    restore() { assert.ok(stack.length, "Unbalanced canvas restore"); state = stack.pop(); },
+    translate(x, y) { multiply([1, 0, 0, 1, x, y]); },
+    scale(x, y) { multiply([x, 0, 0, y, 0, 0]); },
+    rotate(angle) { finite(angle); multiply([Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0, 0]); },
+    beginPath() {}, closePath() {},
+    moveTo: finite, lineTo: finite, quadraticCurveTo: finite, bezierCurveTo: finite,
+    ellipse(x, y, rx, ry, rotation, start, end) {
+      finite(x, y, rx, ry, rotation, start, end);
+      assert.ok(rx >= 0 && ry >= 0, "Negative ellipse radius");
+    },
+    createLinearGradient(...points) {
+      finite(...points);
+      return { addColorStop(offset) { assert.ok(Number.isFinite(offset) && offset >= 0 && offset <= 1); } };
+    },
+    paint(kind) {
+      assert.ok(state.globalAlpha >= 0 && state.globalAlpha <= initial.globalAlpha + 1e-12, "Paint ignored inherited opacity");
+      paints.push({ layer: this.layer, kind, alpha: state.globalAlpha });
+    },
+    fill() { this.paint("fill"); },
+    stroke() { this.paint("stroke"); },
+    drawImage(_image, ...coordinates) { finite(...coordinates); this.paint("image"); },
+    assertRestored() {
+      assert.equal(stack.length, 0, "Unclosed canvas save");
+      assert.deepEqual(state, initial, "Transition leaked canvas state to the next frame");
+    },
+  };
+  for (const property of ["globalAlpha", "fillStyle", "strokeStyle", "lineWidth", "lineCap", "lineJoin"]) {
+    Object.defineProperty(context, property, {
+      get: () => state[property],
+      set: value => {
+        if (property === "globalAlpha") assert.ok(Number.isFinite(value) && value >= 0 && value <= 1);
+        if (property === "lineWidth") assert.ok(Number.isFinite(value) && value > 0);
+        state[property] = value;
+      },
+    });
+  }
+  return context;
+}
+
+class TransitionCharacter extends Character {
+  constructor() { super({}, {}); this.bodies = []; }
+  draw(context, form, value, ...placement) {
+    this.bodies.push({ form, value: { ...value }, alpha: placement[3] ?? 1 });
+    const previous = context.layer;
+    context.layer = "body";
+    try { super.draw(context, form, value, ...placement); }
+    finally { context.layer = previous; }
+  }
+  tornado(context, progress, x, y, scale, front) {
+    const previous = context.layer;
+    context.layer = front ? "front wind" : "rear wind";
+    try { super.tornado(context, progress, x, y, scale, front); }
+    finally { context.layer = previous; }
+  }
+}
+
+function transitionFrame(from, to, progress, source, target) {
+  const context = transitionCanvas();
+  const character = new TransitionCharacter();
+  const endpoints = source === undefined && target === undefined ? [] : [source, target];
+  character.transition(context, from, to, "Tornado", progress, 3, 0, 128, 128, 0.6016, ...endpoints);
+  context.assertRestored();
+  assert.equal(context.layer, "outside");
+  assert.ok(character.bodies.every(body => Object.values(body.value).every(Number.isFinite)), "Transition produced a non-finite pose");
+  return { context, character };
+}
+
+for (let from = 0; from < 3; from += 1) {
+  for (let to = 0; to < 3; to += 1) {
+    if (from === to) continue;
+    const label = `${["key", "pound", "heart"][from]} to ${["key", "pound", "heart"][to]}`;
+    // A blended source and explicit target expression detect substitution with
+    // a newly generated default pose at either boundary.
+    const source = Object.freeze(blend(pose(from, 0, 1.2, 1, 7), pose(from, 16, 0.3, 2, 5), 0.37));
+    const target = Object.freeze(pose(to, 4, 0.5, 1, 3));
+
+    test(`tornado ${label}: exact source and target endpoints without input mutation`, () => {
+      const before = structuredClone({ source, target });
+      for (const [progress, form, expected] of [[0, from, source], [1, to, target]]) {
+        const { context, character } = transitionFrame(from, to, progress, source, target);
+        assert.deepEqual(character.bodies, [{ form, value: expected, alpha: 1 }]);
+        assert.ok(context.paints.length > 0, "Endpoint body was blank");
+        assert.ok(context.paints.every(paint => paint.layer === "body"), "Wind remained visible at an endpoint");
+      }
+      assert.deepEqual({ source, target }, before);
+    });
+
+    test(`tornado ${label}: wind surrounds visible artwork and conceals the target until reveal`, () => {
+      for (const progress of [0.30, 0.82]) {
+        const { context, character } = transitionFrame(from, to, progress, source, target);
+        const layers = context.paints.filter(paint => paint.alpha > 0).map(paint => paint.layer);
+        const groups = layers.filter((layer, index) => index === 0 || layer !== layers[index - 1]);
+        assert.deepEqual(groups, ["rear wind", "body", "front wind"], `Incorrect occlusion at ${progress}`);
+        assert.equal(character.bodies.length, 1);
+        assert.equal(character.bodies[0].form, progress < 0.5 ? from : to);
+      }
+      for (const progress of [0, 0.1, 0.3, 0.479, 0.5, 0.6, 0.719999, 0.72]) {
+        const { context, character } = transitionFrame(from, to, progress, source, target);
+        assert.ok(character.bodies.every(body => body.form !== to), `Target exposed before safe retargeting ended at ${progress}`);
+        if (progress >= 0.5) {
+          assert.equal(character.bodies.length, 0, "Concealed midpoint still draws a character");
+          assert.ok(context.paints.some(paint => paint.alpha > 0), "Concealed midpoint is a blank frame");
+        }
+      }
+    });
+
+    test(`tornado ${label}: every sampled frame is finite and restores canvas state`, () => {
+      for (let frame = 0; frame <= 42; frame += 1) transitionFrame(from, to, frame / 42, source, target);
+    });
+  }
+}
+
+test("tornado keeps the original call contract when endpoint poses are omitted", () => {
+  for (const [progress, form] of [[0, 0], [1, 2]]) {
+    const { character } = transitionFrame(0, 2, progress);
+    assert.deepEqual(character.bodies, [{ form, value: pose(form, 3, 0.5, 0), alpha: 1 }]);
+  }
+});

@@ -22,7 +22,7 @@ export interface BuddyCharacterProps {
 
 type Options = Required<Pick<BuddyCharacterProps, "form" | "action" | "expression" | "animated" | "continuousIdle" | "playfulIdle">>;
 type Engine = typeof import("./buddy-engine.js");
-type FormChange = { from: number; to: number; elapsed: number; action: number };
+type FormChange = { from: number; to: number; elapsed: number; action: number; sourcePose: Pose; targetPose: Pose };
 
 const formIndices: Record<BuddyForm, number> = { property: 0, investment: 1, support: 2 };
 const actionIndices: Record<BuddyAction, number> = { idle: 0, wave: 1, listen: 2, think: 3, talk: 4, explain: 5, reassure: 10, approve: 19 };
@@ -186,7 +186,7 @@ export function BuddyCharacter({
       const scale = Math.min(width, height) / 400 * 0.94;
       if (change) {
         rig.transition(context!, change.from, change.to, "Tornado", change.elapsed / transitionSeconds,
-          change.action, 0, width / 2, height / 2, scale);
+          change.action, 0, width / 2, height / 2, scale, change.sourcePose, change.targetPose);
       } else {
         lastPose = currentPose();
         if (lastPose) rig.draw(context!, currentForm, lastPose, width / 2, height / 2, scale);
@@ -242,8 +242,12 @@ export function BuddyCharacter({
       idleStep = next;
     }
 
-    function beginFormChange(to: number) {
-      change = { from: currentForm, to, elapsed: 0, action: currentAction };
+    function beginFormChange(to: number, sourcePose = currentPose()!) {
+      change = {
+        from: currentForm, to, elapsed: 0, action: currentAction,
+        sourcePose,
+        targetPose: engine!.pose(to, actionIndices[options.action], 0.5, options.playfulIdle ? 1 : 0, expressionIndices[options.expression]),
+      };
       blendingFrom = undefined;
       completed = false;
     }
@@ -256,7 +260,7 @@ export function BuddyCharacter({
       if (change) {
         change.elapsed += delta;
         if (change.elapsed >= transitionSeconds) {
-          const revealed = engine!.pose(change.to, change.action, 0.5, 0);
+          const revealed = change.targetPose;
           currentForm = change.to;
           change = undefined;
           setAction(actionIndices[options.action], expressionIndices[options.expression], revealed);
@@ -307,8 +311,11 @@ export function BuddyCharacter({
         if (change) {
           // Retarget only while artwork is concealed; an already revealed form finishes first.
           const progress = change.elapsed / transitionSeconds;
-          if (progress < 0.72) change.to = target;
-        } else if (target !== currentForm) beginFormChange(target);
+          if (progress < 0.72) {
+            change.to = target;
+            change.targetPose = engine.pose(target, actionIndices[next.action], 0.5, next.playfulIdle ? 1 : 0, expressionIndices[next.expression]);
+          }
+        } else if (target !== currentForm) beginFormChange(target, lastPose);
       }
       if (gestureChanged && !change) setAction(actionIndices[next.action], expressionIndices[next.expression]);
       if (!previous.animated && next.animated && !change) {

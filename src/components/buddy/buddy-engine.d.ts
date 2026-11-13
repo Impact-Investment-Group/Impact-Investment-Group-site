@@ -23,5 +23,7 @@ export class Character {
     x: number,
     y: number,
     scale: number,
+    sourcePose?: Pose,
+    targetPose?: Pose,
   ): void;
 }
