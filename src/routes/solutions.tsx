@@ -2,6 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BuddySlot } from "@/components/buddy/buddy-slot";
 import {
   dealLayers,
   dealLayersKicker,
@@ -11,7 +12,7 @@ import {
   productPitch,
   solutionHero,
 } from "@/content/solutions";
-import { SIZES_FULL_BLEED, SIZES_THIRD_FROM_TABLET, variantSrcSet } from "@/lib/responsive-image";
+import { SIZES_FULL_BLEED, variantSrcSet } from "@/lib/responsive-image";
 import "./editorial-friendly.css";
 
 export const Route = createFileRoute("/solutions")({
@@ -221,7 +222,7 @@ function SolutionsPage() {
               sizes={SIZES_FULL_BLEED}
             />
             <div className="friendly-solution-photo-guide" aria-hidden="true">
-              <img src="/images/solution/trio.webp" alt="" width={829} height={620} />
+              <BuddySlot form="property" action="wave" className="aspect-4/3" />
             </div>
           </div>
         </div>
@@ -268,17 +269,9 @@ function SolutionsPage() {
             </Link>
           </div>
           <div className="friendly-product-portrait">
-            <img
-              src="/images/solution/trio.webp"
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              width={829}
-              height={620}
-              className="friendly-product-guides w-full object-contain"
-              srcSet={variantSrcSet("/images/solution/trio.webp")}
-              sizes={SIZES_THIRD_FROM_TABLET}
-            />
+            <div className="friendly-product-guides">
+              <BuddySlot form="investment" action="explain" className="aspect-4/3" />
+            </div>
           </div>
         </div>
       </section>

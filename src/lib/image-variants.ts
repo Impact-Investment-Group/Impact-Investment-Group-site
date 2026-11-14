@@ -284,11 +284,6 @@ export const IMAGE_VARIANTS: Record<string, { steps: number[]; width: number; he
     width: 846,
     height: 620,
   },
-  "/images/solution/trio.webp": {
-    steps: [400, 640],
-    width: 829,
-    height: 620,
-  },
   "/images/steps/assess.webp": {
     steps: [],
     width: 360,
