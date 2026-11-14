@@ -167,7 +167,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: website-experience-${{ github.sha }}
-          path: docs/screenshots/wave909
+          path: |
+            docs/screenshots/wave909
+            docs/screenshots/wave412
           retention-days: 7
 
       - name: Preserve ecosystem evidence
