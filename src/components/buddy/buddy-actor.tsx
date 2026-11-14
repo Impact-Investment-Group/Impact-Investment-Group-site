@@ -35,8 +35,12 @@ export function BuddyActor() {
 
     function measure() {
       dirty = false;
-      if (node.closest('[aria-hidden="true"], [inert]')) {
-        // Radix hides the page behind another modal. Removing its box also
+      const visibleModal = Array.from(document.querySelectorAll<HTMLElement>('[aria-modal="true"]'))
+        .some(modal => !modal.contains(node) && !modal.closest('[aria-hidden="true"], [inert]') &&
+          modal.getClientRects().length > 0 && window.getComputedStyle(modal).visibility !== "hidden");
+      if (node.closest('[aria-hidden="true"], [inert]') || visibleModal) {
+        // Include custom dialogs such as the Site menu, which do not mark the
+        // background inert. Buddy's own chat is nonmodal. Removing its box also
         // suspends the renderer's IntersectionObserver clock without resetting
         // its pose, performance or existing canvas instance.
         node.style.display = "none";
@@ -103,7 +107,7 @@ export function BuddyActor() {
     resize.observe(document.documentElement);
     const mutations = new MutationObserver(update);
     mutations.observe(document.body, { childList: true, subtree: true, attributes: true,
-      attributeFilter: ["data-buddy-slot-form", "data-buddy-slot-action", "data-buddy-slot-expression", "aria-hidden", "inert"] });
+      attributeFilter: ["data-buddy-slot-form", "data-buddy-slot-action", "data-buddy-slot-expression", "aria-hidden", "aria-modal", "hidden", "inert"] });
     window.addEventListener("scroll", update, { passive: true, capture: true });
     window.addEventListener("resize", update);
     window.addEventListener("animationend", update, true);
