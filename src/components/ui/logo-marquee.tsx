@@ -45,9 +45,10 @@ export function LogoMarquee({
   /** Keep the lane's reading speed consistent as its catalogue grows. */
   durationSeconds?: number;
 }) {
-  // Duplicated once so the translate loops seamlessly. Keys carry the index
-  // because every logo appears twice.
-  const lane = [...items, ...items];
+  const [unavailableLogos, setUnavailableLogos] = useState<ReadonlySet<string>>(new Set());
+  const visibleItems = items.filter((item) => item.logo?.trim() && !unavailableLogos.has(item.logo));
+  // Keep both copies and the accessible list limited to usable logo images.
+  const lane = [...visibleItems, ...visibleItems];
   const { ref, playing } = useVisibleMotion<HTMLDivElement>();
   const [interactive, setInteractive] = useState(false);
 
@@ -69,7 +70,7 @@ export function LogoMarquee({
     }, { root: ref.current, rootMargin: "0px 1200px", threshold: 0 });
     images.forEach((image) => observer.observe(image));
     return () => observer.disconnect();
-  }, [progressiveImages, items, ref]);
+  }, [progressiveImages, items, unavailableLogos, ref]);
 
   return (
     <div
@@ -99,7 +100,7 @@ export function LogoMarquee({
             // The second lane exists only to make the loop seamless. Under
             // reduced motion the track wraps instead of scrolling, so the
             // clone is hidden or every council would appear twice.
-            {...(i >= items.length ? { "data-clone": "true" } : null)}
+            {...(i >= visibleItems.length ? { "data-clone": "true" } : null)}
             title={item.blurb ? `${item.name}: ${item.blurb}` : item.name}
             className={cn(
               /* The hairline is wave 412's, and it is what keeps a white
@@ -162,11 +163,13 @@ export function LogoMarquee({
               loading={progressiveImages ? "lazy" : "eager"}
               fetchPriority="low"
               decoding="async"
+              onError={() => {
+                setUnavailableLogos((current) => new Set(current).add(item.logo!));
+              }}
               className={cn("object-contain", imgClassName ?? "h-full w-auto max-w-[9rem]")}
               width={item.artwork?.w ?? intrinsic(item.logo)?.width}
               height={item.artwork?.h ?? intrinsic(item.logo)?.height}
             />}
-            {!item.logo && <span className="whitespace-normal text-center text-sm font-semibold leading-tight text-ink">{item.name}</span>}
           </span>
         ))}
       </div>
@@ -174,7 +177,7 @@ export function LogoMarquee({
       {/* The marquee is decoration; this is the content. */}
       <ul className="sr-only">
         <li>{label}</li>
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <li key={item.name}>{item.name}{item.blurb ? `: ${item.blurb}` : ""}</li>
         ))}
       </ul>

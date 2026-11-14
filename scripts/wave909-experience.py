@@ -25,7 +25,7 @@ paths += partners + ["/register/" + role for role in roles] + ["/this-route-does
 
 
 stock_snapshot = json.loads((ROOT / "src/data/public-property-stock.json").read_text(encoding="utf-8"))
-data_providers = json.loads((ROOT / "scripts/fixtures/data-service-inventory.json").read_text(encoding="utf-8"))["providers"]
+data_providers = [provider for provider in json.loads((ROOT / "scripts/fixtures/data-service-inventory.json").read_text(encoding="utf-8"))["providers"] if provider.get("logo")]
 stock_fixture = {"as_of": "2026-11-05T09:00:00Z", "total": 4321, "regions": {"North West": {"count": 4000}, "London": {"count": 231}, "Northern Ireland": {"count": 0}, "Unmapped": {"count": 90}}, "basis": "Demonstration aggregate for browser verification."}
 charity_pledge = "10% of all profits made go to Metro World Child UK to bring hope and joy to children today and change lives for tomorrow."
 charity_capture_style = ".site-header,.page-outline,.back-to-top{visibility:hidden!important}"
@@ -557,6 +557,8 @@ with sync_playwright() as pw:
             clones = lane.locator(".logo-marquee__track > [data-clone]")
             expect(originals).to_have_count(len(data_providers))
             expect(clones).to_have_count(len(data_providers))
+            expect(originals.locator("img")).to_have_count(len(data_providers))
+            check(originals.evaluate_all("nodes => nodes.every(node => node.textContent.trim() === '')"), "Data carousel contains a text-only provider")
             expected_credits = [provider["name"] + ": " + provider["blurb"] for provider in data_providers]
             check(originals.evaluate_all("nodes => nodes.map(n => n.title)") == expected_credits, "Data providers do not match the verified catalogue")
             check(lane.locator("ul li").all_text_contents()[1:] == expected_credits, "Data provider descriptions are not accessible")

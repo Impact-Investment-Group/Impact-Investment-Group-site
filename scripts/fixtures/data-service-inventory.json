@@ -7,20 +7,16 @@
     "Three demand datasets have provenance-pending status; no new source or figures are invented for them.",
     "Google Places/Street View and PlanIt need readiness evidence before being represented as active.",
     "Ordnance Survey credit is for evidenced open datasets, not the optional paid OS Places API.",
-    "RQIA has no acquired dataset in the mapped taxonomy. Infrastructure and AI-model providers are outside this UK-data section."
+    "RQIA has no acquired dataset in the mapped taxonomy. Infrastructure and AI-model providers are outside this UK-data section.",
+    "The homepage displays only verified logo images. Providers without usable artwork remain documented here but are omitted from the carousel and its accessible list."
   ],
   "providers": [
     {
       "id": "land-registry",
       "name": "HM Land Registry",
       "blurb": "Sold prices and price-paid comparables",
-      "logo": "/images/logos/data/hm-land-registry.svg",
-      "artwork": {
-        "w": 440,
-        "h": 200
-      },
       "evidence": "registry.py:135",
-      "presentation": "logo"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "ons",
@@ -38,10 +34,10 @@
       "id": "postcodes-io",
       "name": "postcodes.io",
       "blurb": "Postcode validation and geocoding",
-      "logo": "/images/logos/data/postcodes-io.svg",
+      "logo": "/images/logos/data/postcodes-io-official.png",
       "artwork": {
-        "w": 440,
-        "h": 200
+        "w": 1024,
+        "h": 1024
       },
       "evidence": "services/parity_enrichment.py:261-304",
       "presentation": "logo"
@@ -50,10 +46,10 @@
       "id": "openstreetmap",
       "name": "OpenStreetMap",
       "blurb": "Walkable amenities around a home",
-      "logo": "/images/logos/data/openstreetmap.svg",
+      "logo": "/images/logos/data/openstreetmap-official.svg",
       "artwork": {
-        "w": 440,
-        "h": 200
+        "w": 256,
+        "h": 256
       },
       "evidence": "registry.py:312",
       "presentation": "logo"
@@ -62,13 +58,8 @@
       "id": "epc-register",
       "name": "Energy Performance Register",
       "blurb": "Energy ratings and floor area",
-      "logo": "/images/logos/data/epc-register.svg",
-      "artwork": {
-        "w": 440,
-        "h": 200
-      },
       "evidence": "registry.py:450",
-      "presentation": "logo"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "zoopla",
@@ -111,56 +102,56 @@
       "name": "Planning Data",
       "blurb": "Planning constraints and designations",
       "evidence": "registry.py:140,147,200",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "environment-agency",
       "name": "Environment Agency",
       "blurb": "Flood warnings and flood zones",
       "evidence": "registry.py:187,226",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "sepa",
       "name": "Scottish Environment Protection Agency",
       "blurb": "Scottish flood maps",
       "evidence": "registry.py:263",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "mining-remediation-authority",
       "name": "Mining Remediation Authority",
       "blurb": "Coal mining risk information",
       "evidence": "registry.py:247; property_check.py:246; formerly Coal Authority",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "police-uk",
       "name": "police.uk",
       "blurb": "Local crime information",
       "evidence": "registry.py:279",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "department-for-transport",
       "name": "Department for Transport",
       "blurb": "Public transport access points (NaPTAN)",
       "evidence": "registry.py:285; property_check.py:452,523",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "nhs-england",
       "name": "NHS England",
       "blurb": "Health services and hospital discharge statistics",
       "evidence": "registry.py:291; demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "department-for-education",
       "name": "Department for Education",
       "blurb": "Schools and children statistics",
       "evidence": "registry.py:296; property_check.py:451,522",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "bank-of-england",
@@ -179,56 +170,56 @@
       "name": "Historic England",
       "blurb": "Heritage and listed-building information",
       "evidence": "registry.py:307",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "mhclg",
       "name": "Ministry of Housing, Communities and Local Government",
       "blurb": "Housing need and homelessness statistics",
       "evidence": "registry.py:318; demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "valuation-office-agency",
       "name": "Valuation Office Agency",
       "blurb": "Local Housing Allowance and rental areas",
       "evidence": "registry.py:344,355",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "dwp",
       "name": "Department for Work and Pensions",
       "blurb": "Benefit and income statistics",
       "evidence": "registry.py:344; demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "hmrc",
       "name": "HM Revenue & Customs",
       "blurb": "Property tax and household income datasets",
       "evidence": "registry.py:365; demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "revenue-scotland",
       "name": "Revenue Scotland",
       "blurb": "Scottish property tax information",
       "evidence": "registry.py:381",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "welsh-revenue-authority",
       "name": "Welsh Revenue Authority",
       "blurb": "Welsh property tax information",
       "evidence": "registry.py:395",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "nomis",
       "name": "Nomis",
       "blurb": "Population and labour-market statistics",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "cqc",
@@ -247,117 +238,112 @@
       "name": "Care Inspectorate",
       "blurb": "Scottish care-service registrations",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "care-inspectorate-wales",
       "name": "Care Inspectorate Wales",
       "blurb": "Welsh care-service registrations",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "ofsted",
       "name": "Ofsted",
       "blurb": "Children's homes and supported accommodation statistics",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "dhsc",
       "name": "Department of Health and Social Care",
       "blurb": "Adult support and care fee statistics",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "regulator-social-housing",
       "name": "Regulator of Social Housing",
       "blurb": "Supported-housing stock statistics",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "companies-house",
       "name": "Companies House",
       "blurb": "Published company information",
-      "logo": "/images/logos/data/companies-house.svg",
-      "artwork": {
-        "w": 440,
-        "h": 200
-      },
       "evidence": "public demand provenance; downloaded bulk data, not keyed API",
-      "presentation": "logo"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "welsh-government",
       "name": "Welsh Government / StatsWales",
       "blurb": "Welsh housing and deprivation statistics",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "scottish-government",
       "name": "Scottish Government",
       "blurb": "Scottish housing and deprivation statistics",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "communities-ni",
       "name": "Department for Communities Northern Ireland",
       "blurb": "Northern Ireland housing statistics",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "nihe",
       "name": "Northern Ireland Housing Executive",
       "blurb": "Housing waiting-list statistics",
       "evidence": "public demand provenance",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "registers-of-scotland",
       "name": "Registers of Scotland",
       "blurb": "Scottish house-price data",
       "evidence": "data/ppd_medians.source.json",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "land-property-services",
       "name": "Land & Property Services Northern Ireland",
       "blurb": "Northern Ireland house-price data",
       "evidence": "data/ppd_medians.source.json",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "nisra",
       "name": "Northern Ireland Statistics and Research Agency",
       "blurb": "Northern Ireland statistical contributions",
       "evidence": "data/ppd_medians.source.json",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "ordnance-survey",
       "name": "Ordnance Survey",
       "blurb": "Open address, place and boundary data",
       "evidence": "services/free_address.py; data/uk_gazetteer.source.json",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "royal-mail",
       "name": "Royal Mail",
       "blurb": "Upstream postcode reference data",
       "evidence": "data/uk_gazetteer.source.json; data/reference/uk_county_lookup.source.json",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     },
     {
       "id": "ubdc",
       "name": "Urban Big Data Centre, University of Glasgow",
       "blurb": "Postcode-to-rental-area lookup",
       "evidence": "data/outcode_brma.source.json",
-      "presentation": "publisher name"
+      "presentation": "omitted: no verified logo artwork"
     }
   ]
 }

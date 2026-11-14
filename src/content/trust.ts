@@ -146,18 +146,13 @@ export interface DataSource extends LogoCredit {
 /** Verified direct services and upstream publishers, documented in
  * scripts/fixtures/data-service-inventory.json. Optional, unverified APIs are not credited.
  * Companies House contributes published bulk data independently of its keyed API.
- * A plain-name tile is used where no approved standalone brand artwork is available.
+ * The carousel includes only providers with verified logo artwork.
  */
-export const dataSources: DataSource[] = [
+const dataSourceInventory: DataSource[] = [
   {
     "id": "land-registry",
     "name": "HM Land Registry",
-    "blurb": "Sold prices and price-paid comparables",
-    "logo": "/images/logos/data/hm-land-registry.svg",
-    "artwork": {
-      "w": 440,
-      "h": 200
-    }
+    "blurb": "Sold prices and price-paid comparables"
   },
   {
     "id": "ons",
@@ -173,31 +168,26 @@ export const dataSources: DataSource[] = [
     "id": "postcodes-io",
     "name": "postcodes.io",
     "blurb": "Postcode validation and geocoding",
-    "logo": "/images/logos/data/postcodes-io.svg",
+    "logo": "/images/logos/data/postcodes-io-official.png",
     "artwork": {
-      "w": 440,
-      "h": 200
+      "w": 1024,
+      "h": 1024
     }
   },
   {
     "id": "openstreetmap",
     "name": "OpenStreetMap",
     "blurb": "Walkable amenities around a home",
-    "logo": "/images/logos/data/openstreetmap.svg",
+    "logo": "/images/logos/data/openstreetmap-official.svg",
     "artwork": {
-      "w": 440,
-      "h": 200
+      "w": 256,
+      "h": 256
     }
   },
   {
     "id": "epc-register",
     "name": "Energy Performance Register",
-    "blurb": "Energy ratings and floor area",
-    "logo": "/images/logos/data/epc-register.svg",
-    "artwork": {
-      "w": 440,
-      "h": 200
-    }
+    "blurb": "Energy ratings and floor area"
   },
   {
     "id": "zoopla",
@@ -357,12 +347,7 @@ export const dataSources: DataSource[] = [
   {
     "id": "companies-house",
     "name": "Companies House",
-    "blurb": "Published company information",
-    "logo": "/images/logos/data/companies-house.svg",
-    "artwork": {
-      "w": 440,
-      "h": 200
-    }
+    "blurb": "Published company information"
   },
   {
     "id": "welsh-government",
@@ -415,6 +400,9 @@ export const dataSources: DataSource[] = [
     "blurb": "Postcode-to-rental-area lookup"
   }
 ];
+
+// Keep provenance available in the inventory without rendering text-only credits.
+export const dataSources = dataSourceInventory.filter((source) => Boolean(source.logo));
 
 export const dataSourcesEyebrow = "Powered by authoritative UK data";
 

@@ -22,7 +22,8 @@ LANE = f"{PANEL} .logo-marquee"
 TRACK = f"{LANE} .logo-marquee__track"
 ORIGINAL = f"{TRACK} > :not([data-clone])"
 CLONE = f"{TRACK} > [data-clone]"
-PROVIDERS = json.loads((ROOT / "scripts/fixtures/data-service-inventory.json").read_text(encoding="utf-8"))["providers"]
+ALL_PROVIDERS = json.loads((ROOT / "scripts/fixtures/data-service-inventory.json").read_text(encoding="utf-8"))["providers"]
+PROVIDERS = [provider for provider in ALL_PROVIDERS if provider.get("logo")]
 DATA_LANE = "#data-sources .logo-marquee"
 DATA_TRACK = f"{DATA_LANE} .logo-marquee__track"
 REPORT = {"checks": [], "failures": [], "authorities": 382, "data_sources": len(PROVIDERS), "measurements": {}}
@@ -54,8 +55,9 @@ def catalogue_assets():
             image.verify()
         total += built.stat().st_size
     REPORT["measurements"]["all_logo_bytes"] = total
-    assert len(PROVIDERS) == len({provider["id"] for provider in PROVIDERS}) == 42
-    for provider in PROVIDERS:
+    assert len(ALL_PROVIDERS) == len({provider["id"] for provider in ALL_PROVIDERS}) == 42
+    assert len(PROVIDERS) > 0
+    for provider in ALL_PROVIDERS:
         assert provider["evidence"] and provider["name"] and provider["blurb"]
         if provider.get("logo"):
             source = ROOT / "public" / provider["logo"].lstrip("/")
@@ -256,19 +258,21 @@ def data_contract(page):
     expect(lane).to_have_attribute("aria-label", "Powered by authoritative UK data")
     originals = page.locator(f"{DATA_TRACK} > :not([data-clone])")
     clones = page.locator(f"{DATA_TRACK} > [data-clone]")
-    expect(originals).to_have_count(42)
-    expect(clones).to_have_count(42)
+    expect(originals).to_have_count(len(PROVIDERS))
+    expect(clones).to_have_count(len(PROVIDERS))
     expected = [provider["name"] + ": " + provider["blurb"] for provider in PROVIDERS]
     assert originals.evaluate_all("nodes => nodes.map(node => node.title)") == expected
     assert clones.evaluate_all("nodes => nodes.map(node => node.title)") == expected
-    assert lane.locator("ul li").all_text_contents()[1:] == expected, "Every provider and dataset description must remain accessible"
+    assert lane.locator("ul li").all_text_contents()[1:] == expected, "Every displayed logo and dataset description must remain accessible"
     expected_images = [provider["logo"] for provider in PROVIDERS if provider.get("logo")]
     assert originals.locator("img").evaluate_all("images => images.map(image => image.getAttribute('src'))") == expected_images
     boxes = originals.evaluate_all("nodes => nodes.map(node => {const b=node.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height}})")
     assert max(box["y"] for box in boxes) - min(box["y"] for box in boxes) < 1, "Data credits must stay in one row"
     width, height = (256, 128) if page.viewport_size["width"] >= 640 else (224, 112)
     assert all(abs(box["w"] - width) < 1 and abs(box["h"] - height) < 1 for box in boxes), "Large, consistent data plates regressed"
-    assert originals.locator("span").evaluate_all("nodes => nodes.every(node => node.scrollWidth <= node.clientWidth+1 && node.scrollHeight <= node.clientHeight+1)"), "Publisher names overflow their plates"
+    assert originals.evaluate_all("nodes => nodes.every(node => node.children.length === 1 && node.firstElementChild.tagName === 'IMG' && node.textContent.trim() === '')"), "Every provider tile must contain only a logo image"
+    omitted = {provider["name"] for provider in ALL_PROVIDERS if not provider.get("logo")}
+    assert not any(credit.split(": ")[0] in omitted for credit in lane.locator("ul li").all_text_contents()[1:]), "Providers without logos must be omitted"
     expect(section).to_contain_text("Data used under licence. These publishers do not endorse this platform.")
     expect(section).to_contain_text("OpenStreetMap contributors")
     expect(section).to_contain_text("ODbL")
@@ -304,12 +308,12 @@ def data_journey(page, touch=False, static=False, no_js=False):
         for index, provider in enumerate(PROVIDERS):
             if not provider.get("logo"):
                 continue
-            track.evaluate("""(node,index) => {
+            track.evaluate("""(node,{index,count}) => {
               const a=node.getAnimations()[0], first=node.children[0].getBoundingClientRect();
-              const distance=node.children[42].getBoundingClientRect().x-first.x;
+              const distance=node.children[count].getBoundingClientRect().x-first.x;
               const offset=node.children[index].getBoundingClientRect().x-first.x;
               a.currentTime=a.effect.getTiming().duration*offset/distance;
-            }""", index)
+            }""", {"index": index, "count": len(PROVIDERS)})
             image = page.locator(f"{DATA_TRACK} > :not([data-clone])").nth(index).locator("img")
             expect(image).to_be_in_viewport()
             expect(image).to_have_js_property("complete", True, timeout=30000)
@@ -321,9 +325,25 @@ def data_journey(page, touch=False, static=False, no_js=False):
     overflow(page)
 
 
+def missing_data_logo(page):
+    unavailable = PROVIDERS[0]
+    page.route(f"**{unavailable['logo']}", lambda route: route.fulfill(status=404, body=""))
+    home(page, DATA_LANE)
+    originals = page.locator(f"{DATA_TRACK} > :not([data-clone])")
+    clones = page.locator(f"{DATA_TRACK} > [data-clone]")
+    expect(originals).to_have_count(len(PROVIDERS) - 1)
+    expect(clones).to_have_count(len(PROVIDERS) - 1)
+    expected = [provider["name"] + ": " + provider["blurb"] for provider in PROVIDERS[1:]]
+    assert originals.evaluate_all("nodes => nodes.map(node => node.title)") == expected
+    assert clones.evaluate_all("nodes => nodes.map(node => node.title)") == expected
+    assert page.locator(DATA_LANE).locator("ul li").all_text_contents()[1:] == expected
+    assert originals.evaluate_all("nodes => nodes.every(node => node.children.length === 1 && node.firstElementChild.tagName === 'IMG' && node.textContent.trim() === '')"), "A missing logo must not become a text tile or empty plate"
+    overflow(page)
+
+
 try:
     catalogue_assets()
-    REPORT["checks"].append("all382-authority-and42-provider-built-assets")
+    REPORT["checks"].append("all-authority-and-visible-provider-built-assets")
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
         cases = [
@@ -333,8 +353,9 @@ try:
             ("reduced-motion-small-mobile", scrollable_journey, {"viewport": {"width": 320, "height": 740}, "reduced_motion": "reduce"}),
             ("no-js-all382-mobile", lambda page: scrollable_journey(page, no_js=True), {"viewport": {"width": 390, "height": 844}, "java_script_enabled": False}),
             ("no-js-all382-desktop", lambda page: scrollable_journey(page, no_js=True), {"viewport": {"width": 1280, "height": 900}, "java_script_enabled": False}),
-            ("data-all42-desktop", data_journey, {"viewport": {"width": 1280, "height": 900}}),
-            ("data-all42-mobile", lambda page: data_journey(page, touch=True), {"viewport": {"width": 390, "height": 844}, "has_touch": True, "is_mobile": True}),
+            ("data-missing-logo-omitted", missing_data_logo, {"viewport": {"width": 1280, "height": 900}}),
+            ("data-logo-images-desktop", data_journey, {"viewport": {"width": 1280, "height": 900}}),
+            ("data-logo-images-mobile", lambda page: data_journey(page, touch=True), {"viewport": {"width": 390, "height": 844}, "has_touch": True, "is_mobile": True}),
             ("data-reduced-motion-mobile", lambda page: data_journey(page, static=True), {"viewport": {"width": 320, "height": 740}, "reduced_motion": "reduce"}),
             ("data-no-js-mobile", lambda page: data_journey(page, static=True, no_js=True), {"viewport": {"width": 390, "height": 844}, "java_script_enabled": False}),
             ("data-no-js-desktop", lambda page: data_journey(page, static=True, no_js=True), {"viewport": {"width": 1280, "height": 900}, "java_script_enabled": False}),
