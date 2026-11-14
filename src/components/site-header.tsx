@@ -223,7 +223,9 @@ export function SiteHeader() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpen(false);
-        triggerRef.current?.focus();
+        // The overflow lock is still applied until this effect cleans up.
+        // Focusing the sticky header must not scroll to its document position.
+        triggerRef.current?.focus({ preventScroll: true });
         return;
       }
       if (event.key !== "Tab") return;
@@ -540,7 +542,7 @@ export function SiteHeader() {
             aria-hidden="true"
             onClick={() => {
               setOpen(false);
-              triggerRef.current?.focus();
+              triggerRef.current?.focus({ preventScroll: true });
             }}
             className="drawer-scrim fixed inset-0 z-50 cursor-pointer bg-ink/40 xl:hidden"
           />
@@ -559,7 +561,7 @@ export function SiteHeader() {
                 aria-label="Close menu"
                 onClick={() => {
                   setOpen(false);
-                  triggerRef.current?.focus();
+                  triggerRef.current?.focus({ preventScroll: true });
                 }}
                 className="press inline-grid size-11 cursor-pointer place-items-center rounded-full border border-rule text-ink"
               >

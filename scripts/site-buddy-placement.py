@@ -142,19 +142,31 @@ with sync_playwright() as playwright:
                     # This custom modal leaves the page mounted without the
                     # aria-hidden/inert attributes supplied by Radix dialogs.
                     menu_trigger = page.get_by_role("button", name="Open menu", exact=True)
-                    menu_trigger.click()
-                    expect(page.get_by_role("dialog", name="Site menu", exact=True)).to_be_visible()
-                    expect(page.locator("[data-buddy-actor]")).to_be_hidden()
-                    expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "modal")
-                    expect(page.locator("[data-buddy-actor] [data-buddy-form]")).to_have_attribute("data-buddy-motion", "off")
-                    assert page.evaluate("window.__buddyActorCanvas === document.querySelector('[data-buddy-actor] canvas')"), "The Site menu replaced Buddy"
-                    page.keyboard.press("Escape")
-                    expect(page.get_by_role("dialog", name="Site menu", exact=True)).to_have_count(0)
-                    expect(menu_trigger).to_be_focused()
-                    settled_in_slot(page, "page")
-                    expect(page.locator("[data-buddy-actor]")).to_be_visible()
-                    expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "none")
-                    one_actor(page, "page")
+                    menu_scroll = page.evaluate("scrollY")
+                    assert menu_scroll > 0, "The menu journey must start at the lower page illustration"
+                    for close_method in ("escape", "button", "scrim"):
+                        menu_trigger.click()
+                        menu = page.get_by_role("dialog", name="Site menu", exact=True)
+                        expect(menu).to_be_visible()
+                        assert abs(page.evaluate("scrollY") - menu_scroll) < 1, "Opening the Site menu moved the reading position"
+                        expect(page.locator("[data-buddy-actor]")).to_be_hidden()
+                        expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "modal")
+                        expect(page.locator("[data-buddy-actor] [data-buddy-form]")).to_have_attribute("data-buddy-motion", "off")
+                        assert page.evaluate("window.__buddyActorCanvas === document.querySelector('[data-buddy-actor] canvas')"), "The Site menu replaced Buddy"
+                        if close_method == "escape":
+                            page.keyboard.press("Escape")
+                        elif close_method == "button":
+                            menu.get_by_role("button", name="Close menu", exact=True).click()
+                        else:
+                            page.locator(".drawer-scrim").click(position={"x": 12, "y": 422})
+                        expect(menu).to_have_count(0)
+                        expect(menu_trigger).to_be_focused()
+                        assert abs(page.evaluate("scrollY") - menu_scroll) < 1, f"Closing the Site menu by {close_method} moved the reading position"
+                        settled_in_slot(page, "page")
+                        expect(solution_slots.nth(1)).to_have_attribute("data-buddy-occupied", "true")
+                        expect(page.locator("[data-buddy-actor]")).to_be_visible()
+                        expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "none")
+                        one_actor(page, "page")
                 page.goto(BASE + "/partners", wait_until="networkidle")
                 page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
                 page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
