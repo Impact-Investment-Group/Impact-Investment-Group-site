@@ -15,4 +15,10 @@ Postcodes.io and OpenStreetMap use files supplied by their own websites. The rec
 
 The existing CI browser checks now verify image-only tiles, the displayed subset of the provider inventory, no empty fallback plates, accessible labels, both carousel copies, image decoding, mobile and desktop layouts, reduced motion and JavaScript-disabled views. A missing-image scenario returns an actual HTTP 404 for a displayed provider and verifies its removal.
 
-Local builds and test suites were not run, following the project's CI-only gate rule. GitHub Actions and live verification are pending publication.
+Local builds and test suites were not run, following the project's CI-only gate rule. [GitHub Actions run 43639744679](https://github.com/Impact-Investment-Group/Impact-Investment-Group-site/actions/runs/43639744679) passed both build and deployment for `15c2e1f11a82d0ea880069cbd4ee34c1234605c8`. Its authority/data carousel report records all thirteen scenarios passing, with no failures and eight displayed data providers.
+
+The published homepage was inspected in a browser. All eight original provider tiles contained images and no visible text fallback; the matching accessible names and descriptions remained. The visual strip showed the provider artwork with the existing heading, colours and attribution.
+
+CI screenshots and the carousel report are saved outside Git at `C:/Users/Israel/Claude/Projects/Impact Investment Group/05-Artifacts/data-source-logos-2026-11-14/`.
+
+The Context Library's Design System, Live State and History Ledger entries were published in commit `237963b38763b9c7c95cff84d5077b0d264a5720`, based on its current remote head with an isolated temporary index. The existing local context branch and unrelated edits were preserved. The lean platform CLAUDE.md has no Current heads block and expressly locates measured heads in Live-State, which was updated instead.
