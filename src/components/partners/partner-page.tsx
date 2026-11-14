@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Info, LifeBuoy, ZoomIn } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { BuddyCharacter, type BuddyForm } from "@/components/buddy/buddy-character";
+import type { BuddyForm } from "@/components/buddy/buddy-character";
+import { BuddySlot } from "@/components/buddy/buddy-slot";
 import { Reveal } from "@/components/ui/reveal";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { PartnerProfile } from "@/content/partners";
@@ -400,7 +401,7 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
           </p>
           <figure className="partner-craft-guides">
             <div className="partner-craft-guides__art flex items-center justify-center">
-              <BuddyCharacter form={partnerBuddyForm(profile)} action="explain" expression="warm"
+              <BuddySlot form={partnerBuddyForm(profile)} action="explain" expression="warm"
                 className="w-[250px] max-w-full [&_img]:size-full! [&_img]:left-0!" />
             </div>
             <figcaption>{presentation.guideLabels.join(" · ")}</figcaption>
@@ -509,7 +510,7 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
                 </p>
               </div>
               <div className="partner-craft-journey__guide" aria-hidden="true">
-                <BuddyCharacter form={partnerBuddyForm(profile)} action="explain" expression="warm"
+                <BuddySlot form={partnerBuddyForm(profile)} action="explain" expression="warm"
                   className="my-auto w-[140px] sm:w-[170px] [&_img]:size-full!" />
               </div>
             </div>

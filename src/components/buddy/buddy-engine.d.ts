@@ -15,7 +15,8 @@ export declare const styles: string[];
 export declare const forms: string[];
 
 export declare class Character {
-  constructor(atlas: HTMLImageElement, hands?: HTMLImageElement);
+  constructor(atlas?: HTMLImageElement, hands?: HTMLImageElement);
+  body(context: CanvasRenderingContext2D, form: number, yaw: number): void;
   draw(context: CanvasRenderingContext2D, form: number, pose: Pose, x: number, y: number, scale?: number, alpha?: number, layers?: DrawLayers): void;
   transition(
     context: CanvasRenderingContext2D,

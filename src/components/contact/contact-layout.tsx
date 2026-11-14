@@ -12,7 +12,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { EnquiryForm } from "@/components/contact/enquiry-form";
-import { BuddyCharacter } from "@/components/buddy/buddy-character";
+import { BuddySlot } from "@/components/buddy/buddy-slot";
 import { contactHero, enquiryRoutes, type EnquiryRouteId } from "@/content/contact";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ export function ContactLayout({
             </h1>
           </div>
           <div className="contact-intro__characters">
-            <BuddyCharacter
+            <BuddySlot
               form={selected === "investor" ? "investment" : selected === "support" ? "support" : "property"}
               action={selected === "support" ? "reassure" : "wave"}
               animated

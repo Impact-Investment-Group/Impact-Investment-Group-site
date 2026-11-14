@@ -54,35 +54,6 @@ const fallbackImages: Record<BuddyForm, string> = {
 const blendSeconds = 0.45;
 export const BUDDY_FORM_CHANGE_MS = TORNADO_DURATION_SECONDS * 1000;
 const transitionSeconds = TORNADO_DURATION_SECONDS;
-let atlasPromise: Promise<HTMLImageElement> | undefined;
-let handsPromise: Promise<HTMLImageElement> | undefined;
-
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.decoding = "async";
-    image.onload = () => { void image.decode().catch(() => undefined).then(() => resolve(image)); };
-    image.onerror = () => reject(new Error("Buddy artwork unavailable"));
-    image.src = src;
-  });
-}
-
-function loadHands(): Promise<HTMLImageElement | undefined> {
-  handsPromise ??= loadImage("/images/buddy/hands-v3.webp");
-  return handsPromise.catch(() => { handsPromise = undefined; return undefined; });
-}
-
-function loadAtlas(): Promise<HTMLImageElement> {
-  if (!atlasPromise) {
-    atlasPromise = loadImage("/images/buddy/atlas-v2.webp").catch((error: unknown) => {
-      atlasPromise = undefined;
-      throw error;
-    });
-  }
-  return atlasPromise;
-}
-
-
 function loadAmbientProps(src: string, signal: AbortSignal): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -106,7 +77,7 @@ function loadAmbientProps(src: string, signal: AbortSignal): Promise<HTMLImageEl
   });
 }
 
-/** Decorative, transparent v2 artwork. Its containing control supplies the accessible name. */
+/** Scalable decorative actor. Its containing control supplies the accessible name. */
 export function BuddyCharacter({
   form = "property",
   action = "idle",
@@ -126,7 +97,7 @@ export function BuddyCharacter({
   const updateRef = useRef<((options: Options, replay: boolean) => void) | null>(null);
   const replayRef = useRef(replayKey);
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
-  const [refinedHands, setRefinedHands] = useState(false);
+
 
   useEffect(() => {
     const container = containerRef.current;
@@ -315,9 +286,11 @@ export function BuddyCharacter({
       if (disposed) return;
       const bounds = canvas!.getBoundingClientRect();
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      characterPixels = container!.getBoundingClientRect().width * ratio;
-      const width = Math.max(1, Math.round(bounds.width * ratio));
-      const height = Math.max(1, Math.round(bounds.height * ratio));
+      // Page travel scales the parent. Keep backing pixels tied to layout size,
+      // so returning from the small chat slot never stretches a tiny bitmap.
+      characterPixels = (container!.clientWidth || container!.getBoundingClientRect().width) * ratio;
+      const width = Math.max(1, Math.round((canvas!.clientWidth || bounds.width) * ratio));
+      const height = Math.max(1, Math.round((canvas!.clientHeight || bounds.height) * ratio));
       if (canvas!.width !== width || canvas!.height !== height) {
         canvas!.width = width;
         canvas!.height = height;
@@ -484,11 +457,11 @@ export function BuddyCharacter({
       if (loading || rig || disposed) return;
       loading = true;
       try {
-        const [module, atlas, hands] = await Promise.all([import("./buddy-rig"), loadAtlas(), loadHands()]);
+        const module = await import("./buddy-rig");
         if (disposed) return;
         engine = module;
-        rig = new module.Character(atlas, hands);
-        setRefinedHands(Boolean(hands));
+        rig = new module.Character();
+
         options = optionsRef.current;
         currentForm = formIndices[options.form];
         setAction(actions[options.action][0], expressionIndices[options.expression], undefined);
@@ -551,7 +524,7 @@ export function BuddyCharacter({
   }, [form, action, expression, animated, continuousIdle, playfulIdle, ambient, replayKey, attention?.x, attention?.y]);
 
   return (
-    <div ref={containerRef} aria-hidden="true" data-buddy-form={form} data-buddy-version="v2-refined" data-buddy-artwork="v2" data-buddy-hands={refinedHands ? "v3" : "v2"} data-buddy-status={status} data-buddy-motion="off" data-buddy-ambient={ambient ? "rest" : "off"}
+    <div ref={containerRef} aria-hidden="true" data-buddy-form={form} data-buddy-version="v4-vector" data-buddy-artwork="vector" data-buddy-hands="vector" data-buddy-status={status} data-buddy-motion="off" data-buddy-ambient={ambient ? "rest" : "off"}
       className={cn("relative isolate aspect-square w-full shrink-0", className)}>
       {status === "failed" && <img src={fallbackImages[form]} alt="" width={1600} height={1600} loading="lazy" decoding="async"
         className="absolute inset-0 h-full w-full object-contain" />}

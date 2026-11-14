@@ -1,6 +1,7 @@
+import { drawBuddyBody, drawBuddyHand, projectBuddyPoint } from "./buddy-art.js";
 import { sampleTornadoSpin, TORNADO_TIMING } from "./buddy-motion.js";
 export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL, TORNADO_TIMING } from "./buddy-motion.js";
-/* Buddy character engine. Approved body and hand artwork with an articulated canvas rig. */
+/* Shared articulated rig with scalable artwork based on the supplied v2 design. */
   const TAU=Math.PI*2, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
   const ease=v=>{v=clamp(v);return v*v*(3-2*v);};
   const mix=(a,b,v)=>a+(b-a)*v;
@@ -11,15 +12,9 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
   const styles=['Calm','Bouncy','Expressive'];
   const forms=['Key','£ sign','Heart'];
   const rects=[[103,10,240,439],[461,27,309,416],[836,73,356,345],[79,483,294,318],[515,514,219,285],[919,470,210,331],[119,863,221,333],[462,925,318,259],[873,869,298,327]];
-  // Generated hands-v3, measured against the approved transparent hand sheet.
-  // Cuff pivots are crop-relative; a shared scale keeps all six wrists consistent.
-  const handRects=[[99,62,363,402],[623,113,262,351],[1134,56,265,408],[150,563,278,407],[566,623,392,340],[1095,572,300,389]];
-  const handPivots=[[.482093664,.950248756],[.427480916,.943019943],[.418867925,.950980392],[.453237410,.943488943],[.303571429,.932352941],[.54,.046272494]];
-  const handOffsets=[0,0,0,0,0,Math.PI];
-  const handScale=.105;
   const anatomy=[
     {w:174,h:318,face:[7,-54],eyes:27,shoulders:[[-33,15],[35,15]],limbs:[60,60]},
-    {w:230,h:310,face:[7,-93],eyes:26,shoulders:[[-68,17],[61,17]],limbs:[63,63]},
+    {w:230,h:310,face:[-8,-108],eyes:25,shoulders:[[-68,17],[61,17]],limbs:[63,63]},
     {w:246,h:238,face:[9,-23],eyes:33,shoulders:[[-91,9],[93,9]],limbs:[54,56]}
   ];
   function expression(p,id,t){
@@ -172,16 +167,8 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
       for(const [width,colour] of [[15,'#102B4F'],[12,'#193A60'],[9,'#254971']]){path();ctx.lineWidth=width;ctx.strokeStyle=colour;ctx.stroke();}
       ctx.translate(-1.1,-1.1);path();ctx.lineWidth=2.2;ctx.strokeStyle='rgba(112,144,174,.50)';ctx.stroke();ctx.restore();
     }
-    hand(ctx,x,y,angle,kind,mirror){
-      ctx.save();ctx.translate(x,y);ctx.rotate(angle+(this.hands?handOffsets[kind]:0));if(mirror)ctx.scale(-1,1);
-      if(this.hands){
-        const r=handRects[kind],pivot=handPivots[kind],w=r[2]*handScale,h=r[3]*handScale;
-        ctx.drawImage(this.hands,...r,-w*pivot[0],-h*pivot[1],w,h);ctx.restore();return;
-      }
-      const size=[[44,48],[34,44],[32,51],[34,51],[48,39],[43,47]][kind];
-      const pivot=kind===4?.28:.5;
-      this.sprite(ctx,3+kind,-size[0]*pivot,-size[1]*.91,...size);ctx.restore();
-    }
+    body(ctx,form,yaw){drawBuddyBody(ctx,form,yaw);}
+    hand(ctx,x,y,angle,kind,mirror){drawBuddyHand(ctx,x,y,angle,kind,mirror);}
     face(ctx,form,p){
       const n=anatomy[form],f=n.face,d=n.eyes;
       ctx.save();ctx.translate(...f);ctx.lineCap='round';
@@ -195,26 +182,49 @@ export { TORNADO_DURATION_SECONDS, TORNADO_REVEAL_START, TORNADO_RETARGET_UNTIL,
         ctx.restore();
         ctx.save();ctx.translate(x,y-(form===1?14:18)+(side<0?p.browYL:p.browYR));ctx.rotate(side<0?p.browL:p.browR);ctx.strokeStyle='#244759';ctx.lineWidth=2.3;ctx.beginPath();ctx.moveTo(-10,2);ctx.quadraticCurveTo(0,-2,11,0);ctx.stroke();ctx.restore();
       }
-      ctx.translate(p.mouthX,form===1?18:23);ctx.fillStyle='#10324A';ctx.strokeStyle='#173A51';ctx.lineWidth=2.4;
+      ctx.translate(p.mouthX,form===1?14:23);ctx.fillStyle='#10324A';ctx.strokeStyle='#173A51';ctx.lineWidth=2.4;
       if(p.roundMouth>.5){ctx.beginPath();ctx.ellipse(0,form===1?-3:1,5.5,form===1?7:8,0,0,TAU);ctx.fill();}
       else if(p.mouth>.12){ctx.beginPath();ctx.moveTo(-13,0);ctx.quadraticCurveTo(0,4,13,0);ctx.bezierCurveTo(10,8+p.mouth*7,-10,8+p.mouth*7,-13,0);ctx.fill();ctx.fillStyle='#DAF0EE';ctx.beginPath();ctx.moveTo(-8,1.5);ctx.quadraticCurveTo(0,3,8,1.5);ctx.lineTo(6,4);ctx.quadraticCurveTo(0,5,-6,4);ctx.closePath();ctx.fill();}
       else {ctx.beginPath();ctx.moveTo(-12,0);ctx.quadraticCurveTo(0,9*p.smile,13,-2);ctx.stroke();}
       ctx.restore();
     }
     draw(ctx,form,p,x,y,scale=1,alpha=1,layers){
-      const n=anatomy[form],facing=Math.cos(p.yaw||0);ctx.save();ctx.globalAlpha*=alpha;ctx.translate(x+p.x*scale,y+p.y*scale);ctx.scale(scale*p.sx*(.065+.935*Math.abs(facing)),scale*p.sy);ctx.rotate(p.rot);
-      const left=limb(n.shoulders[0],[p.lx,p.ly],n.limbs,-1,[p.lex,p.ley]),right=limb(n.shoulders[1],[p.rx,p.ry],n.limbs,1,[p.rex,p.rey]);
-      this.arm(ctx,left);this.arm(ctx,right);
-      this.sprite(ctx,form,-n.w/2,-n.h/2,n.w,n.h);
-      // The approved artwork is front-facing. Compress its silhouette at each
-      // turn, keep the lettering unmirrored, and hide the face on the rear half.
-      const faceAlpha=ease((facing-.03)/.48);
-      if(faceAlpha>0){ctx.save();ctx.globalAlpha*=faceAlpha;this.face(ctx,form,p);ctx.restore();}
-      if(p.frontL>.001)this.arm(ctx,left,true,p.frontL);
-      if(p.frontR>.001)this.arm(ctx,right,true,p.frontR);
-      if(layers?.beforeHands){ctx.save();try{layers.beforeHands(ctx,{left,right,pose:p});}finally{ctx.restore();}}
-      const drawHand=(l,k,angle,mirror,old)=>{if(old>=0&&old!==k&&p.handMix<1){ctx.save();ctx.globalAlpha*=1-p.handMix;this.hand(ctx,...l.w,angle,old,mirror);ctx.restore();ctx.save();ctx.globalAlpha*=p.handMix;this.hand(ctx,...l.w,angle,k,mirror);ctx.restore();}else this.hand(ctx,...l.w,angle,k,mirror);};
-      drawHand(left,p.lh,p.la,true,p.oldLH);drawHand(right,p.rh,p.ra,false,p.oldRH);
+      const n=anatomy[form],yaw=p.yaw||0,facing=Math.cos(yaw);
+      ctx.save();ctx.globalAlpha*=alpha;ctx.translate(x+p.x*scale,y+p.y*scale);
+      ctx.rotate(p.rot);ctx.scale(scale*p.sx,scale*p.sy);
+      const left=limb(n.shoulders[0],[p.lx,p.ly],n.limbs,-1,[p.lex,p.ley]);
+      const right=limb(n.shoulders[1],[p.rx,p.ry],n.limbs,1,[p.rex,p.rey]);
+      const projectArm=arm=>{
+        const point=v=>{const q=projectBuddyPoint(v[0],v[1],0,yaw);return [q.x,q.y];};
+        const out={...arm,s:point(arm.s),e:point(arm.e),c:point(arm.c),w:point(arm.w)};
+        out.angle=Math.atan2(out.w[1]-out.c[1],out.w[0]-out.c[0])+Math.PI/2;return out;
+      };
+      const l=projectArm(left),r=projectArm(right);
+      this.arm(ctx,l);this.arm(ctx,r);
+      const drawHand=(original,arm,k,angle,mirror,old)=>{
+        const projected=angle+angleDelta(original.angle,arm.angle);
+        const paint=kind=>this.hand(ctx,...arm.w,projected,kind,mirror);
+        if(old>=0&&old!==k&&p.handMix<1){
+          ctx.save();ctx.globalAlpha*=1-p.handMix;paint(old);ctx.restore();
+          ctx.save();ctx.globalAlpha*=p.handMix;paint(k);ctx.restore();
+        }else paint(k);
+      };
+      const hands=()=>{
+        drawHand(left,l,p.lh,p.la,true,p.oldLH);
+        drawHand(right,r,p.rh,p.ra,false,p.oldRH);
+      };
+      const props=()=>{if(layers?.beforeHands){ctx.save();try{layers.beforeHands(ctx,{left:l,right:r,pose:p});}finally{ctx.restore();}}};
+      if(facing<0){props();hands();}
+      this.body(ctx,form,yaw);
+      if(facing>.02){
+        ctx.save();ctx.translate(14*Math.sin(yaw),-1.68);ctx.scale(facing,1);
+        this.face(ctx,form,p);ctx.restore();
+      }
+      if(facing>=0){
+        if(p.frontL>.001)this.arm(ctx,l,true,p.frontL);
+        if(p.frontR>.001)this.arm(ctx,r,true,p.frontR);
+      }
+      if(facing>=0){props();hands();}
       ctx.restore();
     }
     tornado(ctx,t,x,y,scale=1,front=false){

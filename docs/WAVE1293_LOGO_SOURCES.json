@@ -1,0 +1,38 @@
+[
+  {
+    "id": "hometrack",
+    "source": "https://www.hometrack.com/",
+    "asset": "/images/logos/data/hometrack.svg",
+    "method": "Exact first inline header logo SVG, identified by its enclosing logo link.",
+    "adaptation": "Monochrome white wordmark paths changed to readable ink on the light plate; path geometry and coloured symbols preserved."
+  },
+  {
+    "id": "mapbox",
+    "source": "https://www.mapbox.com/",
+    "asset": "/images/logos/data/mapbox.svg",
+    "method": "Exact first inline header logo SVG, identified by its enclosing logo link."
+  },
+  {
+    "id": "cqc",
+    "source": "https://www.cqc.org.uk/",
+    "asset": "/images/logos/data/cqc.svg",
+    "method": "Exact first inline header logo SVG, identified by its enclosing logo link.",
+    "adaptation": "Monochrome white wordmark paths changed to readable ink on the light plate; path geometry and coloured symbols preserved."
+  },
+  {
+    "id": "bank-of-england",
+    "source": "https://www.bankofengland.co.uk/-/media/boe/images/logo/logo-boe.svg?iar=0&mh=61&hash=2C88D4FFDD47844D6BD2541F5A92D70F",
+    "asset": "/images/logos/data/bank-of-england.svg",
+    "method": "Official homepage header image."
+  },
+  {
+    "id": "companies-house",
+    "source": "existing platform public/logos/data/companies-house.svg",
+    "method": "Reused existing platform credit artwork."
+  },
+  {
+    "id": "zoopla",
+    "source": "existing website public/images/brand/zoopla-ink.webp",
+    "method": "Reused existing website wordmark; discarded copied plain-text SVG candidate."
+  }
+]

@@ -2,11 +2,10 @@
  * Council and data-provider credits, plus the platform's own coverage
  * figures.
  *
- * Everything here was copied from the production site at
- * `Impact-Investment-Platform/iip-frontend/iip-web` rather than rebuilt:
- * the council list from `src/components/marketing/CommissioningStrip.jsx`,
- * the data sources from `src/lib/dataSources.js`, and the artwork from
- * `public/logos/` with filenames unchanged.
+ * The original council sample and five data credits came from the platform.
+ * The expanded provider catalogue is traced to platform services and dataset
+ * provenance in scripts/fixtures/data-service-inventory.json. New and reused artwork sources
+ * are recorded separately in docs/WAVE1293_LOGO_SOURCES.json.
  *
  * The disclaimers below are the reason this can ship at all. Council crests
  * are protected marks and a wall of them reads as endorsement unless it says
@@ -17,7 +16,7 @@
 
 export interface LogoCredit {
   name: string;
-  logo: string;
+  logo?: string;
 }
 
 /**
@@ -139,61 +138,289 @@ export const councilsDisclaimer =
 
 export interface DataSource extends LogoCredit {
   id: string;
-  /** Rides the image alt — what the platform actually reads from it. */
+  /** What the platform reads, including clearly described upstream datasets. */
   blurb: string;
-  /** Intrinsic artwork size, so a lazy tile reserves its true width. */
-  artwork: { w: number; h: number };
+  artwork?: { w: number; h: number };
 }
 
-/**
- * A logo here is a claim that the running platform queries that source.
- * Companies House is deliberately absent: the old repo records that its
- * integration is key-gated on a variable never provisioned in production,
- * so crediting it would claim something the platform does not do.
+/** Verified direct services and upstream publishers, documented in
+ * scripts/fixtures/data-service-inventory.json. Optional, unverified APIs are not credited.
+ * Companies House contributes published bulk data independently of its keyed API.
+ * A plain-name tile is used where no approved standalone brand artwork is available.
  */
 export const dataSources: DataSource[] = [
   {
-    id: "land-registry",
-    name: "HM Land Registry",
-    logo: "/images/logos/data/hm-land-registry.svg",
-    artwork: { w: 440, h: 200 },
-    blurb: "Sold prices · price-paid comparables",
+    "id": "land-registry",
+    "name": "HM Land Registry",
+    "blurb": "Sold prices and price-paid comparables",
+    "logo": "/images/logos/data/hm-land-registry.svg",
+    "artwork": {
+      "w": 440,
+      "h": 200
+    }
   },
   {
-    id: "ons",
-    name: "Office for National Statistics",
-    logo: "/images/logos/data/ons.svg",
-    artwork: { w: 595.3, h: 116.3 },
-    blurb: "Population estimates & private-rent trends",
+    "id": "ons",
+    "name": "Office for National Statistics",
+    "blurb": "Population estimates and private-rent trends",
+    "logo": "/images/logos/data/ons.svg",
+    "artwork": {
+      "w": 595.3,
+      "h": 116.3
+    }
   },
   {
-    id: "postcodes-io",
-    name: "postcodes.io",
-    logo: "/images/logos/data/postcodes-io.svg",
-    artwork: { w: 440, h: 200 },
-    blurb: "Postcode validation & geocoding",
+    "id": "postcodes-io",
+    "name": "postcodes.io",
+    "blurb": "Postcode validation and geocoding",
+    "logo": "/images/logos/data/postcodes-io.svg",
+    "artwork": {
+      "w": 440,
+      "h": 200
+    }
   },
   {
-    id: "openstreetmap",
-    name: "OpenStreetMap",
-    logo: "/images/logos/data/openstreetmap.svg",
-    artwork: { w: 440, h: 200 },
-    blurb: "Walkable amenities around a home",
+    "id": "openstreetmap",
+    "name": "OpenStreetMap",
+    "blurb": "Walkable amenities around a home",
+    "logo": "/images/logos/data/openstreetmap.svg",
+    "artwork": {
+      "w": 440,
+      "h": 200
+    }
   },
   {
-    id: "epc-register",
-    name: "Energy Performance Register",
-    logo: "/images/logos/data/epc-register.svg",
-    artwork: { w: 440, h: 200 },
-    blurb: "Energy ratings · floor area",
+    "id": "epc-register",
+    "name": "Energy Performance Register",
+    "blurb": "Energy ratings and floor area",
+    "logo": "/images/logos/data/epc-register.svg",
+    "artwork": {
+      "w": 440,
+      "h": 200
+    }
   },
+  {
+    "id": "zoopla",
+    "name": "Zoopla",
+    "blurb": "Property listing information",
+    "logo": "/images/brand/zoopla-ink.webp",
+    "artwork": {
+      "w": 548,
+      "h": 120
+    }
+  },
+  {
+    "id": "hometrack",
+    "name": "Hometrack",
+    "blurb": "Licensed property data",
+    "logo": "/images/logos/data/hometrack.svg",
+    "artwork": {
+      "w": 147,
+      "h": 16
+    }
+  },
+  {
+    "id": "mapbox",
+    "name": "Mapbox",
+    "blurb": "Maps, directions and travel distances",
+    "logo": "/images/logos/data/mapbox.svg",
+    "artwork": {
+      "w": 126,
+      "h": 28
+    }
+  },
+  {
+    "id": "planning-data",
+    "name": "Planning Data",
+    "blurb": "Planning constraints and designations"
+  },
+  {
+    "id": "environment-agency",
+    "name": "Environment Agency",
+    "blurb": "Flood warnings and flood zones"
+  },
+  {
+    "id": "sepa",
+    "name": "Scottish Environment Protection Agency",
+    "blurb": "Scottish flood maps"
+  },
+  {
+    "id": "mining-remediation-authority",
+    "name": "Mining Remediation Authority",
+    "blurb": "Coal mining risk information"
+  },
+  {
+    "id": "police-uk",
+    "name": "police.uk",
+    "blurb": "Local crime information"
+  },
+  {
+    "id": "department-for-transport",
+    "name": "Department for Transport",
+    "blurb": "Public transport access points (NaPTAN)"
+  },
+  {
+    "id": "nhs-england",
+    "name": "NHS England",
+    "blurb": "Health services and hospital discharge statistics"
+  },
+  {
+    "id": "department-for-education",
+    "name": "Department for Education",
+    "blurb": "Schools and children statistics"
+  },
+  {
+    "id": "bank-of-england",
+    "name": "Bank of England",
+    "blurb": "Bank Rate information",
+    "logo": "/images/logos/data/bank-of-england.svg",
+    "artwork": {
+      "w": 403.82,
+      "h": 52.71
+    }
+  },
+  {
+    "id": "historic-england",
+    "name": "Historic England",
+    "blurb": "Heritage and listed-building information"
+  },
+  {
+    "id": "mhclg",
+    "name": "Ministry of Housing, Communities and Local Government",
+    "blurb": "Housing need and homelessness statistics"
+  },
+  {
+    "id": "valuation-office-agency",
+    "name": "Valuation Office Agency",
+    "blurb": "Local Housing Allowance and rental areas"
+  },
+  {
+    "id": "dwp",
+    "name": "Department for Work and Pensions",
+    "blurb": "Benefit and income statistics"
+  },
+  {
+    "id": "hmrc",
+    "name": "HM Revenue & Customs",
+    "blurb": "Property tax and household income datasets"
+  },
+  {
+    "id": "revenue-scotland",
+    "name": "Revenue Scotland",
+    "blurb": "Scottish property tax information"
+  },
+  {
+    "id": "welsh-revenue-authority",
+    "name": "Welsh Revenue Authority",
+    "blurb": "Welsh property tax information"
+  },
+  {
+    "id": "nomis",
+    "name": "Nomis",
+    "blurb": "Population and labour-market statistics"
+  },
+  {
+    "id": "cqc",
+    "name": "Care Quality Commission",
+    "blurb": "Care-service registrations",
+    "logo": "/images/logos/data/cqc.svg",
+    "artwork": {
+      "w": 170.083,
+      "h": 53.739
+    }
+  },
+  {
+    "id": "care-inspectorate",
+    "name": "Care Inspectorate",
+    "blurb": "Scottish care-service registrations"
+  },
+  {
+    "id": "care-inspectorate-wales",
+    "name": "Care Inspectorate Wales",
+    "blurb": "Welsh care-service registrations"
+  },
+  {
+    "id": "ofsted",
+    "name": "Ofsted",
+    "blurb": "Children's homes and supported accommodation statistics"
+  },
+  {
+    "id": "dhsc",
+    "name": "Department of Health and Social Care",
+    "blurb": "Adult support and care fee statistics"
+  },
+  {
+    "id": "regulator-social-housing",
+    "name": "Regulator of Social Housing",
+    "blurb": "Supported-housing stock statistics"
+  },
+  {
+    "id": "companies-house",
+    "name": "Companies House",
+    "blurb": "Published company information",
+    "logo": "/images/logos/data/companies-house.svg",
+    "artwork": {
+      "w": 440,
+      "h": 200
+    }
+  },
+  {
+    "id": "welsh-government",
+    "name": "Welsh Government / StatsWales",
+    "blurb": "Welsh housing and deprivation statistics"
+  },
+  {
+    "id": "scottish-government",
+    "name": "Scottish Government",
+    "blurb": "Scottish housing and deprivation statistics"
+  },
+  {
+    "id": "communities-ni",
+    "name": "Department for Communities Northern Ireland",
+    "blurb": "Northern Ireland housing statistics"
+  },
+  {
+    "id": "nihe",
+    "name": "Northern Ireland Housing Executive",
+    "blurb": "Housing waiting-list statistics"
+  },
+  {
+    "id": "registers-of-scotland",
+    "name": "Registers of Scotland",
+    "blurb": "Scottish house-price data"
+  },
+  {
+    "id": "land-property-services",
+    "name": "Land & Property Services Northern Ireland",
+    "blurb": "Northern Ireland house-price data"
+  },
+  {
+    "id": "nisra",
+    "name": "Northern Ireland Statistics and Research Agency",
+    "blurb": "Northern Ireland statistical contributions"
+  },
+  {
+    "id": "ordnance-survey",
+    "name": "Ordnance Survey",
+    "blurb": "Open address, place and boundary data"
+  },
+  {
+    "id": "royal-mail",
+    "name": "Royal Mail",
+    "blurb": "Upstream postcode reference data"
+  },
+  {
+    "id": "ubdc",
+    "name": "Urban Big Data Centre, University of Glasgow",
+    "blurb": "Postcode-to-rental-area lookup"
+  }
 ];
 
 export const dataSourcesEyebrow = "Powered by authoritative UK data";
 
 /** Both lines are legal, not decorative. */
 export const dataSourcesDisclaimer =
-  "Public data used under licence. These publishers do not endorse this platform.";
+  "Data used under licence. These publishers do not endorse this platform.";
 /** ODbL requires the contributor credit *and* an indication of the licence. */
 export const openStreetMapAttribution = "© OpenStreetMap contributors · ODbL";
 

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { RolePicker } from "@/components/register/role-picker";
-import { BuddyCharacter } from "@/components/buddy/buddy-character";
+import { BuddySlot } from "@/components/buddy/buddy-slot";
 import { PreReleaseBadge } from "@/components/ui/pre-release-badge";
 import { Reveal } from "@/components/ui/reveal";
 import { pickerContent } from "@/content/audiences";
@@ -52,7 +52,7 @@ function RegisterPickerPage() {
             {pickerContent.lede}
           </p>
           <div className="registration-directory__characters">
-            <BuddyCharacter form="property" action="wave" animated className="mx-auto w-52 max-w-full" />
+            <BuddySlot form="property" action="wave" animated className="mx-auto w-52 max-w-full" />
           </div>
           <p className="registration-directory__note mt-6 text-sm leading-relaxed text-ink-muted">
             {pickerContent.footnote}

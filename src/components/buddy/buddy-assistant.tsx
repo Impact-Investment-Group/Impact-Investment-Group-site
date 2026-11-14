@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, ChevronDown, RotateCcw, Send, X } from "lucide-react";
-import { BUDDY_FORM_CHANGE_MS, BuddyCharacter } from "./buddy-character";
+import { BUDDY_FORM_CHANGE_MS } from "./buddy-character";
+import { BuddySlot } from "./buddy-slot";
 import { BuddyWidget } from "./buddy-launcher";
 import { isBuddyTopic, type BuddyTopic } from "@/content/buddy";
 import { buddyCopy, buddyTopics } from "@/content/buddy-conversation";
@@ -253,7 +254,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
         <header className="shrink-0 border-b border-rule bg-page px-3 py-2">
           <div className="flex items-center gap-2">
             <div className="flex size-12 shrink-0 items-center justify-center">
-              <BuddyCharacter form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} animated={open} continuousIdle className="w-12" />
+              <BuddySlot kind="chat" form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} className="w-12" />
             </div>
             <div className="min-w-0 flex-1">
               <Dialog.Title className="font-heading text-lg font-bold">{buddyCopy.name}</Dialog.Title>

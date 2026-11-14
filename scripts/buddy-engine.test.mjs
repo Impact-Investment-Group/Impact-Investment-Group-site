@@ -3,7 +3,7 @@ import test from "node:test";
 import { Character, blend, names, pose } from "../src/components/buddy/buddy-engine.js";
 import { createIdleDirector, sampleTornadoSpin, TORNADO_DURATION_SECONDS, TORNADO_TIMING } from "../src/components/buddy/buddy-motion.js";
 import { createAmbientDirector } from "../src/components/buddy/buddy-ambient-director.js";
-import { AMBIENT_BOUNDS, AMBIENT_DURATIONS, drawAmbientScene, sampleAmbientScene, PROPS_RECTS } from "../src/components/buddy/buddy-play.js";
+import { AMBIENT_BOUNDS, AMBIENT_DURATIONS, drawAmbientScene, sampleAmbientScene, sampleConstruction, PROPS_RECTS } from "../src/components/buddy/buddy-play.js";
 
 const radians = (degrees) => (degrees * Math.PI) / 180;
 const angularDistance = (a, b) => Math.abs(Math.atan2(Math.sin(b - a), Math.cos(b - a)));
@@ -17,6 +17,7 @@ class RecordingCharacter extends Character {
   }
   arm() {}
   sprite() {}
+  body() {}
   face() {}
   hand(_context, _x, _y, angle, kind, mirrored) {
     this.drawnHands.push({ angle, kind, side: mirrored ? "left" : "right" });
@@ -142,6 +143,7 @@ function transitionCanvas() {
   const context = {
     layer: "outside",
     paints,
+    radials: [],
     save() { stack.push({ ...state, transform: [...state.transform] }); },
     restore() { assert.ok(stack.length, "Unbalanced canvas restore"); state = stack.pop(); },
     translate(x, y) { multiply([1, 0, 0, 1, x, y]); },
@@ -157,6 +159,7 @@ function transitionCanvas() {
     },
     createRadialGradient(...points) {
       finite(...points);
+      this.radials.push({ points, transform: [...state.transform] });
       return { addColorStop(offset) { assert.ok(Number.isFinite(offset) && offset >= 0 && offset <= 1); } };
     },
     createLinearGradient(...points) {
@@ -446,19 +449,19 @@ function insidePolygon(x, y, points) {
   return inside;
 }
 
-test("wall courses follow strikes; roof, complete window frames and door arrive later", () => {
-  const counts = [[.9, 0], [1.2, 1], [2, 3], [3.99, 8], [4.6, 9], [5.0, 10], [5.45, 11], [5.85, 12], [6.25, 13], [6.5, 1]];
+test("wall courses follow strikes; vector roof, complete window frames and door arrive later", () => {
+  const counts = [[.9, 0], [1.2, 1], [2, 3], [3.99, 8], [4.6, 9], [5.0, 10], [5.45, 11], [5.85, 12], [6.25, 13], [6.5, 13]];
   for (const [time, expected] of counts) {
+    const stage = sampleConstruction(time);
+    assert.equal([...stage.courses, stage.roof, ...stage.windows, stage.door].filter(value => value > 0).length, expected);
     const context = transitionCanvas();
-    drawAmbientScene(context, new Character({}, {}), {}, 0, "build", time);
-    assert.equal(imagePaints(context, PROPS_RECTS.house).length, expected, `Wrong house stage at ${time}`);
+    drawAmbientScene(context, new Character(), {}, 0, "build", time);
+    for (const name of ['house', 'door', 'dust']) assert.equal(imagePaints(context, PROPS_RECTS[name]).length, 0, `${name} still uses a bitmap`);
+    assert.ok(context.paints.some(paint => paint.kind === 'fill'), 'Construction scene was blank');
     context.assertRestored();
   }
-  const beforeDoor = transitionCanvas(), afterDoor = transitionCanvas();
-  drawAmbientScene(beforeDoor, new Character({}, {}), {}, 0, "build", 5.9);
-  drawAmbientScene(afterDoor, new Character({}, {}), {}, 0, "build", 6.25);
-  assert.equal(imagePaints(beforeDoor, PROPS_RECTS.door).length, 0);
-  assert.equal(imagePaints(afterDoor, PROPS_RECTS.door).length, 1);
+  assert.equal(sampleConstruction(5.9).door, 0);
+  assert.equal(sampleConstruction(6.25).door, 1);
 });
 
 test("construction dust originates at the actual rig-attached hammer head at every course strike", () => {
@@ -476,10 +479,13 @@ test("construction dust originates at the actual rig-attached hammer head at eve
       for (const [x, y, w, h] of [[183, 126, 119, 124], [55, 286, 111, 127], [315, 286, 111, 127], [160, 263, 166, 216]]) {
         assert.ok(!(localX >= x && localX <= x + w && localY >= y && localY <= y + h), `Hammer hit an unbuilt opening: form ${form}, course ${i}`);
       }
-      const puff = imagePaints(context, PROPS_RECTS.dust).find(paint => Math.abs(paint.coordinates[6] - dustWidth) < 1e-7);
-      assert.ok(puff, "No strike puff at the workpoint");
-      const [, , , , x, y, w] = puff.coordinates;
-      const origin = worldPoint(puff.transform, x + w / 2, y + w * .37 + u * 15);
+      const radius = dustWidth * .13 * (1 - u * .2);
+      const puff = context.radials.find(paint => Math.abs(paint.points[5] - radius) < 1e-7);
+      assert.ok(puff, "No scalable strike puff at the workpoint");
+      const a = -u * .6, spread = .17 + u * .16, h = dustWidth * 341 / 457;
+      const origin = worldPoint(puff.transform,
+        puff.points[3] - dustWidth * Math.cos(a) * spread,
+        puff.points[4] + dustWidth * .37 + u * 15 - h * (.53 + Math.sin(a) * .23));
       assert.ok(Math.hypot(contact.x - origin.x, contact.y - origin.y) < 1e-7, "Dust was detached from the transformed hammer");
       context.assertRestored();
     }
@@ -526,3 +532,22 @@ test("hand-held props remain behind the gripping hands without changing the draw
   context.assertRestored();
 });
 
+
+// Geometry rather than image count is the quality boundary of the v4 rig.
+for (let form = 0; form < 3; form++) {
+  test(`scalable form ${form}: front, profile and back paint without raster artwork`, () => {
+    for (const yaw of [0, Math.PI / 3, Math.PI / 2, Math.PI, Math.PI * 1.5, Math.PI * 2]) {
+      const context = transitionCanvas();
+      const rig = new Character();
+      let faces = 0;
+      const drawFace = rig.face.bind(rig);
+      rig.face = (...args) => { faces++; drawFace(...args); };
+      rig.draw(context, form, { ...pose(form, 1, .5), yaw }, 100, 100, 2);
+      assert.equal(context.paints.filter(paint => paint.kind === 'image').length, 0,
+        'Character still depends on a low-resolution body or hand image');
+      assert.ok(context.paints.length > 30, 'The volumetric shell or connected gloves did not paint');
+      assert.equal(faces, Math.cos(yaw) > .02 ? 1 : 0, 'Face appeared on the back of the character');
+      context.assertRestored();
+    }
+  });
+}

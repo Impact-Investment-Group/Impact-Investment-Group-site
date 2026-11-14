@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Companies House brand mark — GOV.UK style.
+     Includes the recognisable Companies House building/lock icon
+     (simplified silhouette, fair-use) above the wordmark. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 200" width="440" height="200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Companies House">
+  <!-- Building icon — neoclassical columns -->
+  <g transform="translate(220 22)" fill="#062151">
+    <!-- pediment (triangle) -->
+    <polygon points="-44,12 0,-22 44,12" />
+    <!-- entablature -->
+    <rect x="-44" y="12" width="88" height="6" />
+    <!-- columns (4) -->
+    <rect x="-36" y="22" width="6" height="34" />
+    <rect x="-18" y="22" width="6" height="34" />
+    <rect x="12"  y="22" width="6" height="34" />
+    <rect x="30"  y="22" width="6" height="34" />
+    <!-- doorway -->
+    <rect x="-6" y="22" width="12" height="34" />
+    <rect x="-4" y="26" width="8" height="30" fill="#FBF8F0" />
+    <!-- base -->
+    <rect x="-50" y="56" width="100" height="6" />
+  </g>
+  <!-- Wordmark -->
+  <g font-family="'Plus Jakarta Sans', 'Outfit', 'Inter', system-ui, sans-serif" fill="#062151">
+    <text x="220" y="130" text-anchor="middle" font-size="30" font-weight="800" letter-spacing="0.2">Companies House</text>
+    <text x="220" y="160" text-anchor="middle" font-size="11" font-weight="700" fill="#5A6478" letter-spacing="4">GOV.UK</text>
+  </g>
+  <rect x="170" y="172" width="100" height="3" rx="1.5" fill="#062151" />
+</svg>

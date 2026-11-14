@@ -25,6 +25,7 @@ paths += partners + ["/register/" + role for role in roles] + ["/this-route-does
 
 
 stock_snapshot = json.loads((ROOT / "src/data/public-property-stock.json").read_text(encoding="utf-8"))
+data_providers = json.loads((ROOT / "scripts/fixtures/data-service-inventory.json").read_text(encoding="utf-8"))["providers"]
 stock_fixture = {"as_of": "2026-11-05T09:00:00Z", "total": 4321, "regions": {"North West": {"count": 4000}, "London": {"count": 231}, "Northern Ireland": {"count": 0}, "Unmapped": {"count": 90}}, "basis": "Demonstration aggregate for browser verification."}
 charity_pledge = "10% of all profits made go to Metro World Child UK to bring hope and joy to children today and change lives for tomorrow."
 charity_capture_style = ".site-header,.page-outline,.back-to-top{visibility:hidden!important}"
@@ -148,14 +149,24 @@ with sync_playwright() as pw:
                     page.wait_for_timeout(100)
                 for figure in page.locator(".partner-craft-guides").all():
                     caption_top = figure.locator("figcaption").bounding_box()["y"]
-                    for guide in figure.locator("img, [data-buddy-form]").all():
+                    for guide in figure.locator("img, [data-buddy-slot=page]").all():
                         box = guide.bounding_box()
                         check(box["y"] + box["height"] + 8 <= caption_top, "Guide artwork overlaps its caption")
-                for character in page.locator("main [data-buddy-form]:visible").all():
-                    character.scroll_into_view_if_needed()
-                    expect(character).to_have_attribute("data-buddy-version", "v2-refined")
+                expect(page.locator("main [data-buddy-form]")).to_have_count(0)
+                if path != "/this-route-does-not-exist":
+                    expect(page.locator("[data-buddy-actor]")).to_have_count(1)
+                    expect(page.locator("[data-buddy-form]")).to_have_count(1)
+                    character = page.locator("[data-buddy-actor] [data-buddy-form]")
+                    expect(character).to_have_attribute("data-buddy-version", "v4-vector")
+                    expect(character).to_have_attribute("data-buddy-artwork", "vector")
+                    expect(character).to_have_attribute("data-buddy-hands", "vector")
                     expect(character).to_have_attribute("data-buddy-status", "ready")
                     check(character.locator("canvas").evaluate("n => n.width > 0 && n.height > 0"), "Replacement Buddy artwork has no canvas size")
+                    slot = page.locator('main [data-buddy-slot="page"]:visible').first
+                    if slot.count():
+                        slot.evaluate("node => {const b=node.getBoundingClientRect();scrollTo({top:scrollY+b.top+b.height/2-innerHeight*.46,behavior:'instant'})}")
+                        expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-placement", "page")
+                        expect(page.locator("[data-buddy-form]")).to_have_count(1)
                 for link in page.locator(".page-outline a").all():
                     check(page.locator(link.get_attribute("href")).count() == 1, "Missing or duplicate section target")
                 page.add_script_tag(path=str(ROOT / "node_modules/axe-core/axe.min.js"))
@@ -541,13 +552,27 @@ with sync_playwright() as pw:
             expect(page.locator(".hero-panel")).to_have_count(3)
             sources = page.locator("#data-sources")
             sources.scroll_into_view_if_needed()
-            page.wait_for_function("() => [...document.querySelectorAll('#data-sources img')].every(n => n.complete && n.naturalWidth > 0)")
-            expect(sources.locator("img")).to_have_count(5)
+            lane = sources.locator(".logo-marquee")
+            originals = lane.locator(".logo-marquee__track > :not([data-clone])")
+            clones = lane.locator(".logo-marquee__track > [data-clone]")
+            expect(originals).to_have_count(len(data_providers))
+            expect(clones).to_have_count(len(data_providers))
+            expected_credits = [provider["name"] + ": " + provider["blurb"] for provider in data_providers]
+            check(originals.evaluate_all("nodes => nodes.map(n => n.title)") == expected_credits, "Data providers do not match the verified catalogue")
+            check(lane.locator("ul li").all_text_contents()[1:] == expected_credits, "Data provider descriptions are not accessible")
+            expect(sources.get_by_role("button")).to_have_count(0)
+            page.wait_for_function("""() => {
+              const lane=document.querySelector('#data-sources .logo-marquee'),box=lane.getBoundingClientRect();
+              const visible=[...lane.querySelectorAll('img')].filter(n=>{const b=n.getBoundingClientRect();return b.width>0&&b.right>box.left+1&&b.left<box.right-1});
+              return visible.length>0&&visible.every(n=>n.complete&&n.naturalWidth>0);
+            }""")
             check(sources.locator("h3").evaluate("n => getComputedStyle(n).textAlign") == "center", "Data heading is not centred")
             check(sources.locator("p").evaluate("n => getComputedStyle(n).textAlign") == "center", "Data attribution is not centred")
-            check(sources.locator("li").evaluate_all("nodes => new Set(nodes.map(n => {const b=n.getBoundingClientRect();return `${b.width},${b.height}`;})).size === 1"), "Data logo display areas are inconsistent")
-            check(sources.locator("img").evaluate_all("nodes => nodes.every(n => {const b=n.getBoundingClientRect();return b.width >= 180 && b.width <= 224 && b.height >= 40 && b.height <= 112 && Math.abs(b.width/b.height-n.naturalWidth/n.naturalHeight)<0.03;})"), "Data logos are too small, oversized or distorted")
-            check(sources.locator("ul").evaluate("n => {const b=n.getBoundingClientRect(), rows=new Map(); for(const li of n.children){const r=li.getBoundingClientRect(), k=Math.round(r.top); const row=rows.get(k)||[]; row.push(r); rows.set(k,row);} return [...rows.values()].every(row => Math.abs((Math.min(...row.map(r=>r.left))+Math.max(...row.map(r=>r.right)))/2-(b.left+b.right)/2)<2);}"), "Data logo rows are not centred")
+            check(originals.evaluate_all("nodes => new Set(nodes.map(n => {const b=n.getBoundingClientRect();return `${b.width},${b.height}`;})).size === 1"), "Data logo display areas are inconsistent")
+            check(originals.evaluate_all("nodes => nodes.every(n => {const b=n.getBoundingClientRect();return b.width>=224&&b.height>=112;})"), "Data logo plates are too small")
+            check(originals.locator("img").evaluate_all("nodes => nodes.every(n => getComputedStyle(n).objectFit === 'contain')"), "Data logos are cropped or distorted")
+            check(originals.evaluate_all("nodes => new Set(nodes.map(n => Math.round(n.getBoundingClientRect().top))).size === 1"), "Data providers are not a single carousel row")
+            expect(sources).to_contain_text("Data used under licence. These publishers do not endorse this platform.")
             check_crafted_state("restored-home")
 
         def photo_variants():

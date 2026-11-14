@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { BuddyCharacter } from "@/components/buddy/buddy-character";
+import { BuddySlot } from "@/components/buddy/buddy-slot";
 import { partnerProfiles, type PartnerProfile } from "@/content/partners";
 import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 import { PartnerEcosystem } from "./partner-ecosystem";
@@ -98,7 +98,7 @@ export function PartnersHub() {
               <Network />
             </span>
             <div className="partner-craft-hero__companion">
-              <BuddyCharacter
+              <BuddySlot
                 form={stage === "need" || stage === "delivery" || stage === "outcome" ? "support" : "property"}
                 action={stage === "need" || stage === "delivery" || stage === "outcome" ? "reassure" : "wave"}
                 animated

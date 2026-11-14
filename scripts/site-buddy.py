@@ -54,8 +54,8 @@ INIT = """(() => {
   const clearRect = CanvasRenderingContext2D.prototype.clearRect;
   CanvasRenderingContext2D.prototype.clearRect = function (...args) {
     if (this.canvas.closest('[data-buddy-form]')) window.__buddyDraws++;
-    if (this.canvas.closest('[data-buddy-showcase]')) window.__buddyShowcaseDraws++;
-    const companion = this.canvas.closest('[data-buddy-widget] [data-buddy-ambient]');
+    if (this.canvas.closest('[data-buddy-actor][data-buddy-placement="page"]')) window.__buddyShowcaseDraws++;
+    const companion = this.canvas.closest('[data-buddy-actor][data-buddy-placement="corner"] [data-buddy-ambient]');
     if (companion) {
       window.__buddyAmbientDraws++;
       const kind = companion.dataset.buddyAmbient;
@@ -88,7 +88,7 @@ INIT = """(() => {
 
 
 class Fixtures:
-    def __init__(self, fail_atlas=False):
+    def __init__(self, fail_engine=False):
         self.queue = []
         self.requests = []
         self.pending = []
@@ -97,8 +97,9 @@ class Fixtures:
         self.pending_status = []
         self.unexpected_posts = []
         self.atlas_requests = []
+        self.hand_requests = []
         self.chat_chunks = []
-        self.fail_atlas = fail_atlas
+        self.fail_engine = fail_engine
 
     def answer(self, reply, **extra):
         self.queue.append({"status": 200, "body": {"used_ai": True, "reply": reply, **extra}})
@@ -111,6 +112,8 @@ class Fixtures:
         path = urlparse(request.url).path
         if path == V2_ATLAS_PATH:
             self.atlas_requests.append(request.url)
+        if "hands-v3" in path:
+            self.hand_requests.append(request.url)
         if "buddy-assistant" in path and path.endswith(".js"):
             self.chat_chunks.append(request.url)
         if path == "/public/buddy/status":
@@ -141,7 +144,7 @@ class Fixtures:
         if request.method == "POST":
             self.unexpected_posts.append(request.url)
             route.abort()
-        elif self.fail_atlas and path == V2_ATLAS_PATH:
+        elif self.fail_engine and 'buddy-rig' in path and path.endswith('.js'):
             route.abort()
         elif request.url.startswith(BASE + "/"):
             route.continue_()
@@ -150,9 +153,9 @@ class Fixtures:
             route.abort()
 
 
-def context_for(browser, width=1280, reduced=False, fail_atlas=False):
+def context_for(browser, width=1280, reduced=False, fail_engine=False):
     context = browser.new_context(viewport={"width": width, "height": 900}, reduced_motion="reduce" if reduced else "no-preference")
-    fixtures = Fixtures(fail_atlas=fail_atlas)
+    fixtures = Fixtures(fail_engine=fail_engine)
     context.route("**/*", fixtures.handle)
     context.add_init_script(INIT)
     return context, fixtures
@@ -161,6 +164,20 @@ def context_for(browser, width=1280, reduced=False, fail_atlas=False):
 def visit(page, path="/"):
     page.goto(BASE + path, wait_until="networkidle")
     expect(page.locator("[data-buddy-launcher]")).to_be_visible()
+
+
+def buddy_character(page):
+    return page.locator("[data-buddy-actor] [data-buddy-form]")
+
+
+def settled_actor(page, placement):
+    actor = page.locator("[data-buddy-actor]")
+    expect(actor).to_have_count(1)
+    expect(page.locator("[data-buddy-form]")).to_have_count(1)
+    expect(actor).to_be_visible()
+    expect(actor).to_have_attribute("data-buddy-placement", placement)
+    expect(actor).to_have_attribute("data-buddy-travelling", "false")
+    return actor
 
 
 def chat_open(page):
@@ -173,6 +190,12 @@ def chat_open(page):
     expect(chat.get_by_role("group", name="Conversation topic")).to_have_count(0)
     expect(chat.get_by_role("log", name="Conversation with Buddy")).to_have_count(1)
     expect(chat.get_by_label("Your question for Buddy", exact=True)).to_be_focused()
+    settled_actor(page, "chat")
+    expect(chat.locator("[data-buddy-form], canvas")).to_have_count(0)
+    slot = chat.locator('[data-buddy-slot="chat"]').bounding_box()
+    actor = page.locator("[data-buddy-actor]").bounding_box()
+    assert abs(actor["x"] - slot["x"]) < 1 and abs(actor["y"] - slot["y"]) < 1, "The single actor did not arrive in the chat header"
+    assert abs(actor["width"] - 48) < 1, "Chat header Buddy is not compact"
     return chat
 
 
@@ -186,21 +209,27 @@ def assert_fixed_widget(page):
     assert 0 <= width - box["x"] - box["width"] <= 40, "Buddy is not at the right edge"
     assert 0 <= height - box["y"] - box["height"] <= 120, "Buddy is not near the bottom edge"
     assert box["width"] <= 210 and box["height"] <= 300, "Floating Buddy has become a page-sized placement"
-    character = widget.locator('[data-buddy-launcher] [data-buddy-form]').bounding_box()
-    expected_width = 96 if height <= 500 else 160 if width < 640 else 192
+    actor = settled_actor(page, "corner")
+    assert actor.evaluate("n => getComputedStyle(n).position") == "fixed", "Character actor is not a fixed overlay"
+    character = actor.bounding_box()
+    expected_width = 96 if height <= 500 else 176 if width < 640 else 224
     assert abs(character["width"] - expected_width) <= 1, "Floating Buddy does not use its requested responsive size"
+    assert character["x"] >= 0 and character["y"] >= 0, "Floating character leaves the viewport"
+    assert 0 <= width - character["x"] - character["width"] <= 40, "Floating character is not at the right edge"
     for control in widget.get_by_role("button").all():
         control_box = control.bounding_box()
         assert control_box["width"] >= 44 and control_box["height"] >= 44, "Buddy control misses the 44px touch target"
-    return box
+    return character
 
 
 def assert_canvas_artwork(character):
     canvas = character.locator("canvas")
     expect(canvas).to_be_visible()
     expect(canvas).to_have_count(1)
-    expect(character).to_have_attribute("data-buddy-version", "v2-refined")
-    expect(character).to_have_attribute("data-buddy-hands", "v3")
+    expect(character).to_have_attribute("data-buddy-version", "v4-vector")
+    expect(character).to_have_attribute("data-buddy-artwork", "vector")
+    expect(character).to_have_attribute("data-buddy-hands", "vector")
+    expect(character).to_have_attribute("data-buddy-status", "ready")
     assert canvas.evaluate("n => n.getContext('2d').getImageData(0, 0, n.width, n.height).data.some((v, i) => i % 4 === 3 && v > 0)"), "Buddy's canvas is blank"
     return canvas
 
@@ -274,8 +303,9 @@ def floating_placement_and_minimise(page, fixtures):
     expect(page.locator("#demand-heading")).to_have_count(1)
     expect(page.locator("[data-property-map]")).to_have_count(1)
     expect(page.locator("[data-buddy-form]")).to_have_count(1)
-    assert_canvas_artwork(page.locator("[data-buddy-widget] [data-buddy-form]"))
-    assert fixtures.atlas_requests, "The floating character did not request its artwork"
+    assert_canvas_artwork(buddy_character(page))
+    assert not fixtures.atlas_requests, "Vector Buddy requested the retired body atlas"
+    assert not fixtures.hand_requests, "Vector Buddy requested bitmap hands"
     assert not fixtures.chat_chunks, "The assistant dialog loaded before it was opened"
     assert not fixtures.status_requests and not fixtures.requests, "Initial page load called the AI service"
     initial = assert_fixed_widget(page)
@@ -371,16 +401,17 @@ def services_showcase_and_topics(page, fixtures):
     visit(page, "/platform/")
     showcase = page.locator("[data-buddy-showcase]")
     expect(showcase).to_have_count(1)
-    expect(page.locator("main [data-buddy-form]")).to_have_count(1)
-    showcase.scroll_into_view_if_needed()
-    character = showcase.locator("[data-buddy-form]")
+    expect(page.locator("main [data-buddy-form]")).to_have_count(0)
+    expect(showcase.locator("[data-buddy-slot=page]")).to_have_count(1)
+    centre_section(page, '[data-buddy-showcase] [data-buddy-slot="page"]')
+    settled_actor(page, "page")
+    character = buddy_character(page)
     canvas = assert_canvas_artwork(character)
     stage = character.bounding_box()
-    # The larger floating Buddy can now match the phone showcase. The in-page
-    # stage still has a useful bounded size and exists only on Services.
+    # Page and corner placements have independent reserved geometry.
     expected_stage = 160 if page.viewport_size['width'] < 640 else 210
     assert abs(stage["width"] - expected_stage) <= 1, "Services Buddy lost its reserved showcase size"
-    page.evaluate("window.__initialBuddyCanvas = document.querySelector('[data-buddy-showcase] canvas')")
+    page.evaluate("window.__initialBuddyCanvas = document.querySelector('[data-buddy-actor] canvas')")
     initial_pixels = canvas.evaluate("n => n.toDataURL()")
     controls = showcase.get_by_role("group", name="Explore Buddy's forms")
     expect(controls.get_by_role("button")).to_have_count(3)
@@ -388,10 +419,12 @@ def services_showcase_and_topics(page, fixtures):
     costs.focus()
     page.keyboard.press("Enter")
     expect(costs).to_have_attribute("aria-pressed", "true")
+    centre_section(page, '[data-buddy-showcase] [data-buddy-slot="page"]')
+    settled_actor(page, "page")
     expect(character).to_have_attribute("data-buddy-form", "investment")
     page.wait_for_timeout(BUDDY_FORM_CHANGE_MS + 300)
     assert canvas.evaluate("n => n.toDataURL()") != initial_pixels, "Changing form did not change the rendered artwork"
-    assert page.evaluate("window.__initialBuddyCanvas === document.querySelector('[data-buddy-showcase] canvas')"), "Selecting a form replaced the character canvas"
+    assert page.evaluate("window.__initialBuddyCanvas === document.querySelector('[data-buddy-actor] canvas')"), "Selecting a form replaced the character canvas"
     assert abs(character.bounding_box()["height"] - stage["height"]) < 1, "Changing form shifted the reserved character stage"
     page.keyboard.press("Tab")
     support = controls.get_by_role("button", name="Care & support", exact=True)
@@ -403,46 +436,45 @@ def services_showcase_and_topics(page, fixtures):
     trigger.click()
     chat = page.locator("[data-buddy-chat]")
     expect(chat).to_have_attribute("data-buddy-readiness", "ready")
-    expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", "support")
+    expect(buddy_character(page)).to_have_attribute("data-buddy-form", "support")
     expect(chat.get_by_role("group", name="Conversation topic")).to_have_count(0)
     expect(page.locator("[data-buddy-widget]:visible")).to_have_count(0)
     assert not fixtures.requests, "The services showcase sent a question without a user action"
     page.keyboard.press("Escape")
     expect(chat).to_have_count(0)
     expect(trigger).to_be_focused()
-    # A complete form transition, gesture and settle blend can take longer
-    # than a single gesture. Wait for bounded stillness, then verify it lasts.
-    character.scroll_into_view_if_needed()
-    page.evaluate("window.__buddySettleSample = {draws: window.__buddyShowcaseDraws, at: performance.now()}")
-    page.wait_for_function("""() => {
-      const sample = window.__buddySettleSample;
-      if (sample.draws !== window.__buddyShowcaseDraws) {
-        sample.draws = window.__buddyShowcaseDraws;
-        sample.at = performance.now();
-      }
-      return performance.now() - sample.at >= 500;
-    }""", timeout=10000, polling=100)
+    centre_section(page, '[data-buddy-showcase] [data-buddy-slot="page"]')
+    settled_actor(page, "page")
+    # This is the same living companion, now acting in the page placement.
     draws = page.evaluate("window.__buddyShowcaseDraws")
     page.wait_for_timeout(500)
-    assert page.evaluate("window.__buddyShowcaseDraws") - draws < 4, "The services showcase retained an idle animation loop"
+    assert page.evaluate("window.__buddyShowcaseDraws") > draws, "Buddy became a static picture at the page placement"
+    assert page.evaluate("window.__initialBuddyCanvas === document.querySelector('[data-buddy-actor] canvas')"), "Chat opening replaced the one character renderer"
     showcase.screenshot(path=str(OUT / f"services-showcase-{page.viewport_size['width']}.png"), animations="disabled")
+    centre_section(page, "footer")
+    settled_actor(page, "corner")
+    draws = page.evaluate("window.__buddyShowcaseDraws")
+    page.wait_for_timeout(350)
+    assert page.evaluate("window.__buddyShowcaseDraws") == draws, "An offscreen page character retained a duplicate animation loop"
     # The showcase must stay confined to Services, including after navigation.
     for path in ("/", "/pricing/", "/partners/"):
         visit(page, path)
         expect(page.locator("[data-buddy-showcase]")).to_have_count(0)
         if path == "/":
             expect(page.locator("main [data-buddy-form]")).to_have_count(0)
-        assert_fixed_widget(page)
+        if path != "/partners/":
+            assert_fixed_widget(page)
+        expect(page.locator("[data-buddy-form]")).to_have_count(1)
         no_overflow(page)
 
 
 def real_fetch_contract(page, fixtures):
     visit(page)
     chat = chat_open(page)
-    character = chat.locator('[data-buddy-form]')
+    character = buddy_character(page)
     canvas = assert_canvas_artwork(character)
     expect(character).to_have_attribute('data-buddy-form', 'property')
-    page.evaluate("window.__chatBuddyCanvas = document.querySelector('[data-buddy-chat] canvas')")
+    page.evaluate("window.__chatBuddyCanvas = document.querySelector('[data-buddy-actor] canvas')")
     first_pixels = canvas.evaluate("n => n.toDataURL()")
     first_box = character.bounding_box()
     fixtures.queue.append({"pending": True})
@@ -477,7 +509,7 @@ def real_fetch_contract(page, fixtures):
     expect(chat).to_have_attribute('data-buddy-activity', 'idle', timeout=5000)
     page.wait_for_timeout(600)
     assert canvas.evaluate("n => n.toDataURL()") != first_pixels, "Accepted conversation topic did not change Buddy's artwork"
-    assert page.evaluate("window.__chatBuddyCanvas === document.querySelector('[data-buddy-chat] canvas')"), "Topic inference replaced Buddy's canvas"
+    assert page.evaluate("window.__chatBuddyCanvas === document.querySelector('[data-buddy-actor] canvas')"), "Topic inference replaced Buddy's canvas"
     assert abs(character.bounding_box()['height'] - first_box['height']) < 1, "Inferred form changed the reserved character stage"
     second_reply = 'Fixture follow-up: <img src=x onerror="alert(1)"> is plain text.'
     fixtures.answer(second_reply, topic='support')
@@ -499,7 +531,7 @@ def real_fetch_contract(page, fixtures):
         {"role": "user", "content": first_question}, {"role": "assistant", "content": first_reply},
         {"role": "user", "content": "How does care and support connect to this?"}, {"role": "assistant", "content": second_reply},
     ], "The automatic form change lost earlier conversation turns"
-    assert page.evaluate("window.__chatBuddyCanvas === document.querySelector('[data-buddy-chat] canvas')"), "Rapid accepted topic changes replaced Buddy's canvas"
+    assert page.evaluate("window.__chatBuddyCanvas === document.querySelector('[data-buddy-actor] canvas')"), "Rapid accepted topic changes replaced Buddy's canvas"
     assert page.evaluate("window.__buddyFetchOptions.every(o => o.credentials === 'omit' && o.hasSignal)"), "Public chat sent ambient credentials or omitted cancellation"
     # Keep enough real exchanges to exercise the six-turn request limit.
     for index in range(4):
@@ -522,7 +554,7 @@ def real_fetch_contract(page, fixtures):
 def invalid_response_topics(page, fixtures):
     visit(page)
     chat = chat_open(page)
-    character = chat.locator('[data-buddy-form]')
+    character = buddy_character(page)
     fixtures.answer('Fixture accepted support answer.', topic='support')
     send(chat, 'Explain care and support.')
     expect(character).to_have_attribute('data-buddy-form', 'support')
@@ -544,7 +576,7 @@ def retry_and_refusal(page, fixtures):
     visit(page, "/platform/")
     initial_topic = page.locator('[data-buddy-widget]').get_attribute('data-buddy-context')
     chat = chat_open(page)
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', initial_topic)
+    expect(buddy_character(page)).to_have_attribute('data-buddy-form', initial_topic)
     fixtures.queue.append({"status": 503, "body": {"detail": "fixture unavailable"}})
     send(chat, "Explain the property process.")
     expect(chat.get_by_role("alert")).to_contain_text("couldn't get an AI answer")
@@ -565,13 +597,13 @@ def retry_and_refusal(page, fixtures):
         {"used_ai": True, "reply": "x" * 3001},
     ]:
         chat.get_by_role("button", name="New conversation", exact=True).click()
-        previous_form = chat.locator("[data-buddy-form]").get_attribute("data-buddy-form")
+        previous_form = buddy_character(page).get_attribute("data-buddy-form")
         fixtures.queue.append({"body": {**invalid, "topic": "support"}})
         send(chat, "Explain the partner network.")
         expect(chat.get_by_role("alert")).to_contain_text("couldn't get an AI answer")
         expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(0)
         expect(chat.get_by_role("link", name="Contact our team", exact=True)).to_have_attribute("href", "/contact")
-        expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", previous_form)
+        expect(buddy_character(page)).to_have_attribute("data-buddy-form", previous_form)
     chat.get_by_role("button", name="New conversation", exact=True).click()
     fixtures.queue.append({"status": 429, "body": {"detail": "fixture limit"}})
     send(chat, "Explain supported housing.")
@@ -585,7 +617,7 @@ def retry_and_refusal(page, fixtures):
     expect(chat.get_by_role("alert")).to_contain_text("couldn't get an AI answer")
     expect(chat.get_by_role("button", name="Try again", exact=True)).to_be_visible()
     original_retry = fixtures.requests[-1]
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', original_retry['topic'])
+    expect(buddy_character(page)).to_have_attribute('data-buddy-form', original_retry['topic'])
     before_open = len(fixtures.requests)
     status_count = len(fixtures.status_requests)
     chat.get_by_role('link', name='Contact our team', exact=True).click()
@@ -606,19 +638,19 @@ def retry_and_refusal(page, fixtures):
     showcase.get_by_role('button', name='Open Buddy', exact=True).focus()
     page.keyboard.press('Enter')
     expect(chat.get_by_role('button', name='Try again', exact=True)).to_be_visible()
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', original_retry['topic'])
+    expect(buddy_character(page)).to_have_attribute('data-buddy-form', original_retry['topic'])
     assert len(fixtures.requests) == before_open, 'Opening Services reposted the failed question'
     assert len(fixtures.status_requests) == status_count, 'Opening an existing failed chat restarted readiness'
     fixtures.answer('Fixture retry answer after opening Services.', topic='investment')
     chat.get_by_role('button', name='Try again', exact=True).click()
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
     expect(chat.locator('[data-buddy-turn="user"]')).to_have_count(1)
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'investment')
+    expect(buddy_character(page)).to_have_attribute('data-buddy-form', 'investment')
     assert fixtures.requests[-1] == original_retry, 'Reopening changed the question or duplicated retry history'
     fixtures.answer('Fixture answer to the next care question.', topic='support')
     send(chat, 'How does care connect with the property service?')
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(2)
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'support')
+    expect(buddy_character(page)).to_have_attribute('data-buddy-form', 'support')
     assert fixtures.requests[-1]['topic'] == 'investment'
     assert fixtures.requests[-1]['history'] == [
         {'role': 'user', 'content': original_retry['message']},
@@ -645,7 +677,7 @@ def cancellation_and_focus(page, fixtures):
     page.wait_for_timeout(150)
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
     expect(chat).not_to_contain_text("Late cancelled answer")
-    expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", "support")
+    expect(buddy_character(page)).to_have_attribute("data-buddy-form", "support")
     fixtures.queue.append({"pending": True})
     send(chat, "Another pending question.")
     expect(chat.get_by_role("status")).to_be_visible()
@@ -658,7 +690,7 @@ def cancellation_and_focus(page, fixtures):
     chat = chat_open(page)
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
     expect(chat).not_to_contain_text("Closed dialog answer")
-    expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", "support")
+    expect(buddy_character(page)).to_have_attribute("data-buddy-form", "support")
     no_overflow(page)
 
 
@@ -682,7 +714,7 @@ def nonmodal_continuous_conversation(page, fixtures):
     visit(page, "/platform/")
     initial_topic = page.locator('[data-buddy-widget]').get_attribute('data-buddy-context')
     chat = chat_open(page)
-    character = chat.locator('[data-buddy-form]')
+    character = buddy_character(page)
     expect(character).to_have_attribute('data-buddy-form', initial_topic)
     fixtures.queue.append({"pending": True})
     first_question = 'Explain property sourcing while I browse the site.'
@@ -724,7 +756,7 @@ def nonmodal_continuous_conversation(page, fixtures):
     showcase = page.locator('[data-buddy-showcase]')
     showcase.get_by_role('button', name='Care & support', exact=True).focus()
     page.keyboard.press('Enter')
-    expect(showcase.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'support')
+    expect(showcase.locator('[data-buddy-slot=page]')).to_have_attribute('data-buddy-slot-form', 'support')
     showcase.get_by_role('button', name='Open Buddy', exact=True).focus()
     page.keyboard.press('Enter')
     expect(chat).to_have_attribute('data-buddy-readiness', 'ready')
@@ -879,7 +911,7 @@ def centre_section(page, selector):
 def scroll_context_and_retained_chat(page, fixtures):
     visit(page)
     widget = page.locator('[data-buddy-widget]')
-    character = widget.locator('[data-buddy-form]')
+    character = buddy_character(page)
     financial = '#mission-panel-need [data-buddy-topic="investment"]'
     for selector, topic in [
         ('section[aria-labelledby="hero-heading"]', 'property'),
@@ -920,7 +952,7 @@ def scroll_context_and_retained_chat(page, fixtures):
     centre_section(page, '#charity-impact')
     expect(widget).to_have_attribute('data-buddy-context', 'support')
     chat = chat_open(page)
-    chat_character = chat.locator('[data-buddy-form]')
+    chat_character = buddy_character(page)
     expect(chat_character).to_have_attribute('data-buddy-form', 'support')
     fixtures.queue.append({'pending': True})
     question = 'Explain how care organisations work with IIG.'
@@ -947,12 +979,12 @@ def scroll_context_and_retained_chat(page, fixtures):
     centre_section(page, '.council-panel')
     expect(widget).to_have_attribute('data-buddy-context', 'property')
     chat = chat_open(page)
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'investment')
+    expect(buddy_character(page)).to_have_attribute('data-buddy-form', 'investment')
     expect(chat.get_by_label('Your question for Buddy', exact=True)).to_have_value(draft)
     expect(chat.locator('[data-buddy-turn]')).to_have_count(2)
     assert len(fixtures.requests) == 1, 'Closing, scrolling or reopening submitted a question'
     chat.get_by_role('button', name='New conversation', exact=True).click()
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'property')
+    expect(buddy_character(page)).to_have_attribute('data-buddy-form', 'property')
     expect(chat.get_by_label('Your question for Buddy', exact=True)).to_have_value('')
     expect(chat.locator('[data-buddy-turn]')).to_have_count(0)
     chat.get_by_role('button', name='Close Buddy', exact=True).click()
@@ -969,7 +1001,7 @@ def scroll_context_and_retained_chat(page, fixtures):
     showcase.get_by_role('button', name='Costs', exact=True).click()
     expect(widget).to_have_attribute('data-buddy-context', 'investment')
     chat = chat_open(page)
-    expect(chat.locator('[data-buddy-form]')).to_have_attribute('data-buddy-form', 'investment')
+    expect(buddy_character(page)).to_have_attribute('data-buddy-form', 'investment')
     expect(chat.locator('[data-buddy-turn]')).to_have_count(0)
     assert len(fixtures.requests) == 1
     no_overflow(page)
@@ -991,9 +1023,9 @@ def ambient_companion(page, fixtures):
     visit(page)
     no_animation_controls(page)
     widget = page.locator('[data-buddy-widget]')
-    character = widget.locator('[data-buddy-form]')
+    character = buddy_character(page)
     canvas = assert_canvas_artwork(character)
-    expect(widget.locator('canvas')).to_have_count(1)
+    expect(page.locator('[data-buddy-actor] canvas')).to_have_count(1)
     assert_fixed_widget(page)
     page.wait_for_timeout(1500)
     assert not prop_requests, 'Scenery loaded during the quiet initial page request'
@@ -1003,10 +1035,10 @@ def ambient_companion(page, fixtures):
     assert prop_requests, 'The autonomous construction did not request its supplied scenery'
     page.wait_for_timeout(2800)
     assert canvas.evaluate('n => getComputedStyle(n).pointerEvents') == 'none'
-    scene_box, button_box = canvas.bounding_box(), page.locator('[data-buddy-launcher]').bounding_box()
+    scene_box, character_box = canvas.bounding_box(), page.locator('[data-buddy-actor]').bounding_box()
     assert scene_box['x'] >= 0 and scene_box['x'] + scene_box['width'] <= page.viewport_size['width'] + 1, 'Ambient scenery leaves the viewport'
-    assert scene_box['width'] > button_box['width'], 'Scenery was squeezed into the character button'
-    assert page.evaluate("""({x,y}) => !document.elementFromPoint(x,y)?.closest('[data-buddy-widget]')""",
+    assert scene_box['width'] > character_box['width'], 'Scenery was squeezed into the character stage'
+    assert page.evaluate("""({x,y}) => !document.elementFromPoint(x,y)?.closest('[data-buddy-actor], [data-buddy-widget]')""",
                          {'x': scene_box['x'] + 8, 'y': scene_box['y'] + scene_box['height'] / 2}), 'Decorative scenery blocks the page outside Buddy'
     assert page.evaluate('document.activeElement?.tagName') == focused, 'Ambient acting moved keyboard focus'
     no_overflow(page)
@@ -1036,7 +1068,7 @@ def ambient_reduced_motion(page, fixtures):
     page.on('request', lambda request: prop_requests.append(request.url) if 'play-props-v1.webp' in request.url else None)
     visit(page)
     no_animation_controls(page)
-    character = page.locator('[data-buddy-widget] [data-buddy-form]')
+    character = buddy_character(page)
     assert_canvas_artwork(character)
     expect(character).to_have_attribute('data-buddy-motion', 'off')
     expect(character).to_have_attribute('data-buddy-ambient', 'rest')
@@ -1056,8 +1088,9 @@ def ambient_reduced_motion(page, fixtures):
 def reduced_motion(page, fixtures):
     visit(page, "/platform/")
     showcase = page.locator("[data-buddy-showcase]")
-    showcase.scroll_into_view_if_needed()
-    character = showcase.locator("[data-buddy-form]")
+    centre_section(page, '[data-buddy-showcase] [data-buddy-slot="page"]')
+    settled_actor(page, "page")
+    character = buddy_character(page)
     assert_canvas_artwork(character)
     showcase.get_by_role("button", name="Care & support", exact=True).click()
     expect(character).to_have_attribute("data-buddy-form", "support")
@@ -1069,7 +1102,7 @@ def reduced_motion(page, fixtures):
     for topic in ("investment", "support"):
         fixtures.answer(f"Fixture reduced-motion {topic} answer.", topic=topic)
         send(chat, f"Explain the next {topic} point.")
-        expect(chat.locator("[data-buddy-form]")).to_have_attribute("data-buddy-form", topic)
+        expect(buddy_character(page)).to_have_attribute("data-buddy-form", topic)
         page.wait_for_timeout(250)
         draws = page.evaluate("window.__buddyDraws")
         page.wait_for_timeout(500)
@@ -1125,13 +1158,13 @@ def short_viewport(page, fixtures):
 
 def missing_artwork(page, fixtures):
     visit(page)
-    character = page.locator("[data-buddy-widget] [data-buddy-form]")
+    character = buddy_character(page)
     expect(character.locator("canvas")).to_be_hidden()
     expect(character).to_have_attribute("data-buddy-status", "failed")
     fallback = character.locator('img[alt=""]')
     expect(fallback).to_be_visible()
     expect(fallback).to_have_attribute("src", "/images/buddy/key-hero-v2.png")
-    page.wait_for_function("document.querySelector('[data-buddy-widget] img')?.naturalWidth > 0")
+    page.wait_for_function("document.querySelector('[data-buddy-actor] img')?.naturalWidth > 0")
     bounds = character.bounding_box()
     assert bounds["width"] >= 44 and bounds["height"] >= 44, "Missing artwork collapsed the floating character"
     assert_fixed_widget(page)
@@ -1148,7 +1181,7 @@ try:
     atlas = (ROOT / "dist/client" / V2_ATLAS_PATH.lstrip("/")).read_bytes()
     assert len(atlas) == V2_ATLAS_SIZE, "Built Buddy atlas has the wrong version/size"
     assert hashlib.sha256(atlas).hexdigest() == V2_ATLAS_SHA256, "Built Buddy atlas differs from the supplied v2-refined package"
-    REPORT["checks"].append({"name": "supplied-v2-refined-artwork", "status": "pass", "bytes": len(atlas), "sha256": V2_ATLAS_SHA256})
+    REPORT["checks"].append({"name": "preserved-v2-reference-atlas", "status": "pass", "bytes": len(atlas), "sha256": V2_ATLAS_SHA256})
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
         cases = [
@@ -1166,7 +1199,7 @@ try:
             ("ambient-companion", ambient_companion, {}),
             ("ambient-reduced-motion", ambient_reduced_motion, {"reduced": True}),
             ("reduced-motion", reduced_motion, {"reduced": True}),
-            ("artwork-fallback", missing_artwork, {"fail_atlas": True, "reduced": True}),
+            ("artwork-fallback", missing_artwork, {"fail_engine": True, "reduced": True}),
             ("short-viewport", short_viewport, {"reduced": True}),
         ]
         unknown = set(ARGS.case) - {name for name, _, _ in cases}
@@ -1191,6 +1224,7 @@ try:
                 try:
                     run(page, fixtures)
                     assert not errors, errors
+                    assert not fixtures.atlas_requests and not fixtures.hand_requests, "Vector character fetched old body or hand bitmaps"
                     assert not fixtures.unexpected_posts, fixtures.unexpected_posts
                     assert not fixtures.queue, "A scheduled fixture was never requested"
                     assert not fixtures.status_queue, "A scheduled readiness fixture was never requested"

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import type { LogoCredit } from "@/content/trust";
 import { intrinsic } from "@/lib/responsive-image";
@@ -28,8 +28,9 @@ export function LogoMarquee({
   imgClassName,
   focusable = false,
   progressiveImages = false,
+  durationSeconds = 40,
 }: {
-  items: LogoCredit[];
+  items: (LogoCredit & { artwork?: { w: number; h: number }; blurb?: string })[];
   /** Accessible name for the list of credits behind the lane. */
   label: string;
   className?: string;
@@ -41,11 +42,16 @@ export function LogoMarquee({
   focusable?: boolean;
   /** Decode upcoming images before transform-driven motion brings them into view. */
   progressiveImages?: boolean;
+  /** Keep the lane's reading speed consistent as its catalogue grows. */
+  durationSeconds?: number;
 }) {
   // Duplicated once so the translate loops seamlessly. Keys carry the index
   // because every logo appears twice.
   const lane = [...items, ...items];
   const { ref, playing } = useVisibleMotion<HTMLDivElement>();
+  const [interactive, setInteractive] = useState(false);
+
+  useEffect(() => { setInteractive(true); }, []);
 
   useEffect(() => {
     if (!progressiveImages || !ref.current) return;
@@ -69,10 +75,22 @@ export function LogoMarquee({
     <div
       ref={ref}
       data-motion={playing ? "running" : "paused"}
+      data-interactive={interactive ? "true" : "false"}
       className={cn("logo-marquee", className)}
+      style={{ "--marquee-duration": `${durationSeconds}s`, "--marquee-touch-duration": `${durationSeconds * 1.5}s` } as CSSProperties}
       tabIndex={focusable ? 0 : undefined}
       role={focusable ? "region" : undefined}
       aria-label={focusable ? label : undefined}
+      onPointerDown={focusable ? event => {
+        if (event.pointerType !== "mouse") event.currentTarget.focus({ preventScroll: true });
+      } : undefined}
+      onBlur={focusable ? event => {
+        // Native reading mode can reach the far end of a long catalogue.
+        // Reset that scroll offset before the transform-driven loop returns.
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          event.currentTarget.scrollLeft = 0;
+        }
+      } : undefined}
     >
       <div className="logo-marquee__track" aria-hidden="true">
         {lane.map((item, i) => (
@@ -82,6 +100,7 @@ export function LogoMarquee({
             // reduced motion the track wraps instead of scrolling, so the
             // clone is hidden or every council would appear twice.
             {...(i >= items.length ? { "data-clone": "true" } : null)}
+            title={item.blurb ? `${item.name}: ${item.blurb}` : item.name}
             className={cn(
               /* The hairline is wave 412's, and it is what keeps a white
                  plate a plate. The lane used to run on a navy band, where
@@ -137,16 +156,17 @@ export function LogoMarquee({
                 decoded shows the white plate and its hairline with nothing in
                 it; the image fades in on top. Nothing is hidden in the markup
                 and nothing waits at opacity 0 for JavaScript. */}
-            <img
+            {item.logo && <img
               src={item.logo}
               alt=""
               loading={progressiveImages ? "lazy" : "eager"}
               fetchPriority="low"
               decoding="async"
               className={cn("object-contain", imgClassName ?? "h-full w-auto max-w-[9rem]")}
-              width={intrinsic(item.logo)?.width}
-              height={intrinsic(item.logo)?.height}
-            />
+              width={item.artwork?.w ?? intrinsic(item.logo)?.width}
+              height={item.artwork?.h ?? intrinsic(item.logo)?.height}
+            />}
+            {!item.logo && <span className="whitespace-normal text-center text-sm font-semibold leading-tight text-ink">{item.name}</span>}
           </span>
         ))}
       </div>
@@ -155,7 +175,7 @@ export function LogoMarquee({
       <ul className="sr-only">
         <li>{label}</li>
         {items.map((item) => (
-          <li key={item.name}>{item.name}</li>
+          <li key={item.name}>{item.name}{item.blurb ? `: ${item.blurb}` : ""}</li>
         ))}
       </ul>
     </div>

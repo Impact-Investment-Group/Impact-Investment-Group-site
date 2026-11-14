@@ -616,7 +616,7 @@
   white-space: nowrap;
   gap: var(--marquee-gap);
   padding: 6px 0;
-  animation: logo-marquee 40s linear infinite;
+  animation: logo-marquee var(--marquee-duration, 40s) linear infinite;
 }
 
 @keyframes logo-marquee {
@@ -641,16 +641,35 @@
   animation-play-state: paused;
 }
 
-/* HALF SPEED WHERE THERE IS NO HOVER TO PAUSE IT WITH. On a touch screen the
-   pause above is unreachable: there is no pointer, and tapping a lane of
-   aria-hidden decoration does nothing. So the lane runs at half speed instead,
-   which is the only control this rule can offer a phone and is enough to read
-   a crest by. The sr-only list beside it carries every name regardless, which
-   is what makes this a nicety rather than the only way to the content. */
+/* Touch motion is slower. Tapping the focusable lane enters the same static,
+   natively scrollable reading mode as keyboard focus, without a separate button. */
 @media (hover: none) {
   .logo-marquee__track {
-    animation-duration: 80s;
+    animation-duration: var(--marquee-touch-duration, 80s);
   }
+}
+
+/* Without JavaScript or while focused, every original logo stays reachable in
+   one native scrolling row. Decorative clones are never repeated in this view. */
+.logo-marquee[data-interactive="false"],
+.logo-marquee[tabindex]:focus {
+  overflow-x: auto;
+  mask-image: none;
+  -webkit-mask-image: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rule) transparent;
+}
+.logo-marquee[data-interactive="false"] .logo-marquee__track,
+.logo-marquee[tabindex]:focus .logo-marquee__track {
+  animation: none;
+  transform: none;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  white-space: nowrap;
+}
+.logo-marquee[data-interactive="false"] [data-clone="true"],
+.logo-marquee[tabindex]:focus [data-clone="true"] {
+  display: none;
 }
 
 /* Reduced motion: the lane stops dead and wraps instead. The global backstop
@@ -658,6 +677,18 @@
    its end state and hide the first lane, so the animation is removed outright
    and the track resets. */
 @media (prefers-reduced-motion: reduce) {
+  .logo-marquee[tabindex] {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule) transparent;
+  }
+  .logo-marquee[tabindex] .logo-marquee__track {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    white-space: nowrap;
+  }
   .logo-marquee__track {
     animation: none;
     transform: none;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowUpRight, Heart, Home, PoundSterling } from "lucide-react";
-import { BuddyCharacter, type BuddyForm } from "./buddy-character";
+import type { BuddyForm } from "./buddy-character";
+import { BuddySlot } from "./buddy-slot";
 import { openBuddy } from "@/content/buddy";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ export function BuddyServices() {
     <section aria-labelledby="buddy-services-heading" className="border-y border-rule bg-page-alt" data-buddy-showcase data-buddy-topic={form}>
       <div className="mx-auto grid w-full max-w-[1200px] items-center gap-6 px-5 py-12 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-10 sm:px-8 lg:grid-cols-[210px_minmax(0,1fr)] lg:py-16">
         <div className="mx-auto w-40 sm:w-full">
-          <BuddyCharacter form={form} action={topic.action} animated />
+          <BuddySlot form={form} action={topic.action} animated />
         </div>
         <div>
           <p className="text-sm font-semibold text-teal-600">Meet Buddy</p>

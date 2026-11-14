@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { Minus } from "lucide-react";
-import { BuddyCharacter } from "./buddy-character";
+import { BuddyActor } from "./buddy-actor";
+import { BuddySlot } from "./buddy-slot";
 import { buddyLauncherLabel, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
 import { useBuddyPageContext } from "@/hooks/use-buddy-page-context";
 
@@ -19,16 +20,6 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
   const trigger = useRef<HTMLButtonElement>(null);
   const reopen = useRef<HTMLButtonElement>(null);
   const movedFocus = useRef(false);
-  const [compact, setCompact] = useState(false);
-  const [attention, setAttention] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const media = window.matchMedia("(max-height: 500px)");
-    const sync = () => setCompact(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
 
   function minimize() {
     movedFocus.current = true;
@@ -47,18 +38,14 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
       Buddy
     </button> : <div className="relative">
       <button ref={node => { trigger.current = node; setTrigger?.(node); }} type="button" data-buddy-launcher aria-label={buddyLauncherLabel} aria-haspopup="dialog" aria-busy={loading} disabled={loading} onClick={onOpen}
-        className="pointer-events-auto flex min-h-11 w-40 flex-col items-center rounded-2xl bg-transparent p-0 text-ink transition-transform duration-200 ease-out hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 motion-reduce:transform-none sm:w-48 [@media(max-height:500px)]:w-24">
-        <span className="block w-full" onPointerMove={event => {
-          if (event.pointerType === "touch") return;
-          const rect = event.currentTarget.getBoundingClientRect();
-          setAttention({ x: (event.clientX - rect.left) / rect.width * 2 - 1, y: (event.clientY - rect.top) / rect.height * 2 - 1 });
-        }} onPointerLeave={() => setAttention({ x: 0, y: 0 })}>
-          <BuddyCharacter form={topic} action={loading ? "listen" : "wave"} expression="warm" animated attention={attention} continuousIdle ambient={!loading} ambientCanvasClassName={compact ? "h-28 w-40" : "h-44 w-64 sm:h-56 sm:w-80"} className="w-full" />
+        className="pointer-events-auto flex min-h-11 flex-col items-center rounded-2xl bg-transparent p-0 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+        <span className="pointer-events-none absolute bottom-full right-0 w-44 sm:w-56 [@media(max-height:500px)]:w-24">
+          <BuddySlot kind="corner" form={topic} action={loading ? "listen" : "wave"} />
         </span>
         <span className="-mt-1 whitespace-nowrap rounded-full border border-rule bg-page/95 px-3 py-1 text-xs font-semibold leading-5 shadow-sm">{loading ? "Opening..." : buddyLauncherLabel}</span>
       </button>
       <button type="button" aria-label="Minimize Buddy" title="Minimize Buddy" onClick={minimize}
-        className="pointer-events-auto absolute -right-2 -top-2 flex size-11 items-center justify-center rounded-full text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+        className="pointer-events-auto absolute -left-11 top-0 flex size-11 items-center justify-center rounded-full text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
         <span className="flex size-6 items-center justify-center rounded-full border border-rule bg-page/95 shadow-sm transition-colors hover:bg-secondary"><Minus aria-hidden="true" className="size-3.5" /></span>
       </button>
     </div>}
@@ -102,6 +89,9 @@ export function BuddyLauncher() {
     return () => { mounted.current = false; window.removeEventListener("iig:open-buddy", show); };
   }, []);
 
-  if (Assistant) return <Assistant initialTopic={options.current.topic} initialTrigger={options.current.trigger} contextTopic={contextTopic} />;
-  return <BuddyWidget topic={contextTopic} onOpen={() => open()} loading={loading} failed={failed} />;
+  return <>
+    <BuddyActor />
+    {Assistant ? <Assistant initialTopic={options.current.topic} initialTrigger={options.current.trigger} contextTopic={contextTopic} />
+      : <BuddyWidget topic={contextTopic} onOpen={() => open()} loading={loading} failed={failed} />}
+  </>;
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { BuddyCharacter } from "@/components/buddy/buddy-character";
+import { BuddySlot } from "@/components/buddy/buddy-slot";
 import { problemHero, problemSections } from "@/content/problem";
 import { variantSrcSet } from "@/lib/responsive-image";
 import "./editorial-friendly.css";
@@ -81,7 +81,7 @@ function TheProblemPage() {
                 </p>
                 {section.buddyForm && section.id !== "cost" ? (
                   <div className="friendly-evidence-guide flex items-center">
-                    <BuddyCharacter form={section.buddyForm} action="explain" expression="thoughtful" />
+                    <BuddySlot form={section.buddyForm} action="explain" expression="thoughtful" />
                   </div>
                 ) : null}
               </div>

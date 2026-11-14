@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight, ShieldAlert } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ShieldAlert, Heart, Home, PoundSterling } from "lucide-react";
 import { DirectorCard } from "@/components/about/director-card";
-import { BuddyCharacter } from "@/components/buddy/buddy-character";
+import { BuddySlot } from "@/components/buddy/buddy-slot";
 import { CharityImpact } from "@/components/charity/charity-impact";
 import {
   accountableChain,
@@ -122,7 +122,7 @@ function AboutPage() {
                 {leadershipCapability.experienceLabel}
               </p>
               <div className="mt-5 hidden h-24 w-40 items-center justify-center lg:flex">
-                <BuddyCharacter form="support" expression="warm" className="w-24" />
+                <BuddySlot form="support" expression="warm" className="w-24" />
               </div>
             </div>
             <dl className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
@@ -223,7 +223,7 @@ function AboutPage() {
                   </p>
                 </div>
                 <div className="hidden h-28 w-full items-center sm:flex">
-                  <BuddyCharacter form={chainBuddyForms[index] ?? "property"} expression="warm" />
+                  {chainBuddyForms[index] === "support" ? <Heart aria-hidden="true" className="size-10 text-teal-600" /> : chainBuddyForms[index] === "investment" ? <PoundSterling aria-hidden="true" className="size-10 text-teal-600" /> : <Home aria-hidden="true" className="size-10 text-teal-600" />}
                 </div>
               </li>
             ))}

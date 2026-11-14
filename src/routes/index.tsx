@@ -10,6 +10,7 @@ import { HomeFaq } from "@/components/faq/home-faq";
 import { CharityImpact } from "@/components/charity/charity-impact";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
+import { LogoMarquee } from "@/components/ui/logo-marquee";
 import { demandMapCopy } from "@/content/home";
 import {
   dataSources,
@@ -121,27 +122,16 @@ function HomePage() {
             <h3 id="data-sources-heading" className="text-base font-semibold text-teal-600">
               {dataSourcesEyebrow}
             </h3>
-            <ul
-              aria-labelledby="data-sources-heading"
-              className="mx-auto mt-6 flex max-w-7xl flex-wrap items-center justify-center gap-x-4 gap-y-4 sm:gap-y-6"
-            >
-              {dataSources.map((source) => (
-                <li
-                  key={source.id}
-                  className="flex h-24 w-52 max-w-full items-center justify-center sm:h-28 sm:w-56"
-                >
-                  <img
-                    src={source.logo}
-                    alt={source.name + ": " + source.blurb}
-                    width={source.artwork.w}
-                    height={source.artwork.h}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-auto max-h-24 w-auto max-w-full object-contain sm:max-h-28"
-                  />
-                </li>
-              ))}
-            </ul>
+            <LogoMarquee
+              items={dataSources}
+              label={dataSourcesEyebrow}
+              focusable
+              progressiveImages
+              durationSeconds={dataSources.length * 6}
+              className="mt-6 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+              plateClassName="h-28 w-56 overflow-hidden p-3 sm:h-32 sm:w-64"
+              imgClassName="size-full"
+            />
             <p className="mx-auto mt-6 max-w-[100ch] text-xs leading-relaxed text-ink-muted">
               {dataSourcesDisclaimer} · {openStreetMapAttribution} ·{" "}
               <Link
