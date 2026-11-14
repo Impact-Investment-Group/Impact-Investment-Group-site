@@ -213,13 +213,52 @@ def assert_fixed_widget(page):
     assert actor.evaluate("n => getComputedStyle(n).position") == "fixed", "Character actor is not a fixed overlay"
     character = actor.bounding_box()
     expected_width = 96 if height <= 500 else 176 if width < 640 else 224
-    assert abs(character["width"] - expected_width) <= 1, "Floating Buddy does not use its requested responsive size"
+    slot = widget.locator('[data-buddy-slot="corner"]').bounding_box()
+    assert slot and abs(slot["width"] - expected_width) <= 1, "Buddy lost its requested responsive corner size"
+    assert 71 <= character["width"] <= expected_width + 1, "Adaptive Buddy is outside its readable size range"
+    assert abs(character["height"] - character["width"]) <= 1, "Adaptive Buddy distorted the square character stage"
+    target = actor.evaluate("n => ({x:Number(n.dataset.buddyTargetX), y:Number(n.dataset.buddyTargetY), size:Number(n.dataset.buddyTargetSize)})")
+    for actual, requested in ((character["x"], target["x"]), (character["y"], target["y"]), (character["width"], target["size"])):
+        assert requested is not None and abs(actual - requested) <= 1, "Buddy did not settle at its adaptive corner target"
     assert character["x"] >= 0 and character["y"] >= 0, "Floating character leaves the viewport"
+    assert character["y"] + character["height"] <= height + 1, "Floating character is clipped below the viewport"
     assert 0 <= width - character["x"] - character["width"] <= 40, "Floating character is not at the right edge"
     for control in widget.get_by_role("button").all():
         control_box = control.bounding_box()
         assert control_box["width"] >= 44 and control_box["height"] >= 44, "Buddy control misses the 44px touch target"
+        assert control_box["x"] >= 0 and control_box["y"] >= 0, "Buddy control is clipped above or left"
+        assert control_box["x"] + control_box["width"] <= width + 1 and control_box["y"] + control_box["height"] <= height + 1, "Buddy control leaves the viewport"
     return character
+
+
+def find_ambient_corner(page):
+    """Find real homepage whitespace without changing its content or layout."""
+    assert urlparse(page.url).path == "/", "Ambient eligibility must be exercised on the real homepage"
+    character = buddy_character(page)
+    step = max(1, page.viewport_size["height"] // 3)
+    observed = []
+    for index in range(120):
+        limit = page.evaluate("Math.max(0, document.documentElement.scrollHeight - innerHeight)")
+        offset = min(index * step, limit)
+        page.evaluate("top => scrollTo({top, behavior:'instant'})", offset)
+        page.wait_for_timeout(180)
+        settled_actor(page, "corner")
+        state = character.get_attribute("data-buddy-ambient")
+        if state != "off":
+            # A genuine topic change may still be turning Buddy. It must finish
+            # naturally before this location can qualify as a quiet corner.
+            page.wait_for_function("document.querySelector('[data-buddy-actor] [data-buddy-form]')?.dataset.buddyAmbient !== 'changing'",
+                                   timeout=BUDDY_FORM_CHANGE_MS + 1500)
+            page.wait_for_timeout(300)
+            state = character.get_attribute("data-buddy-ambient")
+            if state == "rest":
+                assert_fixed_widget(page)
+                no_overflow(page)
+                return
+        observed.append({"scroll": offset, "ambient": state})
+        if offset >= limit:
+            break
+    raise AssertionError(f"No clear real-page corner enabled ambient Buddy within the bounded homepage search: {observed}")
 
 
 def assert_canvas_artwork(character):
@@ -308,12 +347,14 @@ def floating_placement_and_minimise(page, fixtures):
     assert not fixtures.hand_requests, "Vector Buddy requested bitmap hands"
     assert not fixtures.chat_chunks, "The assistant dialog loaded before it was opened"
     assert not fixtures.status_requests and not fixtures.requests, "Initial page load called the AI service"
-    initial = assert_fixed_widget(page)
+    assert_fixed_widget(page)
+    initial = page.locator('[data-buddy-launcher] > span:last-child').bounding_box()
     page.screenshot(path=str(OUT / f"home-original-layout-{page.viewport_size['width']}.png"))
     page.evaluate("scrollTo({top:document.documentElement.scrollHeight, behavior:'instant'})")
     page.wait_for_timeout(150)
-    scrolled = assert_fixed_widget(page)
-    assert abs(scrolled["y"] - initial["y"]) < 1, "Buddy scrolls away with the page"
+    assert_fixed_widget(page)
+    scrolled = page.locator('[data-buddy-launcher] > span:last-child').bounding_box()
+    assert abs(scrolled["y"] - initial["y"]) < 1, "Buddy's launcher label scrolls away with the page"
     page.get_by_role("button", name="Minimize Buddy", exact=True).click()
     expect(page.locator("[data-buddy-launcher]:visible")).to_have_count(0)
     expect(page.locator("[data-buddy-form]:visible")).to_have_count(0)
@@ -1029,6 +1070,7 @@ def ambient_companion(page, fixtures):
     assert_fixed_widget(page)
     page.wait_for_timeout(1500)
     assert not prop_requests, 'Scenery loaded during the quiet initial page request'
+    find_ambient_corner(page)
     expect(character).to_have_attribute('data-buddy-ambient', 'rest')
     focused = page.evaluate('document.activeElement?.tagName')
     expect(character).to_have_attribute('data-buddy-ambient', 'build', timeout=24000)
@@ -1070,6 +1112,9 @@ def ambient_reduced_motion(page, fixtures):
     no_animation_controls(page)
     character = buddy_character(page)
     assert_canvas_artwork(character)
+    expect(character).to_have_attribute('data-buddy-motion', 'off')
+    expect(character).to_have_attribute('data-buddy-ambient', re.compile('^(off|rest)$'))
+    find_ambient_corner(page)
     expect(character).to_have_attribute('data-buddy-motion', 'off')
     expect(character).to_have_attribute('data-buddy-ambient', 'rest')
     page.wait_for_timeout(250)
