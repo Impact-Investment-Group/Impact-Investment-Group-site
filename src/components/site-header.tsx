@@ -218,7 +218,8 @@ export function SiteHeader() {
           'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ) ?? [],
       );
-    focusables()[0]?.focus();
+    // Opening the overflow-locked drawer must also retain the reading position.
+    focusables()[0]?.focus({ preventScroll: true });
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {

@@ -203,6 +203,19 @@ with sync_playwright() as playwright:
             page.screenshot(path=str(OUT / f"clear-corner-{'home' if route == '/' else 'legal'}-1280.png"))
             REPORT.append({"route": route, "corner_content_clear": True})
         context.close()
+    except Exception as error:
+        if "page" in locals() and not page.is_closed():
+            evidence = page.evaluate("""() => ({url:location.href, scrollY, width:innerWidth, height:innerHeight,
+              rootOverflow:document.documentElement.style.overflow, bodyOverflow:document.body.style.overflow,
+              focused:document.activeElement?.outerHTML.slice(0,1000),
+              elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot], #site-drawer')].map(el => ({
+                data:{...el.dataset}, rect:el.getBoundingClientRect().toJSON(),
+                visibility:getComputedStyle(el).visibility, display:getComputedStyle(el).display
+              }))})""")
+            evidence["error"] = str(error)
+            (OUT / "failure-state.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+            page.screenshot(path=str(OUT / "failure-state.png"))
+        raise
     finally:
         browser.close()
         server.shutdown()
