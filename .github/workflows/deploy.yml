@@ -115,6 +115,10 @@ jobs:
             sleep infinity
           docker exec site-browser-checks python -m pip install playwright==1.65.0 pillow
 
+      - name: Check one Buddy moving between page and chat placements
+        if: inputs.source_ref == ''
+        run: docker exec site-browser-checks python scripts/site-buddy-placement.py
+
       - name: Check Firefox and WebKit scrolling
         run: docker exec site-browser-checks python scripts/site-scroll-smoke.py
 
@@ -132,10 +136,6 @@ jobs:
       - name: Check floating Buddy and real AI states
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
         run: docker exec site-browser-checks python scripts/site-buddy.py
-
-      - name: Check one Buddy moving between page and chat placements
-        if: ${{ !cancelled() && inputs.source_ref == '' && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
-        run: docker exec site-browser-checks python scripts/site-buddy-placement.py
 
       - name: Capture and check Buddy views and transformation frames
         if: ${{ !cancelled() && inputs.source_ref == '' && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}

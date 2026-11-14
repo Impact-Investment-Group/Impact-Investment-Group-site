@@ -34,6 +34,23 @@ def requests(route):
         route.abort()
 
 
+def click_visible_control(page, control, point=None):
+    """Use viewport input without scrolling an already-visible sticky control."""
+    expect(control).to_be_visible()
+    box = control.bounding_box()
+    assert box is not None, "Visible control has no bounding box"
+    if point is None:
+        point = {"x": box["x"] + box["width"] / 2, "y": box["y"] + box["height"] / 2}
+    viewport = page.viewport_size
+    assert 0 <= point["x"] < viewport["width"] and 0 <= point["y"] < viewport["height"], "Control click point is outside the viewport"
+    assert box["x"] <= point["x"] < box["x"] + box["width"] and box["y"] <= point["y"] < box["y"] + box["height"], "Click point is outside the control"
+    assert control.evaluate("""(element, point) => {
+      const hit = document.elementFromPoint(point.x, point.y);
+      return hit !== null && (hit === element || element.contains(hit));
+    }""", point), "Another element covers the control click point"
+    page.mouse.click(point["x"], point["y"])
+
+
 def one_actor(page, placement):
     expect(page.locator("[data-buddy-actor]")).to_have_count(1)
     expect(page.locator("[data-buddy-form]")).to_have_count(1)
@@ -145,9 +162,17 @@ with sync_playwright() as playwright:
                     menu_scroll = page.evaluate("scrollY")
                     assert menu_scroll > 0, "The menu journey must start at the lower page illustration"
                     for close_method in ("escape", "button", "scrim"):
-                        menu_trigger.click()
+                        # Locator click scrolls this sticky trigger toward the
+                        # root's padded scroll area before sending pointer input.
+                        click_visible_control(page, menu_trigger)
                         menu = page.get_by_role("dialog", name="Site menu", exact=True)
                         expect(menu).to_be_visible()
+                        page.wait_for_function("""() => {
+                          const drawer = document.getElementById('site-drawer');
+                          if (!drawer) return false;
+                          const rect = drawer.getBoundingClientRect();
+                          return rect.left >= 0 && Math.abs(rect.right - innerWidth) < 1;
+                        }""")
                         assert abs(page.evaluate("scrollY") - menu_scroll) < 1, "Opening the Site menu moved the reading position"
                         expect(page.locator("[data-buddy-actor]")).to_be_hidden()
                         expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "modal")
@@ -156,9 +181,9 @@ with sync_playwright() as playwright:
                         if close_method == "escape":
                             page.keyboard.press("Escape")
                         elif close_method == "button":
-                            menu.get_by_role("button", name="Close menu", exact=True).click()
+                            click_visible_control(page, menu.get_by_role("button", name="Close menu", exact=True))
                         else:
-                            page.locator(".drawer-scrim").click(position={"x": 12, "y": 422})
+                            click_visible_control(page, page.locator(".drawer-scrim"), {"x": 12, "y": 422})
                         expect(menu).to_have_count(0)
                         expect(menu_trigger).to_be_focused()
                         assert abs(page.evaluate("scrollY") - menu_scroll) < 1, f"Closing the Site menu by {close_method} moved the reading position"
