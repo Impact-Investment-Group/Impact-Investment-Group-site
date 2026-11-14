@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { BuddyCharacter, type BuddyAction, type BuddyExpression, type BuddyForm } from "./buddy-character";
 import { buddyDestinationRect, followBuddyDestination, selectBuddyDestination, type BuddyDestinationRect } from "./buddy-placement.js";
 import type { BuddyPlacement } from "./buddy-slot";
+import { safeBuddyCorner } from "./buddy-corner";
 import { buddyLauncherLabel, openBuddy } from "@/content/buddy";
 
-type Performance = { form: BuddyForm; action: BuddyAction; expression: BuddyExpression; kind: BuddyPlacement; visible: boolean };
-const initial: Performance = { form: "property", action: "wave", expression: "warm", kind: "corner", visible: false };
+type Performance = { form: BuddyForm; action: BuddyAction; expression: BuddyExpression; kind: BuddyPlacement; visible: boolean; ambient: boolean };
+const initial: Performance = { form: "property", action: "wave", expression: "warm", kind: "corner", visible: false, ambient: false };
 
 /** This component is never exchanged when chat opens or a route changes. */
 export function BuddyActor() {
@@ -73,13 +74,18 @@ export function BuddyActor() {
         }
       }
       if (!next || !destination) { target = undefined; node.style.visibility = "hidden"; assign({ ...current, visible: false }); return; }
-      target = buddyDestinationRect(next);
+      const preferred = buddyDestinationRect(next);
+      const corner = next.kind === "corner" ? safeBuddyCorner(preferred) : null;
+      target = corner ?? preferred;
+      node.dataset.buddyTargetX = String(target.x);
+      node.dataset.buddyTargetY = String(target.y);
+      node.dataset.buddyTargetSize = String(target.size);
       node.style.visibility = "visible";
       node.dataset.buddyPlacement = next.kind;
       assign({ form: destination.dataset.buddySlotForm as BuddyForm,
         action: destination.dataset.buddySlotAction as BuddyAction,
         expression: destination.dataset.buddySlotExpression as BuddyExpression,
-        kind: next.kind, visible: true });
+        kind: next.kind, visible: true, ambient: corner?.roomForAmbient ?? false });
     }
 
     function tick(now: number) {
@@ -145,7 +151,7 @@ export function BuddyActor() {
     }} onPointerLeave={() => setAttention({ x: 0, y: 0 })}>
     <BuddyCharacter form={performance.form} action={performance.action} expression={performance.expression}
       animated={performance.visible} continuousIdle playfulIdle={performance.kind === "page"}
-      ambient={performance.kind === "corner" && performance.action !== "listen"}
+      ambient={performance.kind === "corner" && performance.ambient && performance.action !== "listen"}
       attention={attention} ambientCanvasClassName="h-72 w-96" className="w-full" />
     {performance.kind !== "chat" && <button type="button" aria-label={buddyLauncherLabel} aria-haspopup="dialog"
       onClick={() => openBuddy(performance.form)}

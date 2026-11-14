@@ -50,6 +50,10 @@ def settled_in_slot(page, kind):
           const slot = document.querySelector(`[data-buddy-slot='${kind}'][data-buddy-occupied]`);
           if (!actor || !slot || actor.dataset.buddyTravelling !== 'false') return false;
           const a = actor.getBoundingClientRect(), s = slot.getBoundingClientRect();
+          if (kind === 'corner') return Math.abs(a.x - Number(actor.dataset.buddyTargetX)) < 1 &&
+            Math.abs(a.y - Number(actor.dataset.buddyTargetY)) < 1 &&
+            Math.abs(a.width - Number(actor.dataset.buddyTargetSize)) < 1 &&
+            Math.abs(a.right - s.right) < 1 && a.top >= 80;
           return Math.abs(a.x + a.width / 2 - s.x - s.width / 2) < 1 &&
             Math.abs(a.y + a.height / 2 - s.y - s.height / 2) < 1;
         }""", arg=kind)
@@ -170,6 +174,23 @@ with sync_playwright() as playwright:
                 expect(trigger).to_be_focused()
                 REPORT.append({"width": width, "reduced_motion": reduced, "single_actor": True, "chat_and_route_continuity": True, "unrelated_modal_suspension": True, "site_menu_suspension": width < 1280})
                 context.close()
+        # These actual page controls were obscured by the enlarged corner actor.
+        # Keep the full actor footprint clear, not merely its pointer target.
+        context = browser.new_context(viewport={"width": 1280, "height": 900})
+        context.route("**/*", requests)
+        page = context.new_page()
+        for route, selector in (("/", "#hero-role-resident-label"), ("/legal", "button[aria-label='Copy registered office']")):
+            page.goto(BASE + route, wait_until="networkidle")
+            page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
+            settled_in_slot(page, "corner")
+            assert page.locator(selector).evaluate("""el => {
+              const a = document.querySelector('[data-buddy-actor]').getBoundingClientRect();
+              const b = el.getBoundingClientRect();
+              return a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom;
+            }"""), f"Corner Buddy obscures {selector}"
+            page.screenshot(path=str(OUT / f"clear-corner-{'home' if route == '/' else 'legal'}-1280.png"))
+            REPORT.append({"route": route, "corner_content_clear": True})
+        context.close()
     finally:
         browser.close()
         server.shutdown()
