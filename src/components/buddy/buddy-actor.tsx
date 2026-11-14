@@ -16,6 +16,7 @@ export function BuddyActor() {
   useEffect(() => {
     const node = stage.current!;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const viewport = window.visualViewport;
     let destination: HTMLElement | null = null;
     let position: BuddyDestinationRect | undefined;
     let target: BuddyDestinationRect | undefined;
@@ -34,6 +35,17 @@ export function BuddyActor() {
 
     function measure() {
       dirty = false;
+      if (node.closest('[aria-hidden="true"], [inert]')) {
+        // Radix hides the page behind another modal. Removing its box also
+        // suspends the renderer's IntersectionObserver clock without resetting
+        // its pose, performance or existing canvas instance.
+        node.style.display = "none";
+        node.dataset.buddySuspended = "modal";
+        target = undefined;
+        return;
+      }
+      node.style.display = "";
+      node.dataset.buddySuspended = "none";
       const slots = Array.from(document.querySelectorAll<HTMLElement>("[data-buddy-slot]"))
         .filter(element => element.getClientRects().length && window.getComputedStyle(element).visibility !== "hidden")
         .map(element => {
@@ -91,12 +103,14 @@ export function BuddyActor() {
     resize.observe(document.documentElement);
     const mutations = new MutationObserver(update);
     mutations.observe(document.body, { childList: true, subtree: true, attributes: true,
-      attributeFilter: ["data-buddy-slot-form", "data-buddy-slot-action", "data-buddy-slot-expression"] });
+      attributeFilter: ["data-buddy-slot-form", "data-buddy-slot-action", "data-buddy-slot-expression", "aria-hidden", "inert"] });
     window.addEventListener("scroll", update, { passive: true, capture: true });
     window.addEventListener("resize", update);
     window.addEventListener("animationend", update, true);
     window.addEventListener("transitionend", update, true);
     window.addEventListener("iig:buddy-slots", update);
+    viewport?.addEventListener("resize", update);
+    viewport?.addEventListener("scroll", update);
     reduced.addEventListener("change", update);
     document.addEventListener("visibilitychange", visibilityChanged);
     update();
@@ -108,6 +122,8 @@ export function BuddyActor() {
       window.removeEventListener("animationend", update, true);
       window.removeEventListener("transitionend", update, true);
       window.removeEventListener("iig:buddy-slots", update);
+      viewport?.removeEventListener("resize", update);
+      viewport?.removeEventListener("scroll", update);
       reduced.removeEventListener("change", update);
       document.removeEventListener("visibilitychange", visibilityChanged);
       destination?.removeAttribute("data-buddy-occupied");

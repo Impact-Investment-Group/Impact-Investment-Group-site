@@ -85,10 +85,10 @@ export function LogoMarquee({
         if (event.pointerType !== "mouse") event.currentTarget.focus({ preventScroll: true });
       } : undefined}
       onBlur={focusable ? event => {
-        // Native reading mode can reach the far end of a long catalogue.
-        // Reset that scroll offset before the transform-driven loop returns.
+        // Cancel native scrolling before the transform-driven loop returns.
+        // An explicit instant reset also covers engines without overflow:clip.
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          event.currentTarget.scrollLeft = 0;
+          event.currentTarget.scrollTo({ left: 0, behavior: "instant" });
         }
       } : undefined}
     >

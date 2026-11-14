@@ -672,6 +672,16 @@
   display: none;
 }
 
+/* A moving lane is not a native scroll container. With overflow:hidden an
+   ArrowRight animation can continue after blur and overwrite the offset reset,
+   shifting the transform loop. Clip removes that competing scroll mechanism.
+   Focus, reduced motion and no-JavaScript retain their native reading row. */
+@media (prefers-reduced-motion: no-preference) {
+  .logo-marquee[tabindex][data-interactive="true"]:not(:focus) {
+    overflow: clip;
+  }
+}
+
 /* Reduced motion: the lane stops dead and wraps instead. The global backstop
    below flattens animation-duration to ~0, which would SNAP the marquee to
    its end state and hide the first lane, so the animation is removed outright

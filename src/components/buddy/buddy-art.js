@@ -84,7 +84,18 @@ function shell(ctx, source, yaw) {
   // Cached curve samples are geometry, never a rasterized front photograph.
   trace(ctx, source);
   const faces = [], rings = [[-14, .965], [-10, 1], [9, 1], [14, .975]];
-  for (const loop of outlinePoints(source)) for (let i = 0; i < loop.length; i++) {
+  const loops = outlinePoints(source);
+  for (let loopIndex = 0; loopIndex < loops.length; loopIndex++) {
+    const loop = loops[loopIndex];
+    // The supplied silhouettes do not all have the same winding. Orient the
+    // outer wall outward and the keyhole inward before culling or lighting;
+    // otherwise rear-facing strips protrude from the pound and heart turns.
+    const area = loop.reduce((sum, a, i) => {
+      const b = loop[(i + 1) % loop.length];
+      return sum + a[0] * b[1] - b[0] * a[1];
+    }, 0);
+    const winding = (area >= 0 ? 1 : -1) * (loopIndex === 0 ? 1 : -1);
+    for (let i = 0; i < loop.length; i++) {
     const a = loop[i], b = loop[(i + 1) % loop.length];
     for (let j = 1; j < rings.length; j++) {
       const [z0, r0] = rings[j-1], [z1, r1] = rings[j];
@@ -92,7 +103,7 @@ function shell(ctx, source, yaw) {
         [b[0]*r1,b[1]*r1,z1],[a[0]*r1,a[1]*r1,z1]];
       const u=points[1].map((v,k)=>v-points[0][k]), v=points[3].map((v,k)=>v-points[0][k]);
       const normal=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
-      const length=Math.hypot(...normal)||1, nx=normal[0]/length, ny=normal[1]/length, nz=normal[2]/length;
+      const length=Math.hypot(...normal)||1, nx=winding*normal[0]/length, ny=winding*normal[1]/length, nz=winding*normal[2]/length;
       const toward=nz*Math.cos(yaw)-nx*Math.sin(yaw);
       if(toward < -.04) continue;
       const projected=points.map(p=>projectBuddyPoint(...p,yaw));
@@ -101,6 +112,7 @@ function shell(ctx, source, yaw) {
       faces.push({points:projected,depth:projected.reduce((sum,p)=>sum+p.depth,0)/4,
         color:`rgb(${color.map(c=>Math.min(255,Math.round(c*lighting))).join(',')})`});
     }
+  }
   }
   faces.sort((a,b)=>a.depth-b.depth);
   for(const face of faces){

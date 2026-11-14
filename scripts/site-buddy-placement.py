@@ -44,14 +44,25 @@ def one_actor(page, placement):
 
 
 def settled_in_slot(page, kind):
-    page.wait_for_function("""kind => {
-      const actor = document.querySelector('[data-buddy-actor]');
-      const slot = document.querySelector(`[data-buddy-slot='${kind}'][data-buddy-occupied]`);
-      if (!actor || !slot || actor.dataset.buddyTravelling !== 'false') return false;
-      const a = actor.getBoundingClientRect(), s = slot.getBoundingClientRect();
-      return Math.abs(a.x + a.width / 2 - s.x - s.width / 2) < 1 &&
-        Math.abs(a.y + a.height / 2 - s.y - s.height / 2) < 1;
-    }""", arg=kind)
+    try:
+        page.wait_for_function("""kind => {
+          const actor = document.querySelector('[data-buddy-actor]');
+          const slot = document.querySelector(`[data-buddy-slot='${kind}'][data-buddy-occupied]`);
+          if (!actor || !slot || actor.dataset.buddyTravelling !== 'false') return false;
+          const a = actor.getBoundingClientRect(), s = slot.getBoundingClientRect();
+          return Math.abs(a.x + a.width / 2 - s.x - s.width / 2) < 1 &&
+            Math.abs(a.y + a.height / 2 - s.y - s.height / 2) < 1;
+        }""", arg=kind)
+    except Exception:
+        evidence = page.evaluate("""() => ({scrollY, width:innerWidth, height:innerHeight,
+          elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot]')].map(el => ({
+            data:{...el.dataset}, rect:el.getBoundingClientRect().toJSON(),
+            visibility:getComputedStyle(el).visibility, display:getComputedStyle(el).display
+          }))})""")
+        name = f"failure-{page.viewport_size['width']}-{kind}"
+        (OUT / f"{name}.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+        page.screenshot(path=str(OUT / f"{name}.png"))
+        raise
 
 
 with sync_playwright() as playwright:
@@ -75,6 +86,13 @@ with sync_playwright() as playwright:
                 page.locator("[data-buddy-showcase]").get_by_role("button", name="Care & support", exact=True).click()
                 expect(page.locator("[data-buddy-actor] [data-buddy-form]")).to_have_attribute("data-buddy-form", "support")
                 page.wait_for_timeout(3400 if not reduced else 100)
+                # On a phone the controls sit below the illustration. Clicking
+                # them can scroll its slot out of view, correctly returning Buddy
+                # to the corner. Put the page destination back in the reading area
+                # before asserting the subsequent chat-to-page return.
+                showcase.evaluate("el => el.scrollIntoView({block:'center', behavior:'instant'})")
+                settled_in_slot(page, "page")
+                one_actor(page, "page")
                 page.screenshot(path=str(OUT / f"page-{width}-{'reduced' if reduced else 'motion'}.png"))
                 page.locator("[data-buddy-launcher]").click()
                 expect(page.locator("[data-buddy-chat]")).to_be_visible()
@@ -103,7 +121,24 @@ with sync_playwright() as playwright:
                 expect(page.locator('h1')).to_be_visible()
                 assert page.evaluate("window.__buddyActorCanvas === document.querySelector('[data-buddy-actor] canvas')"), "Client navigation replaced Buddy"
                 expect(page.locator("[data-buddy-form]")).to_have_count(1)
-                REPORT.append({"width": width, "reduced_motion": reduced, "single_actor": True, "chat_and_route_continuity": True})
+                page.goto(BASE + "/partners", wait_until="networkidle")
+                page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
+                page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
+                trigger = page.locator('[data-role="investor"]')
+                trigger.focus()
+                page.keyboard.press("Enter")
+                expect(page.get_by_role("dialog")).to_be_visible()
+                expect(page.locator("[data-buddy-actor]")).to_be_hidden()
+                expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "modal")
+                expect(page.locator("[data-buddy-actor] [data-buddy-form]")).to_have_attribute("data-buddy-motion", "off")
+                assert page.evaluate("window.__buddyActorCanvas === document.querySelector('[data-buddy-actor] canvas')"), "An unrelated modal replaced the actor"
+                page.keyboard.press("Escape")
+                expect(page.get_by_role("dialog")).to_have_count(0)
+                expect(page.locator("[data-buddy-actor]")).to_be_visible()
+                expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "none")
+                assert page.evaluate("window.__buddyActorCanvas === document.querySelector('[data-buddy-actor] canvas')"), "Closing an unrelated modal remounted the actor"
+                expect(trigger).to_be_focused()
+                REPORT.append({"width": width, "reduced_motion": reduced, "single_actor": True, "chat_and_route_continuity": True, "unrelated_modal_suspension": True})
                 context.close()
     finally:
         browser.close()

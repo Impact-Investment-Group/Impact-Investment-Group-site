@@ -170,6 +170,7 @@ def reading_controls(page, touch=False, lane_selector=LANE, track_selector=TRACK
     expect(lane).to_have_js_property("scrollLeft", 0)
     page.wait_for_function("selector => getComputedStyle(document.querySelector(selector)).animationPlayState === 'running'", arg=track_selector)
     assert sample_motion(page, track_selector)["delta"] < -0.5, "Carousel does not resume after reading"
+    expect(lane).to_have_js_property("scrollLeft", 0)
 
 
 def motion_journey(page, touch=False):
