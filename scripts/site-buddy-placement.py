@@ -22,6 +22,14 @@ server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Han
 threading.Thread(target=server.serve_forever, daemon=True).start()
 BASE = f"http://127.0.0.1:{server.server_address[1]}"
 REPORT = []
+ERRORS = []
+
+
+def observe(page):
+    page.on('pageerror', lambda error: ERRORS.append(str(error)))
+    page.on('console', lambda message: ERRORS.append(message.text) if message.type == 'error' else None)
+    page.on('requestfailed', lambda request: ERRORS.append(f'{request.url}: {request.failure}'))
+    return page
 
 
 def requests(route):
@@ -93,7 +101,7 @@ with sync_playwright() as playwright:
             for reduced in (False, True):
                 context = browser.new_context(viewport={"width": width, "height": 844}, reduced_motion="reduce" if reduced else "no-preference")
                 context.route("**/*", requests)
-                page = context.new_page()
+                page = observe(context.new_page())
                 page.goto(BASE + "/platform", wait_until="networkidle")
                 page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
                 page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
@@ -215,7 +223,7 @@ with sync_playwright() as playwright:
         # Keep the full actor footprint clear, not merely its pointer target.
         context = browser.new_context(viewport={"width": 1280, "height": 900})
         context.route("**/*", requests)
-        page = context.new_page()
+        page = observe(context.new_page())
         for route, selector in (("/", "#hero-role-resident-label"), ("/legal", "button[aria-label='Copy registered office']")):
             page.goto(BASE + route, wait_until="networkidle")
             page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
@@ -233,11 +241,12 @@ with sync_playwright() as playwright:
             evidence = page.evaluate("""() => ({url:location.href, scrollY, width:innerWidth, height:innerHeight,
               rootOverflow:document.documentElement.style.overflow, bodyOverflow:document.body.style.overflow,
               focused:document.activeElement?.outerHTML.slice(0,1000),
-              elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot], #site-drawer')].map(el => ({
+              elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot], [data-buddy-form], #site-drawer')].map(el => ({
                 data:{...el.dataset}, rect:el.getBoundingClientRect().toJSON(),
                 visibility:getComputedStyle(el).visibility, display:getComputedStyle(el).display
               }))})""")
             evidence["error"] = str(error)
+            evidence["browser_errors"] = ERRORS
             (OUT / "failure-state.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
             page.screenshot(path=str(OUT / "failure-state.png"))
         raise
