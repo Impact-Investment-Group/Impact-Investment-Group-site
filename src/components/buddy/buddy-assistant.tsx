@@ -380,10 +380,10 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
           </form>
           {(speech.listening || speech.error) && <p role="status" className="mt-1 rounded-xl bg-page px-3 py-2 text-xs text-ink-muted">{speech.listening ? "Listening. Review your words before sending." : speech.error === "not-allowed" || speech.error === "service-not-allowed" ? "Microphone access was declined. You can type your question instead." : "Voice input stopped. Try again or type your question."}</p>}
           <div className="flex items-center justify-between gap-1">
-            <button type="button" aria-expanded={noticeOpen} aria-controls="buddy-notices" onClick={() => setNoticeOpen(previous => !previous)} className={cn(control, "gap-1 px-1 text-xs font-normal text-ink-muted hover:text-ink")}>
+            <button type="button" aria-expanded={noticeOpen} aria-controls="buddy-notices" onClick={() => setNoticeOpen(previous => !previous)} className={cn(control, "gap-1 bg-page px-2 text-xs font-normal text-ink-muted hover:text-ink")}>
               {buddyCopy.about}<ChevronDown className={cn("size-3", noticeOpen && "rotate-180")} aria-hidden="true" />
             </button>
-            <div className="flex">
+            <div className="flex rounded-xl bg-page">
               {busy && <button type="button" onClick={() => cancel()} className={cn(control, "px-2 text-xs text-teal-600")}>{buddyCopy.cancel}</button>}
               <button type="button" aria-label="Explore this page with Buddy" title="Explore this page" disabled={busy} onClick={inspectPage} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page")}><Search className="size-4" aria-hidden="true" /></button>
               <button type="button" aria-label="Conversation history" title="Conversation history" aria-pressed={historyOpen} disabled={!turns.length} onClick={() => setHistoryOpen(previous => !previous)} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page")}><History className="size-4" aria-hidden="true" /></button>
