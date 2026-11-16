@@ -12,6 +12,7 @@ const initial: Performance = { form: "property", action: "wave", expression: "wa
 export function BuddyActor() {
   const stage = useRef<HTMLDivElement>(null);
   const [performance, setPerformance] = useState(initial);
+  const [travelling, setTravelling] = useState(false);
   const [attention, setAttention] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -25,6 +26,7 @@ export function BuddyActor() {
     let previousTime = 0;
     let dirty = true;
     let current = initial;
+    let wasMoving = false;
     const watched = new Set<HTMLElement>();
 
     function assign(next: Performance) {
@@ -99,6 +101,7 @@ export function BuddyActor() {
       const moving = Math.abs(position.x - target.x) + Math.abs(position.y - target.y) + Math.abs(position.size - target.size) > .12 ||
         Object.values(position.velocity ?? {}).some(value => Math.abs(value) > .5);
       node.dataset.buddyTravelling = String(moving);
+      if (moving !== wasMoving) { wasMoving = moving; setTravelling(moving); }
       if (moving) frame = window.requestAnimationFrame(tick);
     }
 
@@ -150,7 +153,7 @@ export function BuddyActor() {
       const rect = event.currentTarget.getBoundingClientRect();
       setAttention({ x: (event.clientX - rect.left) / rect.width * 2 - 1, y: (event.clientY - rect.top) / rect.height * 2 - 1 });
     }} onPointerLeave={() => setAttention({ x: 0, y: 0 })}>
-    <BuddyCharacter form={performance.form} action={performance.action} expression={performance.expression}
+    <BuddyCharacter form={performance.form} action={travelling ? "glide" : performance.action} expression={performance.expression}
       animated={performance.visible} continuousIdle playfulIdle={performance.kind === "page"}
       ambient={performance.kind === "corner" && performance.ambient && performance.action !== "listen"}
       attention={attention} inspect={performance.kind === "inspect" ? { hand: "left", direction: "right", radius: 42 } : undefined}
