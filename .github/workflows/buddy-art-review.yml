@@ -23,6 +23,11 @@ on:
         required: false
         type: boolean
         default: false
+      placement_only:
+        description: "Review actor placement only; does not certify artwork or publish"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -34,7 +39,7 @@ concurrency:
 jobs:
   review:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,7 +63,7 @@ jobs:
       # Bundle the actual renderer and its framing helpers separately. This
       # preview workflow has no Pages permissions or deployment step.
       - name: Prepare production Buddy renderer proof
-        if: inputs.speech_only != true
+        if: inputs.speech_only != true && inputs.placement_only != true
         run: bun scripts/build-buddy-3d-proof.mjs
 
       - name: Prepare speech interface preview without publishing
@@ -82,11 +87,11 @@ jobs:
 
       - name: Capture and check actual Buddy geometry and gestures
         id: artwork
-        if: inputs.speech_only != true
+        if: inputs.speech_only != true && inputs.placement_only != true
         run: docker exec buddy-art-review python scripts/site-buddy-3d.py
 
       - name: Upload artwork and exact source provenance
-        if: ${{ always() && inputs.speech_only != true }}
+        if: ${{ always() && inputs.speech_only != true && inputs.placement_only != true }}
         uses: actions/upload-artifact@v4
         with:
           name: buddy-3d-review-${{ github.sha }}
@@ -95,7 +100,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Check speech bubbles and microphone draft lifecycle
-        if: ${{ !cancelled() && (inputs.speech_only == true || steps.artwork.outcome == 'success' || steps.artwork.outcome == 'failure') }}
+        if: ${{ !cancelled() && inputs.placement_only != true && (inputs.speech_only == true || steps.artwork.outcome == 'success' || steps.artwork.outcome == 'failure') }}
         env:
           SPEECH_ONLY: ${{ inputs.speech_only }}
         run: |
@@ -110,11 +115,24 @@ jobs:
           fi
 
       - name: Upload speech interface preview
-        if: always()
+        if: ${{ always() && inputs.placement_only != true }}
         uses: actions/upload-artifact@v4
         with:
           name: buddy-speech-review-${{ github.sha }}
           path: docs/screenshots/wave909/buddy
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Check page and speech placements
+        if: inputs.placement_only == true
+        run: docker exec buddy-art-review python scripts/site-buddy-placement.py
+
+      - name: Upload placement diagnostics
+        if: ${{ always() && inputs.placement_only == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddy-placement-review-${{ github.sha }}
+          path: docs/screenshots/wave909/buddy-placement
           retention-days: 7
           if-no-files-found: warn
 

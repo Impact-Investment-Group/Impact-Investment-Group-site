@@ -20,6 +20,66 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  buddy_artwork:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    steps:
+      - name: Retain the explicit historical-content artwork exception
+        if: inputs.source_ref != ''
+        run: echo "Historical content retains its earlier rig; current artwork checks do not apply."
+
+      - uses: actions/checkout@v4
+        if: inputs.source_ref == ''
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            src
+            public
+            scripts
+
+      - uses: oven-sh/setup-bun@v2
+        if: inputs.source_ref == ''
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+        if: inputs.source_ref == ''
+
+      - name: Prepare real Buddy renderer visual proof
+        if: inputs.source_ref == ''
+        run: bun scripts/build-buddy-3d-proof.mjs
+
+      - name: Start artwork verification container
+        if: inputs.source_ref == ''
+        timeout-minutes: 5
+        run: |
+          docker run --detach --init --ipc=host --name buddy-artwork \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work --env CI=true \
+            mcr.microsoft.com/playwright/python:v1.65.0-noble@sha256:f9294526294a7bdfb8ca8aa7d815c049125a10e73b65d47fb9a80f5d74f284a6 \
+            sleep infinity
+          docker exec buddy-artwork python -m pip install playwright==1.65.0 pillow
+
+      - name: Capture and check Buddy views and transformation frames
+        if: inputs.source_ref == ''
+        run: docker exec buddy-artwork python scripts/site-buddy-3d.py
+
+      - name: Share Buddy artwork and exact source provenance
+        if: ${{ always() && inputs.source_ref == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddy-3d-review-${{ github.sha }}
+          path: docs/screenshots/wave909/buddy-3d
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Stop artwork verification container
+        if: ${{ always() && inputs.source_ref == '' }}
+        run: docker rm --force buddy-artwork 2>/dev/null || true
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -76,10 +136,6 @@ jobs:
         if: inputs.source_ref == ''
         run: node --test scripts/buddy-engine.test.mjs scripts/buddy-placement.test.mjs scripts/buddy-ambient.test.mjs scripts/buddy-depth.test.mjs
 
-      - name: Prepare real Buddy renderer visual proof
-        if: inputs.source_ref == ''
-        run: bun scripts/build-buddy-3d-proof.mjs
-
       # STATIC_BUILD switches vite.config.ts to prerender with no Nitro server.
       - name: Build static site
         env:
@@ -135,21 +191,18 @@ jobs:
           path: docs/screenshots/wave909/authorities
           retention-days: 7
 
-      - name: Capture and check Buddy views and transformation frames
-        if: ${{ !cancelled() && steps.browser_container.outcome == 'success' && inputs.source_ref == '' }}
-        run: docker exec site-browser-checks python scripts/site-buddy-3d.py
-
-      - name: Share Buddy artwork for review during the remaining checks
-        if: ${{ !cancelled() && inputs.source_ref == '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: buddy-3d-review-${{ github.sha }}
-          path: docs/screenshots/wave909/buddy-3d
-          retention-days: 7
-
       - name: Check one Buddy moving between page and chat placements
         if: ${{ !cancelled() && steps.browser_container.outcome == 'success' && inputs.source_ref == '' }}
         run: docker exec site-browser-checks python scripts/site-buddy-placement.py
+
+      - name: Share placement diagnostics before the remaining journeys
+        if: ${{ !cancelled() && steps.browser_container.outcome == 'success' && inputs.source_ref == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddy-placement-review-${{ github.sha }}
+          path: docs/screenshots/wave909/buddy-placement
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Check Firefox and WebKit scrolling
         if: ${{ !cancelled() && steps.browser_container.outcome == 'success' }}
@@ -205,7 +258,7 @@ jobs:
           path: dist/client
 
   deploy:
-    needs: build
+    needs: [build, buddy_artwork]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

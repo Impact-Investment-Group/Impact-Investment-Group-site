@@ -287,7 +287,17 @@ with sync_playwright() as playwright:
                 trigger = page.locator('[data-role="investor"]')
                 trigger.focus()
                 page.keyboard.press("Enter")
-                expect(page.get_by_role("dialog")).to_be_visible()
+                partner_dialog = page.get_by_role("dialog", name="Property Investor", exact=True)
+                expect(partner_dialog).to_be_visible()
+                expect(partner_dialog).to_have_attribute("data-state", "open")
+                # Visible portal markup can precede Radix's focus/layer effects.
+                # Exercise Escape after actual keyboard readiness and the opening
+                # animation, without adding a fixed delay or retrying the key.
+                modal_close = partner_dialog.get_by_role("button", name="Close", exact=True)
+                expect(modal_close).to_be_focused()
+                partner_dialog.evaluate("node => Promise.all(node.getAnimations().map(animation => animation.finished.catch(() => {})))")
+                expect(partner_dialog).to_have_attribute("data-state", "open")
+                expect(modal_close).to_be_focused()
                 expect(page.locator("[data-buddy-actor]")).to_be_hidden()
                 expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "modal")
                 expect(page.locator("[data-buddy-actor] [data-buddy-form]")).to_have_attribute("data-buddy-motion", "off")
@@ -356,6 +366,13 @@ with sync_playwright() as playwright:
               rootOverflow:document.documentElement.style.overflow, bodyOverflow:document.body.style.overflow,
               observedTrip:window.__buddyTrip,
               focused:document.activeElement?.outerHTML.slice(0,1000),
+              dialogs:[...document.querySelectorAll('[role="dialog"]')].map(el => ({
+                id:el.id, state:el.getAttribute('data-state'), modal:el.getAttribute('aria-modal'),
+                labelledBy:el.getAttribute('aria-labelledby'), containsFocus:el.contains(document.activeElement),
+                visibility:getComputedStyle(el).visibility, display:getComputedStyle(el).display,
+                opacity:getComputedStyle(el).opacity,
+                animations:el.getAnimations().map(animation => ({state:animation.playState, currentTime:animation.currentTime}))
+              })),
               elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot], [data-buddy-form], #site-drawer')].map(el => ({
                 data:{...el.dataset}, rect:el.getBoundingClientRect().toJSON(),
                 visibility:getComputedStyle(el).visibility, display:getComputedStyle(el).display
