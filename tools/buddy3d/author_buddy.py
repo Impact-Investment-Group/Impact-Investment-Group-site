@@ -35,9 +35,16 @@ def material(name, color, emission=0, metallic=.12, roughness=.25, coat=.35):
     bsdf.inputs['Emission Strength'].default_value = emission
     return m
 
-TEAL = material('Hologram_Teal', (.028, .34, .32), metallic=.12, roughness=.25)
-NAVY = material('Hologram_Deep', (.012, .037, .105), metallic=.30, roughness=.25)
-ORANGE = material('Hologram_Rim', (.18, .68, .65), .015, metallic=.55, roughness=.19)
+def brand_color(value):
+    """Blender and glTF store linear-light colour, not the brand's sRGB hex."""
+    rgb=[int(value[index:index+2],16)/255 for index in (0,2,4)]
+    return tuple(c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4 for c in rgb)
+
+TEAL = material('Hologram_Teal', brand_color('258D8A'), .025, metallic=.12, roughness=.25)
+NAVY = material('Hologram_Deep', brand_color('14366A'), .015, metallic=.30, roughness=.25)
+ORANGE = material('Hologram_Rim', brand_color('E15E31'), .05, metallic=.35, roughness=.22)
+EMITTER = material('Hologram_Emitter', brand_color('E15E31'), .42, metallic=.10, roughness=.20)
+PROJECTION = material('Hologram_Projection', brand_color('258D8A'), .40, metallic=.05, roughness=.22)
 GLOVE = material('Glove_Pearl', (.88, .90, .85), metallic=.02, roughness=.36, coat=.16)
 WHITE = material('Eye_White', (.95, .97, .94), metallic=.02, roughness=.20)
 IRIS = material('Eye_Iris', (.015, .15, .18), metallic=.20, roughness=.22)
@@ -110,7 +117,7 @@ PANELS={
  'investment':'M 81 -111 C 68 -140 24 -151 -14 -134 C -60 -115 -84 -74 -73 -39 C -59 -25 -38 -22 -21 -31 C -24 -51 -16 -69 -1 -80 C 20 -95 39 -90 59 -82 C 80 -75 92 -87 81 -111 Z',
  'support':'M 0 -57 C -47 -113 -103 -88 -103 -48 C -107 0 -51 58 0 97 C 51 58 107 0 103 -48 C 103 -88 47 -113 0 -57 Z',
 }
-def contour(name, source, mat, depth, bevel, parent, front=0):
+def contour_loops(source):
     tokens=re.findall(r'[MLCQZ]|-?\d+(?:\.\d+)?',source)
     loops=[];loop=[];current=(0,0);i=0
     while i<len(tokens):
@@ -130,6 +137,32 @@ def contour(name, source, mat, depth, bevel, parent, front=0):
         elif op=='Z':
             loops.append(loop);loop=[]
     if loop:loops.append(loop)
+    return loops
+
+def outline(name, source, mat, radius, parent, front):
+    curve=bpy.data.curves.new(name,'CURVE');curve.dimensions='3D'
+    curve.bevel_depth=radius;curve.bevel_resolution=2
+    for points in contour_loops(source):
+        # A fine contour needs fewer samples than its broad sculpted shell.
+        points=points[::3]
+        spline=curve.splines.new('POLY');spline.points.add(len(points)-1)
+        for p,xy in zip(spline.points,points):p.co=(xy[0]/100,front,-xy[1]/100,1)
+        spline.use_cyclic_u=True
+    o=bpy.data.objects.new(name,curve);scene.collection.objects.link(o)
+    o.data.materials.append(mat);o.parent=parent
+    return o
+
+def join_details(name, objects, parent):
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in objects:obj.select_set(True)
+    bpy.context.view_layer.objects.active=objects[0]
+    bpy.ops.object.convert(target='MESH')
+    bpy.ops.object.join()
+    obj=bpy.context.object;obj.name=name;obj.parent=parent;obj.select_set(False)
+    return obj
+
+def contour(name, source, mat, depth, bevel, parent, front=0):
+    loops=contour_loops(source)
     curve=bpy.data.curves.new(name,'CURVE');curve.dimensions='2D';curve.fill_mode='BOTH'
     curve.extrude=depth;curve.bevel_depth=bevel;curve.bevel_resolution=5;curve.resolution_u=24
     for points in loops:
@@ -151,9 +184,22 @@ for form in SHAPES:
     contour('Body_'+form,SHAPES[form],NAVY,.19,.09,group)
     rim=SHAPES[form]
     if form=='property':rim='M -34 -112 C -37 -173 38 -173 35 -112 C 35 -104 50 -105 60 -100 C 82 -94 87 -80 87 -60 L 87 -25 C 87 -1 70 12 44 12 L -44 12 C -72 12 -87 0 -87 -25 L -87 -60 C -87 -88 -68 -102 -47 -104 Q -34 -105 -34 -112 Z M -16 -130 C -16 -106 18 -106 18 -130 C 18 -153 -16 -153 -16 -130 Z'
-    contour('Rim_'+form,rim,ORANGE,.045,.06,group,-.255)
+    contour('Rim_'+form,rim,NAVY,.045,.06,group,-.255)
     if form=='property':contour('KeyTeeth','M 30 52 L 62 52 Q 75 52 75 65 L 75 74 Q 75 84 63 84 L 44 84 L 44 95 L 62 95 Q 75 95 75 107 Q 75 120 62 120 L 30 120 Z',ORANGE,.045,.055,group,-.255)
     contour('Panel_'+form,PANELS[form],TEAL,.045,.065,group,-.325)
+    details=[outline('InsetSeam_'+form,PANELS[form],NAVY,.012,group,-.443)]
+    details.append(outline('BrandedEdge_'+form,rim,ORANGE,.022,group,-.365))
+    # A restrained emitter and recessed optical traces belong to the body,
+    # never an external cone that could obscure nearby text on the page.
+    emitter_z={'property':-1.29,'investment':-1.23,'support':-.86}[form]
+    surface={'property':-.285,'investment':-.365,'support':-.443}[form]
+    details.append(sphere('EmitterSocket_'+form,(0,surface-.010,emitter_z),(.095,.025,.065),NAVY,group,12))
+    details.append(sphere('EmitterJewel_'+form,(0,surface-.035,emitter_z),(.057,.015,.038),EMITTER,group,12))
+    trace_height={'property':.64,'investment':.19,'support':.27}[form]
+    for index in (-1,0,1):
+        x=index*.11
+        details.append(line('OpticalTrace_'+form+str(index),[(index*.035,surface-.004,emitter_z+.10),(x,surface-.004,emitter_z+.10+trace_height*.55),(x,surface-.004,emitter_z+.10+trace_height)],.006,PROJECTION if form!='support' else EMITTER,group))
+    join_details('SurfaceDetails_'+form,details,group)
     fx,fz=face_locations[form]
     face=empty('Face_'+form,group);face.location=(fx,-.445,fz)
     for side in (-1,1):
@@ -169,9 +215,16 @@ for form in SHAPES:
         sclera.data.update()
         sphere('Iris_'+form+str(side),(0,.024,0),(.105,.014,.140),IRIS,eye,24)
         sphere('Catchlight_'+form+str(side),(side*.235-.025,-.178,.120),(.026,.008,.032),LIGHT,face,12)
-        line('Brow_'+form+str(side),[(side*.235-.105,-.005,.30),(side*.235,-.015,.33),(side*.235+.10,0,.30)],.018,NAVY,face)
-    line('Smile_'+form,[(-.15,-.015,-.17),(0,-.037,-.23),(.15,-.015,-.17)],.023,EYE,face)
-    sphere('Mouth_'+form,(0,.008,-.20),(.095,.025,.040),EYE,face,16)
+        line('UpperLid_'+form+str(side),[(-.125,.030,.135),(0,.035,.192),(.125,.030,.135)],.012,NAVY,eye)
+        brow=line('Brow_'+form+str(side),[(side*.235-.115,-.025,.30),(side*.235,-.035,.34),(side*.235+.115,-.025,.30)],.027,NAVY,face)
+        for point,radius in zip(brow.data.splines[0].bezier_points,(.45,1.2,.45)):point.radius=radius
+    # The mouth is one animated assembly: its cavity, teeth and lower lip
+    # stay together through speech and expression changes.
+    mouth=empty('Mouth_'+form,face);mouth.location.z=-.205
+    contour('MouthCavity_'+form,'M -24 -5 C -14 1 14 1 24 -5 C 22 7 15 13 0 13 C -15 13 -22 7 -24 -5 Z',EYE,.018,.012,mouth,-.050)
+    cube('UpperTeeth_'+form,(0,-.084,-.020),(.305,.026,.045),WHITE,mouth,.014)
+    line('Smile_'+form,[(-.235,-.061,.045),(-.17,-.073,-.065),(0,-.080,-.125),(.17,-.073,-.065),(.235,-.061,.045)],.018,TEAL,mouth)
+    sphere('LowerLip_'+form,(0,-.082,-.094),(.105,.014,.025),ORANGE,mouth,16)
 
 # A single real armature. Left/right are the character's own sides, not screen sides.
 armature=bpy.data.armatures.new('BuddySkeleton')
@@ -241,9 +294,10 @@ for side,suffix in ((1,'L'),(-1,'R')):
     teal_index=next(i for i,m in enumerate(hand.data.materials) if m==TEAL)
     glove_index=next(i for i,m in enumerate(hand.data.materials) if m==GLOVE)
     navy_index=next(i for i,m in enumerate(hand.data.materials) if m==NAVY)
+    hand.data.materials.append(ORANGE);orange_index=len(hand.data.materials)-1
     for poly in hand.data.polygons:
         z=sum(hand.data.vertices[index].co.z for index in poly.vertices)/len(poly.vertices)
-        poly.material_index=glove_index if z<wrist[2]-.035 else teal_index if z<wrist[2]+.065 else navy_index
+        poly.material_index=glove_index if z<wrist[2]-.035 else orange_index if z<wrist[2]+.012 else teal_index if z<wrist[2]+.065 else navy_index
     hand.vertex_groups.clear()
     relevant={name:ends for name,ends in bone_specs.items() if name.endswith('.'+suffix)}
     groups={name:hand.vertex_groups.new(name=name) for name in relevant}
@@ -431,9 +485,10 @@ scene.render.engine='CYCLES';scene.cycles.samples=64;scene.cycles.use_denoising=
 scene.render.resolution_x=700;scene.render.resolution_y=700;scene.render.resolution_percentage=100
 scene.render.image_settings.file_format='PNG';scene.render.film_transparent=True
 scene.view_settings.view_transform='AgX'
-# Authoring plates use the same opaque, physically shaded material roles as
-# the runtime. No extra transparency/emission makes these previews look better
-# than the exported model. The lens alone transmits light.
+# These studio authoring plates show the exported geometry and material
+# roles. They do not reproduce the runtime projection raster or translucency;
+# exact browser appearance is reviewed from the production GPU renderer.
+# The lens alone transmits light in this authoring scene.
 # Keep studio illumination identical across every form. The optional bone
 # backdrop is a camera-only surface, never a brighter environment light.
 scene.world.use_nodes=True

@@ -20,10 +20,12 @@ export function hologramColor(material) {
   return material?.baseColorFactor?.slice(0, 3) || [0.08, 0.55, 0.52];
 }
 
-/** Preserve the authored material separation in the lightweight studio renderer. */
+/** A dimensional, brand-coloured projection with readable solid facial features. */
 export function hologramMaterial(gl, material, skinned = false) {
   const name = material?.name || "";
   const lens = name === "Hologram_Lens";
+  const projection = name.startsWith("Hologram_") && !lens ? 1 : 0;
+  const iris = name === "Eye_Iris" ? 1 : 0;
   const color = hologramColor(material);
   const roughness = Math.max(0.16, Math.min(1, material?.roughnessFactor ?? 0.3));
   const metallic = Math.max(0, Math.min(1, material?.metallicFactor ?? 0.15));
@@ -42,7 +44,7 @@ export function hologramMaterial(gl, material, skinned = false) {
       }`,
     fragment: `precision highp float;
       uniform vec3 baseColor, emission;
-      uniform float time, opacity, roughness, metallic, coat, lens, glow;
+      uniform float time, opacity, roughness, metallic, coat, lens, glow, projection, iris;
       varying vec3 vNormal,vView,vWorld;
       const float PI=3.14159265;
       vec3 fresnel(float cosine,vec3 f0){
@@ -69,7 +71,7 @@ export function hologramMaterial(gl, material, skinned = false) {
         float key=pow(max(dot(r,normalize(vec3(-.65,.8,1.25))),0.0),18.0);
         float fill=pow(max(dot(r,normalize(vec3(.8,.3,1.1))),0.0),10.0);
         float top=pow(max(dot(r,normalize(vec3(.0,1.0,-.2))),0.0),8.0);
-        return vec3(.98,.97,.94)*key*1.6+vec3(.66,.83,1.0)*fill*.65+vec3(.72,1.0,.96)*top*.75;
+        return vec3(1.0,.94,.86)*key*1.6+vec3(.56,.87,.85)*fill*.65+vec3(.72,1.0,.96)*top*.75;
       }
       vec3 toSRGB(vec3 linearColor){
         vec3 low=12.92*linearColor;
@@ -83,17 +85,35 @@ export function hologramMaterial(gl, material, skinned = false) {
         vec3 sky=mix(vec3(.10,.13,.17),vec3(.43,.48,.51),n.y*.5+.5);
         vec3 color=baseColor*sky*(1.0-metallic*.65);
         color+=studioLight(n,v,vec3(-.6,.85,1.4),vec3(3.2,3.1,2.9),f0);
-        color+=studioLight(n,v,vec3(.9,.2,1.0),vec3(.65,.84,1.05),f0);
+        color+=studioLight(n,v,vec3(.9,.2,1.0),vec3(.65,1.05,.98),f0);
         color+=studioLight(n,v,vec3(.15,.7,-1.0),vec3(.65,1.15,1.2),f0);
+        color+=studioLight(n,v,vec3(-.75,-.45,.6),vec3(.72,.20,.075),f0);
         vec3 reflection=studioReflection(reflect(-v,n));
         color+=reflection*(fresnel(nv,f0)*(1.0-roughness*.65)+coat*.11);
-        // A restrained cool edge retains the digital identity without stripes
-        // or washing out the face and hands.
-        color+=vec3(.025,.12,.14)*edge*coat+emission;
+        // Retain navy, teal and orange surface colour through the projected
+        // light. White facial features stay legible rather than becoming neon.
+        vec3 spectral=mix(baseColor,vec3(.028,.26,.235),.22);
+        float contour=pow(1.0-nv,2.0);
+        color+=spectral*contour*(.38+.34*projection)+emission;
+        // Fine reconstruction texture is subpixel scale and low contrast. A
+        // slow travelling light passes through it; no flashing or dark bands.
+        float raster=sin(gl_FragCoord.y*3.14159265);
+        float grain=fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)-.5;
+        float wave=pow(.5+.5*sin(vWorld.y*3.5-time*.65),18.0);
+        color*=1.0+projection*(raster*.018+grain*.018);
+        color+=spectral*projection*(.10+wave*.28)*(contour+.12);
+        // Radial fibres make the sculpted irises read as eyes in the close-up,
+        // without another texture request or changing pupil/hand geometry.
+        if(iris>.5){
+          float angle=dot(n.xy,n.xy)>.00001?atan(n.y,n.x):0.0;
+          float fibres=.5+.5*sin(angle*58.0+nv*24.0);
+          color*=1.0+(fibres-.5)*.22;
+        }
         color+=vec3(.06,.65,.55)*glow;
         // Gentle photographic highlight compression, then one linear-to-sRGB conversion.
         color=color/(vec3(1.0)+color*.28);
-        float alpha=mix(1.0,.055+.24*edge,lens)*opacity;
+        float bodyAlpha=1.0-projection*(.14-.09*contour);
+        float alpha=mix(bodyAlpha,.055+.24*edge,lens)*opacity;
         gl_FragColor=vec4(toSRGB(clamp(color,0.0,1.0)),alpha);
       }`,
     uniforms: {
@@ -106,6 +126,8 @@ export function hologramMaterial(gl, material, skinned = false) {
       coat: { value: coat },
       emission: { value: material?.emissiveFactor || [0, 0, 0] },
       lens: { value: lens ? 1 : 0 },
+      projection: { value: projection },
+      iris: { value: iris },
     },
     transparent: true,
     depthWrite: !lens,

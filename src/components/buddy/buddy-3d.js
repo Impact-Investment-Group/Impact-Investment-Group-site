@@ -282,7 +282,8 @@ export async function createBuddyRenderer(canvas, library) {
       disposed = false,
       lastName = "",
       blendTime = 1,
-      lastTime = 0;
+      lastTime = 0,
+      materialSeconds = 0;
     const rest = new Map(
       gltf.nodes.map((node) => [
         node,
@@ -513,6 +514,7 @@ export async function createBuddyRenderer(canvas, library) {
         }
         const delta = Math.min(0.35, Math.max(0, time - lastTime));
         lastTime = time;
+        materialSeconds += delta;
         blendTime = Math.min(1, blendTime + delta / 0.35);
         restore(scene, rest);
         applyClip(
@@ -710,7 +712,7 @@ export async function createBuddyRenderer(canvas, library) {
           if (smile) smile.scale.x *= faceState[4];
         }
         materials.forEach((program) => {
-          program.uniforms.time.value = time;
+          program.uniforms.time.value = materialSeconds;
           program.uniforms.opacity.value = opacity;
         });
         frameOpacity = opacity;

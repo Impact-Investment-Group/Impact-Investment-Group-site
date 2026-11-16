@@ -54,11 +54,11 @@
   "hologram": "shared runtime GPU material, no image-plane character",
   "asset": {
     "file": "buddy.glb",
-    "bytes": 3360388,
-    "sha256": "bac740b4714372eb67146e40f38d6f6006d40038430a2dac31accfc2dabde8bc",
-    "nodes": 143,
-    "meshes": 84,
-    "primitives": 88,
-    "trianglesAllForms": 106404
+    "bytes": 3938404,
+    "sha256": "c78386c804949b44239d2afcaed42f2996722be609be2fa0d8697dddb4ec8918",
+    "nodes": 161,
+    "meshes": 99,
+    "primitives": 113,
+    "trianglesAllForms": 131692
   }
 }
