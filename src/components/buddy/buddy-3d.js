@@ -93,6 +93,37 @@ export function applyBuddyForeground(nodes, form, name, amount) {
   }
 }
 
+/** Calibrate the aperture about its centre, never by lengthening the grip. */
+export function sizeBuddyLens(nodes, suffix, factor) {
+  const scale = Math.max(0.05, factor);
+  for (const part of ["GlassRing.", "GlassLens."]) {
+    const node = nodes.get(part + suffix);
+    if (node) node.scale.set(scale);
+  }
+  const centre = nodes.get("LensCentre." + suffix),
+    handle = nodes.get("GlassHandle." + suffix);
+  if (centre && handle) {
+    const length = Math.max(0.04, centre.position.z - 0.4 * scale);
+    handle.position.z = length / 2;
+    handle.scale.y = length / 0.63;
+  }
+}
+
+export function followBuddyEyeCatchlight(
+  eye,
+  glint,
+  eyeRest,
+  glintRest,
+  factor,
+) {
+  glint.position.set(
+    eye.position.x + (glintRest.x - eyeRest.x) * factor,
+    eye.position.y + (glintRest.y - eyeRest.y) * factor,
+    eye.position.z + (glintRest.z - eyeRest.z) * factor,
+  );
+  glint.scale.multiply(factor);
+}
+
 /** GPU bitmap sizing must never replace the caller's CSS layout contract. */
 export function preserveBuddyCanvasLayout(canvas, operation) {
   const width = canvas.style.width,
@@ -318,7 +349,7 @@ export async function createBuddyRenderer(canvas, library) {
         (inspect?.direction || "right").replace(/^./, (c) => c.toUpperCase())
       );
     }
-    function configure(nodesMap, form, inspect, size) {
+    function configure(nodesMap, form, inspect) {
       forms.forEach((name) => {
         const node = nodesMap.get("Form_" + name);
         if (node) node.visible = name === form;
@@ -330,9 +361,7 @@ export async function createBuddyRenderer(canvas, library) {
           glass.visible =
             Boolean(inspect) &&
             (inspect.hand === "left" ? "L" : "R") === suffix;
-          glass.scale.set(
-            inspect ? clamp(inspect.radius / ((size / 4) * 0.4), 0.5, 3) : 1,
-          );
+          glass.scale.set(1);
         }
         if (hammer) hammer.visible = false;
       }
@@ -370,12 +399,7 @@ export async function createBuddyRenderer(canvas, library) {
         (0.5 - point.y * 0.5) * height - p.y,
       );
       if (actual > 0.001) {
-        const k = inspect.radius / actual;
-        glass.scale.set(
-          glass.scale.x * k,
-          glass.scale.y * k,
-          glass.scale.z * k,
-        );
+        sizeBuddyLens(nodesMap, suffix, inspect.radius / actual);
       }
       return inspect.radius;
     }
@@ -410,7 +434,7 @@ export async function createBuddyRenderer(canvas, library) {
           inspect ? inspectName(inspect) : "Idle",
           inspect ? 1 : 0,
         );
-        configure(probe.nodes, form, inspect, size);
+        configure(probe.nodes, form, inspect);
         place(probe.root, size, width / 2, height / 2);
         probe.root.updateMatrixWorld();
         camera.updateMatrixWorld();
@@ -506,7 +530,7 @@ export async function createBuddyRenderer(canvas, library) {
             blendBuddyPose(node, previous, a);
           }
         }
-        configure(nodes, form, inspect, size);
+        configure(nodes, form, inspect);
         if (name === "Closeup_Inspect_R") {
           const glass = nodes.get("Magnifier.R");
           if (glass) glass.visible = true;
@@ -531,7 +555,7 @@ export async function createBuddyRenderer(canvas, library) {
           const turn = smooth(p) * Math.PI * 8;
           root.rotation.y += turn;
           form = p < 0.5 ? transition.from : transition.to;
-          configure(nodes, form, undefined, size);
+          configure(nodes, form, undefined);
           opacity =
             0.7 +
             0.3 *
@@ -664,7 +688,18 @@ export async function createBuddyRenderer(canvas, library) {
               brow.rotation.z += sign * faceState[2];
             }
             const glint = nodes.get("Catchlight_" + current + sign);
-            if (glint) glint.visible = blink < 0.92;
+            if (glint) {
+              glint.visible = blink < 0.92;
+              if (eye && name === "Closeup_Inspect_R" && suffix === "R") {
+                followBuddyEyeCatchlight(
+                  eye,
+                  glint,
+                  rest.get(eye).position,
+                  rest.get(glint).position,
+                  1 + close * 0.95,
+                );
+              }
+            }
           }
           const mouth = nodes.get("Mouth_" + current);
           if (mouth)
