@@ -32,21 +32,26 @@ Blender's GPL applies to Blender software, not to these authored output models:
 GPL-2.0-or-later licence. The OGL 1.0.11 runtime is Unlicense:
 <https://github.com/oframe/ogl>.
 
-The current geometry follows Israel's request for a complete sculptural
-character on 16 November. The key has a rounded head, real bow opening and
-volumetric shaft; the pound has a curved round-section stroke; the heart has
-full lobes and a continuous tapered body. Fused cheek and orbital volumes,
-partial eyelids, curved brows and a recessed smiling mouth give each form an
-expressive face. Soft, continuous arms connect to articulated pearl gloves.
-There are no screen panels, border bezels or mechanical elbow joints.
+The current geometry restores the original orange-edged `v2-refined` identity,
+explicitly selected by Israel on 16 November: navy symbol depth and arms, an
+orange perimeter, teal inset face and teal hands. The key retains its real bow
+opening and shaft; the pound and heart retain their original silhouettes.
+Small domed navy almond eyes, catchlights and a curved smile replace the later
+white eyeballs, cheek volumes and pearl gloves. All bodies have real depth and
+rounded bevels; they are not image planes.
 
-Navy, teal and orange retain their distinct brand roles. The bodies use linear
-vertex colour in glTF COLOR_0 to blend cleanly across a single continuous
-sculpture. The runtime material must multiply this attribute by the material's
-base colour. Eyes and gloves use their own materials. Studio authoring renders
-show the sculpt and physically based materials; the application adds projected
-lighting, luminous contours, restrained reconstruction texture and slight body
-translucency. Those runtime effects are not baked into the fallback images.
+Arms have ordered joint loops with smooth elbow and wrist weighting. Each hand
+has a continuous cuff, palm and five fingers. A finger vertex can follow its
+own joint chain and palm, never a neighbouring digit or the opposite hand.
+Pose authoring aligns the forearm with the wrist and grip without reflected
+scales. CI inspects the shipped skin influences as well as posed hand matrices.
+
+The runtime uses distinct face and hand materials to keep those features
+readable within the translucent projection. Navy, teal and orange retain their
+brand roles. Luminous contours, spatial reconstruction lines and a slow light
+sweep accompany the shaded geometry; the raster is bounded to avoid subpixel
+aliasing in small portraits. Studio authoring renders show the geometry and
+physical materials; runtime projection effects are not baked into fallbacks.
 
 The runtime applies the shared hologram GPU material and expression transforms
 to the actual geometry. PNGs are only the source-faithful fallback if WebGL or

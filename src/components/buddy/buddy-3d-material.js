@@ -28,6 +28,10 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
   const iris = name === "Eye_Iris" ? 1 : 0;
   const emitter = name === "Hologram_Emitter" ? 1 : 0;
   const trace = name === "Hologram_Projection" ? 1 : 0;
+  const face = name === "Hologram_Face";
+  const hands = name === "Hologram_Hands";
+  const surfaceAlpha = !projection ? 1 : face ? 0.94 : hands ? 0.90 : name === "Hologram_Rim" ? 0.85 : 0.74;
+  const reconstruction = !projection ? 0 : face ? 0.45 : hands ? 0.65 : 1;
   const projectionColor = name === "Hologram_Rim" || emitter
     ? [1, 0.20, 0.055] : [0.045, 0.55, 0.49];
   const color = hologramColor(material);
@@ -50,7 +54,7 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
       }`,
     fragment: `precision highp float;
       uniform vec3 baseColor, emission, projectionColor;
-      uniform float time, opacity, roughness, metallic, coat, lens, glow, projection, iris, emitter, trace;
+      uniform float time, opacity, roughness, metallic, coat, lens, glow, projection, iris, emitter, trace, surfaceAlpha, reconstruction, rasterFrequency;
       varying vec3 vNormal,vView,vWorld;
       ${vertexColors ? "varying vec4 vColor;" : ""}
       const float PI=3.14159265;
@@ -92,24 +96,28 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
         vec3 f0=mix(vec3(.04),albedo,metallic);
         vec3 sky=mix(vec3(.10,.13,.17),vec3(.43,.48,.51),n.y*.5+.5);
         vec3 color=albedo*sky*(1.0-metallic*.65);
-        color+=studioLight(n,v,vec3(-.6,.85,1.4),vec3(3.2,3.1,2.9),f0,albedo);
-        color+=studioLight(n,v,vec3(.9,.2,1.0),vec3(.65,1.05,.98),f0,albedo);
-        color+=studioLight(n,v,vec3(.15,.7,-1.0),vec3(.65,1.15,1.2),f0,albedo);
-        color+=studioLight(n,v,vec3(-.75,-.45,.6),vec3(.72,.20,.075),f0,albedo);
+        // Keep volume and sidewall shading, but projected surfaces emit their
+        // own colour instead of reflecting four bright studio softboxes.
+        float physicalLight=1.0-projection*.55;
+        color+=studioLight(n,v,vec3(-.6,.85,1.4),vec3(3.2,3.1,2.9),f0,albedo)*physicalLight;
+        color+=studioLight(n,v,vec3(.9,.2,1.0),vec3(.65,1.05,.98),f0,albedo)*physicalLight;
+        color+=studioLight(n,v,vec3(.15,.7,-1.0),vec3(.65,1.15,1.2),f0,albedo)*physicalLight;
+        color+=studioLight(n,v,vec3(-.75,-.45,.6),vec3(.72,.20,.075),f0,albedo)*physicalLight;
         vec3 reflection=studioReflection(reflect(-v,n));
-        color+=reflection*(fresnel(nv,f0)*(1.0-roughness*.65)+coat*.11);
-        // Retain navy, teal and orange surface colour through the projected
-        // light. White facial features stay legible rather than becoming neon.
+        color+=reflection*(fresnel(nv,f0)*(1.0-roughness*.65)+coat*.11)*(1.0-projection*.85);
+        color+=albedo*projection*.38;
+        // Orange stays on the perimeter, teal on face/hands and navy on the
+        // stem/sidewalls. The dark facial ink has no reconstruction texture.
         float contour=pow(1.0-nv,2.0);
-        color+=projectionColor*pow(1.0-nv,5.0)*projection*.65;
+        color+=projectionColor*pow(1.0-nv,5.0)*projection*.52;
         color+=emission*(1.0+trace*2.5);
-        // Fine reconstruction texture is subpixel scale and low contrast. A
-        // slow travelling light passes through it; no flashing or dark bands.
-        float raster=sin(gl_FragCoord.y*3.14159265);
+        // Spatial reconstruction lines cross the actual 3D volume. They do
+        // not flicker, and the slow light sweep never switches the body off.
+        float raster=sin(vWorld.y*rasterFrequency);
         float grain=fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)-.5;
-        float wave=pow(.5+.5*sin(vWorld.y*3.5-time*.65),80.0);
-        color*=1.0+projection*(raster*.004+grain*.002);
-        color+=projectionColor*projection*wave*(.12+contour*.35);
+        float wave=pow(.5+.5*sin(vWorld.y*3.5-time*.65),60.0);
+        color*=1.0+reconstruction*(raster*.055+grain*.004);
+        color+=projectionColor*projection*wave*(.20+contour*.35);
         // A hot optical core and coloured rim make the source read as light,
         // while its low-contrast rays remain inside the authored silhouette.
         color+=emitter*mix(projectionColor*.9,vec3(2.0,1.55,1.1),pow(nv,6.0));
@@ -123,7 +131,8 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
         color+=vec3(.06,.65,.55)*glow;
         // Gentle photographic highlight compression, then one linear-to-sRGB conversion.
         color=color/(vec3(1.0)+color*.28);
-        float bodyAlpha=1.0-projection*(.045-.02*contour);
+        float bodyAlpha=mix(surfaceAlpha,1.0,contour*.55);
+        bodyAlpha*=1.0-reconstruction*.025*(.5+.5*raster);
         float alpha=mix(bodyAlpha,.055+.24*edge,lens)*opacity;
         gl_FragColor=vec4(toSRGB(clamp(color,0.0,1.0)),alpha);
       }`,
@@ -141,6 +150,9 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
       iris: { value: iris },
       emitter: { value: emitter },
       trace: { value: trace },
+      surfaceAlpha: { value: surfaceAlpha },
+      reconstruction: { value: reconstruction },
+      rasterFrequency: { value: 170 },
       projectionColor: { value: projectionColor },
     },
     transparent: true,

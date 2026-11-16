@@ -45,10 +45,11 @@ NAVY = material('Hologram_Deep', brand_color('14366A'), .015, metallic=.06, roug
 ORANGE = material('Hologram_Rim', brand_color('E15E31'), .05, metallic=.35, roughness=.22)
 EMITTER = material('Hologram_Emitter', brand_color('E15E31'), .42, metallic=.10, roughness=.20)
 PROJECTION = material('Hologram_Projection', brand_color('258D8A'), .40, metallic=.05, roughness=.22)
-GLOVE = material('Glove_Pearl', (.88, .90, .85), metallic=.02, roughness=.36, coat=.16)
+GLOVE = material('Hologram_Hands', brand_color('258D8A'), .025, metallic=.02, roughness=.32, coat=.12)
+FACE = material('Hologram_Face', brand_color('258D8A'), .025, metallic=.03, roughness=.34, coat=.14)
 WHITE = material('Eye_White', (.95, .97, .94), metallic=.02, roughness=.20)
 IRIS = material('Eye_Iris', (.015, .15, .18), metallic=.20, roughness=.22)
-EYE = material('Face_Ink', (.004, .012, .025), metallic=.04, roughness=.20)
+EYE = material('Face_Ink', brand_color('14366A'), metallic=.02, roughness=.32, coat=.10)
 LIGHT = material('Eye_Catchlight', (.96, 1, .98), .15, metallic=0, roughness=.14)
 LENS = material('Hologram_Lens', (.60, .88, .85), metallic=0, roughness=.08)
 LENS.node_tree.nodes.get('Principled BSDF').inputs['Transmission Weight'].default_value=.93
@@ -254,90 +255,61 @@ def mouth_bowl(name, parent):
     for poly in mesh.polygons:poly.use_smooth=True
     return obj
 
+def fade(lo,hi,value):
+    t=max(0,min(1,(value-lo)/(hi-lo)));return t*t*(3-2*t)
+
+def polygon_path(points):
+    return 'M '+' L '.join(f'{x:.5f} {y:.5f}' for x,y in points)+' Z'
+
+def reverse_path(source):
+    return ' '.join(polygon_path(list(reversed(loop))) for loop in contour_loops(source))
+
+def almond(name,pos,parent):
+    # A small navy almond with a gently domed front, matching the original
+    # character. It is a closed 3D mesh, not a white eyeball or image decal.
+    vertices=[(0,-.030,0)];faces=[];segments=48
+    for index in range(segments):
+        a=2*math.pi*index/segments
+        vertices.append((.145*math.cos(a),-.008,.076*math.sin(a)*abs(math.sin(a))**.30+.018*math.cos(a)))
+    for index in range(segments):faces.append((0,1+index,1+(index+1)%segments))
+    vertices.append((0,.012,0));back=len(vertices)-1
+    for index in range(segments):faces.append((back,1+(index+1)%segments,1+index))
+    mesh=bpy.data.meshes.new(name);mesh.from_pydata(vertices,[],faces);mesh.update()
+    obj=bpy.data.objects.new(name,mesh);scene.collection.objects.link(obj);obj.location=pos
+    return finish(obj,name,EYE,parent)
+
+HEAD='M -34 -112 C -37 -173 38 -173 35 -112 C 35 -104 50 -105 60 -100 C 82 -94 87 -80 87 -60 L 87 -25 C 87 -1 71 12 31 12 L -31 12 C -72 12 -87 0 -87 -25 L -87 -60 C -87 -88 -68 -102 -47 -104 Q -34 -105 -34 -112 Z M -16 -130 C -16 -106 18 -106 18 -130 C 18 -153 -16 -153 -16 -130 Z'
+TEETH='M 31 52 L 62 52 Q 75 52 75 65 L 75 74 Q 75 84 63 84 L 44 84 L 44 95 L 62 95 Q 75 95 75 107 Q 75 120 62 120 L 31 120 Z'
 forms={}
-face_locations={'property':(0,.48),'investment':(-.18,.86),'support':(0,.45)}
+face_locations={'property':(0,.48),'investment':(0,.98),'support':(0,.05)}
 for form in ('property','investment','support'):
     group=empty('Form_'+form,ROOT);forms[form]=group
     fx,fz=face_locations[form]
-    facial_scale=1.15 if form=='support' else 1
+    contour('Body_'+form,SHAPES[form],NAVY,.16,.055,group)
     if form=='property':
-        pieces=[sphere('KeyHeadVolume',(0,-.015,.51),(.80,.47,.65),TEAL,segments=48,rings=28),
-            pill('KeyShaftVolume',(0,.025,-.03),(0,.025,-1.27),.235,NAVY),
-            cube('KeyToothUpper',(.36,.025,-.64),(.66,.43,.32),ORANGE,bevel=.15),
-            cube('KeyToothLower',(.36,.025,-1.06),(.66,.43,.32),ORANGE,bevel=.15)]
-        bpy.ops.mesh.primitive_torus_add(major_radius=.225,minor_radius=.13,major_segments=48,minor_segments=20,location=(0,0,1.30),rotation=(math.pi/2,0,0))
-        pieces.append(finish(bpy.context.object,'RoundedKeyBow',TEAL))
+        frame_source=HEAD+' '+reverse_path(PANELS[form])
+        contour('OrangeFrame_'+form,frame_source,ORANGE,.042,.035,group,front=-.205)
+        contour('OrangeKeyTeeth',TEETH,ORANGE,.075,.035,group,front=-.14)
+        cube('TealKeyCollar',(0,-.015,-.19),(.70,.45,.18),TEAL,group,.065)
     elif form=='investment':
-        pieces=[sweep('OrganicPoundSpine',[(.65,0,1.08),(.20,0,1.27),(-.42,0,1.00),(-.53,0,.45),(-.38,0,-.18),(-.48,0,-.65),(-.82,0,-1.15)],[1.08,1.14,1.18,1.05,.93,.95,1.0],NAVY,radius=.255),
-            sweep('PoundCrossbar',[(-.87,0,-.13),(-.1,-.025,-.12),(.61,0,-.10)],[.92,1,.92],NAVY,radius=.19),
-            sweep('PoundBase',[(-.82,0,-1.15),(-.28,0,-1.12),(.28,.015,-1.13),(.77,0,-1.03)],[1,1.10,1.05,.9],NAVY,radius=.23),
-            sphere('PoundBrowVolume',(-.18,-.015,.95),(.67,.46,.51),TEAL,segments=48,rings=28)]
-        for index,(position,radius) in enumerate([((.65,0,1.08),.275),((-.82,0,-1.15),.255),((.77,0,-1.03),.207),((-.87,0,-.13),.175),((.61,0,-.10),.175)]):
-            pieces.append(sphere('PoundRoundedEnd_'+str(index),position,(radius,)*3,NAVY,segments=24,rings=16))
+        # A continuous rounded border follows the true concave silhouette.
+        # Scaling its inner path about the origin crossed the narrow strokes.
+        outline('OrangeFrame_'+form,SHAPES[form],ORANGE,.075,group,-.230)
     else:
-        pieces=[sphere('HeartLobeLeft',(-.53,0,.75),(.66,.50,.70),TEAL,segments=48,rings=28),
-            sphere('HeartLobeRight',(.53,0,.75),(.66,.50,.70),TEAL,segments=48,rings=28),
-            ring_volume('HeartTaper',[(1.08,.10,.08),(.95,.50,.23),(.75,1.00,.37),(.40,1.13,.47),(.05,1.00,.54),(-.35,.81,.50),(-.80,.50,.36),(-1.25,.15,.16),(-1.48,.025,.035)])]
-    # Orbital pads, cheek planes and chin blend into the whole sculpture.
-    # There is no front panel, bezel, planar cap or decorative silhouette rim.
+        contour('OrangeFrame_'+form,SHAPES[form]+' '+reverse_path(PANELS[form]),ORANGE,.042,.035,group,front=-.205)
+    contour('TealInset_'+form,PANELS[form],FACE,.024,.026,group,front=-.205)
+    face=empty('Face_'+form,group);face.location=(fx,-.270,fz)
+    if form=='investment':face.scale=(.9,1,.9)
     for side in (-1,1):
-        pieces.append(sphere('OrbitalPad_'+str(side),(fx+side*.27*facial_scale,-.25,fz+.105*facial_scale),(.255*facial_scale,.32,.285*facial_scale),TEAL,segments=32,rings=20))
-        pieces.append(sphere('CheekVolume_'+str(side),(fx+side*.40*facial_scale,-.17,fz-.07*facial_scale),(.24*facial_scale,.30,.20*facial_scale),TEAL,segments=32,rings=20))
-    body=sculpt('Body_'+form,pieces,group)
-    # An actual recessed mouth opening gives the face depth in profile.
-    cutter=sphere('MouthSculptTool',(fx,-.50,fz-.22*facial_scale),(.275*facial_scale,.19,.145*facial_scale),EYE,segments=32,rings=20)
-    bpy.context.view_layer.objects.active=body;body.select_set(True)
-    cut=body.modifiers.new('Sculpted mouth recess','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=cutter
-    bpy.ops.object.modifier_apply(modifier=cut.name)
-    bpy.data.objects.remove(cutter,do_unlink=True);body.select_set(False)
-    body.data.validate(clean_customdata=False)
-    body.data.materials.clear();body.data.materials.append(CHARACTER)
-    for poly in body.data.polygons:poly.material_index=0;poly.use_smooth=True
-    colours=body.data.color_attributes.new(name='Color',type='FLOAT_COLOR',domain='POINT')
-    body.data.color_attributes.active_color_index=0;body.data.color_attributes.render_color_index=0
-    def fade(lo,hi,value):
-        t=max(0,min(1,(value-lo)/(hi-lo)));return t*t*(3-2*t)
-    def tint(a,b,t):return tuple(a[index]*(1-t)+b[index]*t for index in range(3))
-    teal,navy,orange=map(brand_color,('258D8A','14366A','E15E31'))
-    for vertex in body.data.vertices:
-        x,y,z=vertex.co
-        if form=='property':
-            color=tint(navy,teal,fade(-.12,.08,z))
-            color=tint(color,orange,fade(.20,.34,x)*(1-fade(-.35,-.20,z)))
-        elif form=='investment':
-            color=tint(navy,teal,fade(.28,.50,z))
-            color=tint(color,orange,fade(.54,.72,x)*(1-fade(-.85,-.70,z)))
-        else:
-            color=tint(teal,navy,fade(.16,.43,y)*.65)
-            color=tint(color,orange,fade(1.12,1.42,-z)*.78)
-        colours.data[vertex.index].color=(*color,1)
-    face=empty('Face_'+form,group);face.location=(fx,-.48,fz);face.scale=(facial_scale,1,facial_scale)
-    for side in (-1,1):
-        # The animated pupil carries its layered iris and sclera. The complete
-        # eye therefore blinks and enlarges together, including the close-up.
-        eye=sphere('Eye_'+form+('_L' if side>0 else '_R'),(side*.27,-.180,.105),(.090,.020,.130),EYE,face,32,rings=20)
-        sclera=sphere('Sclera_'+form+str(side),(0,.090,0),(.180,.085,.230),WHITE,eye,32,rings=20)
-        # A shallow convex front and a longer hidden back attach the white to
-        # the face. Its visible perimeter stays clear of the panel even at the
-        # 1.95x magnified-eye pose; intersecting rims caused stippled outlines.
-        for vertex in sclera.data.vertices:
-            if vertex.co.y>0:vertex.co.y*=2
-        sclera.data.update()
-        sphere('Iris_'+form+str(side),(0,.014,0),(.122,.009,.160),IRIS,eye,32,rings=20)
-        sphere('Catchlight_'+form+str(side),(side*.27-.029,-.214,.158),(.030,.008,.037),LIGHT,face,16)
-        line('UpperLid_'+form+str(side),[(-.15,.040,.16),(-.02,.060,.235),(.14,.044,.17)],.010,TEAL,eye)
-        line('LowerLid_'+form+str(side),[(side*.16,.060,-.10),(side*.11,.060,-.195),(0,.065,-.225)],.009,TEAL,eye)
-        raised=.025 if side<0 else 0
-        brow=line('Brow_'+form+str(side),[(side*.27-.15,.052,.36+raised),(side*.27-.07,.037,.39+raised),(side*.27+.02,.030,.40+raised),(side*.27+.10,.043,.38+raised),(side*.27+.15,.055,.35+raised)],.024,NAVY,face)
-        for point,radius in zip(brow.data.splines[0].bezier_points,(.35,.90,1,.80,.30)):point.radius=radius
-    # The mouth is one animated assembly: its cavity, teeth and lower lip
-    # stay together through speech and expression changes.
-    sphere('Nose_'+form,(0,-.105,-.047),(.085,.075,.072),TEAL,face,24,rings=16)
-    mouth=empty('Mouth_'+form,face);mouth.location.z=-.220
-    mouth_bowl('MouthCavity_'+form,mouth)
-    sweep('UpperTeeth_'+form,[(-.155,-.052,.027),(0,-.068,.005),(.155,-.052,.027)],[.65,1,.65],WHITE,mouth,radius=.028)
-    line('Smile_'+form,[(-.265,-.025,.025),(-.18,-.044,-.078),(0,-.052,-.132),(.18,-.044,-.078),(.265,-.025,.025)],.024,TEAL,mouth)
-    sphere('LowerLip_'+form,(0,-.018,-.087),(.112,.025,.028),ORANGE,mouth,20)
+        almond('Eye_'+form+('_L' if side>0 else '_R'),(side*.27,0,.075),face)
+        sphere('Catchlight_'+form+str(side),(side*.27+.035,-.038,.108),(.032,.007,.032),LIGHT,face,20)
+        raised=.018 if side>0 else 0
+        brow=line('Brow_'+form+str(side),[(side*.27-.13,-.012,.255+raised),(side*.27,-.018,.285+raised),(side*.27+.13,-.012,.278+raised)],.013,EYE,face)
+        for point,radius in zip(brow.data.splines[0].bezier_points,(.65,1,.65)):point.radius=radius
+    # The simple original smile retains both animation anchors. Speech scales
+    # the assembly without teeth, a protruding muzzle or detached lip layers.
+    mouth=empty('Mouth_'+form,face);mouth.location.z=-.135
+    line('Smile_'+form,[(-.16,-.010,.035),(-.075,-.016,-.024),(.025,-.016,-.032),(.16,-.010,.055)],.015,EYE,mouth)
 
 # A single real armature. Left/right are the character's own sides, not screen sides.
 armature=bpy.data.armatures.new('BuddySkeleton')
@@ -357,6 +329,8 @@ for side,suffix in ((1,'L'),(-1,'R')):
     side_positions[suffix]=(shoulder,elbow,wrist)
     bone('UpperArm.'+suffix,shoulder,elbow,'Root')
     bone('Forearm.'+suffix,elbow,wrist,'UpperArm.'+suffix)
+    bisector=((Vector(elbow)-Vector(shoulder)).normalized()+(Vector(wrist)-Vector(elbow)).normalized()).normalized()
+    bone('Elbow.'+suffix,elbow,Vector(elbow)+bisector*.18,'Root')
     bone('Hand.'+suffix,wrist,(wrist[0],wrist[1],wrist[2]-.29),'Forearm.'+suffix)
     specs=[]
     for digit,offset,length in [('Index',-.16,.30),('Middle',-.05,.36),('Ring',.07,.32),('Pinky',.18,.245)]:
@@ -381,74 +355,136 @@ def weight(o,bone_name):
     o.select_set(False)
     return o
 
+def bind_skin(obj,weights):
+    groups={}
+    for index,values in enumerate(weights):
+        total=sum(values.values())
+        for name,value in values.items():
+            if value<=0:continue
+            if name not in groups:groups[name]=obj.vertex_groups.new(name=name)
+            groups[name].add([index],value/total,'REPLACE')
+    obj.parent=rig
+    modifier=obj.modifiers.new('Handed skeleton','ARMATURE');modifier.object=rig
+    return obj
+
+def limb_mesh(side,suffix):
+    # Ordered rings and explicit parent-joint weights replace the remeshed
+    # hose. The forearm cannot borrow a finger's weights, and every elbow has
+    # enough evenly spaced loops for a soft bend with a readable silhouette.
+    shoulder,elbow,wrist=map(Vector,side_positions[suffix])
+    points=[Vector((side*.29,.015,-.08)),shoulder,elbow,wrist]
+    vertices=[];faces=[];weights=[];radial=16;steps=12
+    for span in range(3):
+        p0,p1,p2,p3=points[max(0,span-1)],points[span],points[span+1],points[min(3,span+2)]
+        for sample in range(steps+(1 if span==2 else 0)):
+            t=sample/steps
+            centre=.5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t*t+(-p0+3*p1-3*p2+p3)*t*t*t)
+            tangent=.5*((-p0+p2)+2*(2*p0-5*p1+4*p2-p3)*t+3*(-p0+3*p1-3*p2+p3)*t*t)
+            tangent.normalize();u=Vector((0,1,0));u=(u-tangent*u.dot(tangent)).normalized();v=tangent.cross(u)
+            radius=(.090 if span==0 else .093-.010*t if span==1 else .083-.006*t)
+            if span==0:values={'Root':1-fade(.1,.95,t),'UpperArm.'+suffix:fade(.1,.95,t)}
+            elif span==1:
+                mix=fade(.62,1,t);values={'UpperArm.'+suffix:1-mix,'Elbow.'+suffix:mix}
+            else:
+                joint=1-fade(0,.34,t);hand=.20*fade(.78,1,t)
+                values={'Elbow.'+suffix:joint,'Forearm.'+suffix:1-joint-hand,'Hand.'+suffix:hand}
+            for index in range(radial):
+                angle=2*math.pi*index/radial
+                vertices.append(tuple(centre+radius*(u*.92*math.cos(angle)+v*math.sin(angle))));weights.append(values)
+    rows=len(vertices)//radial
+    for row in range(rows-1):
+        for index in range(radial):
+            a=row*radial+index;b=row*radial+(index+1)%radial
+            faces.append((a,b,b+radial,a+radial))
+    faces.append(tuple(reversed(range(radial))));faces.append(tuple((rows-1)*radial+i for i in range(radial)))
+    mesh=bpy.data.meshes.new('ArmSurface.'+suffix);mesh.from_pydata(vertices,[],faces);mesh.update()
+    obj=bpy.data.objects.new('ArmMesh.'+suffix,mesh);scene.collection.objects.link(obj)
+    finish(obj,obj.name,NAVY);bind_skin(obj,weights)
+
 for side,suffix in ((1,'L'),(-1,'R')):
     shoulder,elbow,wrist=side_positions[suffix]
+    limb_mesh(side,suffix)
     pieces=[]
-    inner_shoulder=(side*.25,.015,-.10)
-    hose=sweep('SoftArm_'+suffix,[inner_shoulder,(side*.48,.01,-.06),shoulder,(side*1.08,-.025,-.025),(side*1.34,-.035,-.15),elbow,(side*1.46,-.025,-.43),wrist],
-        [1.10,1.18,1.24,1.13,1.05,1.02,.94,.86],TEAL,radius=.115)
-    bpy.context.view_layer.objects.active=hose;hose.select_set(True);bpy.ops.object.convert(target='MESH')
-    pieces.append(weight(bpy.context.object,'UpperArm.'+suffix))
-    # A hemispherical root sits within every symbol, including the pound's
-    # crossbar; the skin remains rounded if a gesture reveals its shoulder.
-    pieces.append(weight(sphere('ShoulderRoot_'+suffix,inner_shoulder,(.1265,.1265,.1265),TEAL),'Root'))
-    pieces.append(weight(sphere('Palm_'+suffix,(wrist[0],wrist[1],wrist[2]-.16),(.195,.115,.22),GLOVE),'Hand.'+suffix))
-    for name,a,b,r in hand_parts[suffix]:pieces.append(weight(capsule('Finger_'+name,a,b,r,GLOVE),name))
+    pieces.append(cube('SoftCuff_'+suffix,(wrist[0],wrist[1],wrist[2]-.02),(.21,.18,.12),GLOVE,bevel=.035))
+    pieces.append(sphere('Palm_'+suffix,(wrist[0],wrist[1],wrist[2]-.17),(.185,.102,.20),GLOVE))
+    for digit in ('Index','Middle','Ring','Pinky'):
+        segments=[part for part in hand_parts[suffix] if part[0].startswith(digit+'.')]
+        pieces.append(pill('Finger_'+digit+'.'+suffix,segments[0][1],segments[-1][2],segments[0][3],GLOVE))
+    thumb=[part for part in hand_parts[suffix] if part[0].startswith('Thumb.')]
+    thumb_shape=sweep('ThumbSurface.'+suffix,[thumb[0][1],thumb[0][2],thumb[-1][2]],[1,.96,.86],GLOVE,radius=.061)
+    bpy.context.view_layer.objects.active=thumb_shape;thumb_shape.select_set(True);bpy.ops.object.convert(target='MESH');thumb_shape.select_set(False)
+    pieces.append(bpy.context.object)
+    pieces.append(sphere('ThumbTip.'+suffix,thumb[-1][2],(.053,)*3,GLOVE))
     bpy.ops.object.select_all(action='DESELECT')
     for o in pieces:o.select_set(True)
     bpy.context.view_layer.objects.active=pieces[0];bpy.ops.object.join()
     hand=bpy.context.object;hand.name='HandMesh.'+suffix;hand.parent=rig
-    # Fuse the overlapping phalanges and palm into one continuous glove surface.
-    # Weights are rebuilt after remeshing, so there are no disconnected bead joints.
-    remesh=hand.modifiers.new('Continuous glove surface','REMESH');remesh.mode='VOXEL';remesh.voxel_size=.014;remesh.use_smooth_shade=True
+    # Sculpted fingers, thenar pad and cuff form one closed teal hand. Arms
+    # retain their deliberate joint loops instead of being voxel-remeshed.
+    bpy.ops.object.transform_apply(location=True,rotation=True,scale=True)
+    remesh=hand.modifiers.new('Continuous hand surface','REMESH');remesh.mode='VOXEL';remesh.voxel_size=.012;remesh.use_smooth_shade=True
     bpy.ops.object.modifier_apply(modifier=remesh.name)
-    smooth=hand.modifiers.new('Soft glove knuckles','SMOOTH');smooth.factor=.45;smooth.iterations=3
+    smooth=hand.modifiers.new('Soft hand knuckles','SMOOTH');smooth.factor=.40;smooth.iterations=4
     bpy.ops.object.modifier_apply(modifier=smooth.name)
-    simplify=hand.modifiers.new('Efficient glove topology','DECIMATE');simplify.ratio=.55
+    simplify=hand.modifiers.new('Efficient hand topology','DECIMATE');simplify.ratio=.65
     bpy.ops.object.modifier_apply(modifier=simplify.name)
     hand.data.validate(clean_customdata=False)
-    # The continuous arm flows directly into the soft glove, with no elbow
-    # ball, rigid wrist ring or mechanical colour bands.
-    for slot in (TEAL,GLOVE,NAVY,ORANGE):
-        if slot not in hand.data.materials[:]:hand.data.materials.append(slot)
-    teal_index=next(i for i,m in enumerate(hand.data.materials) if m==TEAL)
-    glove_index=next(i for i,m in enumerate(hand.data.materials) if m==GLOVE)
-    navy_index=next(i for i,m in enumerate(hand.data.materials) if m==NAVY)
-    orange_index=next(i for i,m in enumerate(hand.data.materials) if m==ORANGE)
-    for poly in hand.data.polygons:
-        z=sum(hand.data.vertices[index].co.z for index in poly.vertices)/len(poly.vertices)
-        poly.material_index=glove_index if z<wrist[2]-.025 else teal_index
+    hand.data.materials.clear();hand.data.materials.append(GLOVE)
+    for poly in hand.data.polygons:poly.material_index=0;poly.use_smooth=True
     hand.vertex_groups.clear()
-    relevant={name:ends for name,ends in bone_specs.items() if name.endswith('.'+suffix)}
-    groups={name:hand.vertex_groups.new(name=name) for name in relevant}
-    root_group=hand.vertex_groups.new(name='Root')
+    skin=[]
     for vertex in hand.data.vertices:
         point=vertex.co
-        root_mix=1-fade(.46,.84,abs(point.x)) if point.z>-.26 else 0
-        if root_mix>0:root_group.add([vertex.index],root_mix,'REPLACE')
+        drop=wrist[2]-point.z;lateral=side*(point.x-wrist[0])
+        if drop<.085:
+            blend=fade(-.065,.085,drop)
+            skin.append({'Forearm.'+suffix:1-blend,'Hand.'+suffix:blend});continue
+        digit=None;blend=0
+        def chain_distance(prefix):
+            distances=[]
+            for name,(a,b) in bone_specs.items():
+                if not (name.startswith(prefix+'.') and name.endswith('.'+suffix)):continue
+                delta=b-a;fraction=max(0,min(1,(point-a).dot(delta)/delta.length_squared))
+                distances.append((point-a-delta*fraction).length)
+            return min(distances)
+        thumb_surface=lateral<-.14 and drop<.36 and chain_distance('Thumb')<min(chain_distance(digit) for digit in ('Index','Middle','Ring','Pinky'))*.8
+        if thumb_surface:
+            digit='Thumb';blend=fade(.14,.25,-lateral)*fade(.075,.15,drop)
+        elif drop>.265:
+            digit=min([('Index',-.16),('Middle',-.05),('Ring',.07),('Pinky',.18)],key=lambda value:abs(lateral-value[1]))[0]
+            blend=fade(.265,.355,drop)
+        if not digit or blend==0:
+            skin.append({'Hand.'+suffix:1});continue
+        # A distal finger may use only its own anatomical chain. Palm and web
+        # areas stay on Hand, never the adjacent finger or the forearm.
         distances=[]
-        for name,(a,b) in relevant.items():
+        for name,(a,b) in bone_specs.items():
+            if not (name.startswith(digit+'.') and name.endswith('.'+suffix)):continue
             direction=b-a;fraction=max(0,min(1,(point-a).dot(direction)/direction.length_squared))
             distance=(point-(a+direction*fraction)).length
             distances.append((distance,name))
         closest=sorted(distances)[:2]
-        weights=[1/(distance+.025)**5 for distance,name in closest];total=sum(weights)
-        for (_,name),value in zip(closest,weights):groups[name].add([vertex.index],(1-root_mix)*value/total,'REPLACE')
+        values=[1/(distance+.035)**3 for distance,name in closest];total=sum(values)
+        assigned={'Hand.'+suffix:1-blend}
+        for (_,name),value in zip(closest,values):assigned[name]=blend*value/total
+        skin.append(assigned)
     hand['handedness']='left' if suffix=='L' else 'right';hand['digits']=5
-    modifier=hand.modifiers.new('Handed skeleton','ARMATURE');modifier.object=rig
+    hand['palm_normal']=[0,-1,0];bind_skin(hand,skin)
     hand.select_set(False)
     socket=empty('Grip.'+suffix)
     socket.parent=rig;socket.parent_type='BONE';socket.parent_bone='Hand.'+suffix
     # Bone local +Y is wrist-to-fingers; socket sits in the centre of the palm.
-    socket.location=(0,-.12,-.045)
+    socket.location=(0,-.12,.095)
     socket['handedness']=hand['handedness']
     glass=empty('Magnifier.'+suffix,socket)
+    glass.rotation_euler.z=side*math.pi/2
     capsule('GlassHandle.'+suffix,(0,0,0),(0,-.63,0),.052,ORANGE,glass)
     bpy.ops.mesh.primitive_torus_add(major_radius=.40,minor_radius=.035,major_segments=48,minor_segments=10,location=(0,-1.02,0))
     ring=bpy.context.object;finish(ring,'GlassRing.'+suffix,TEAL,glass)
     lens=sphere('GlassLens.'+suffix,(0,-1.02,0),(.375,.375,.008),LENS,glass,32)
     centre=empty('LensCentre.'+suffix,glass);centre.location=(0,-1.02,0)
     hammer=empty('Hammer.'+suffix,socket)
+    hammer.rotation_euler.z=side*math.pi/2
     capsule('HammerHandle.'+suffix,(0,.10,0),(0,-.56,0),.045,ORANGE,hammer)
     cube('HammerHead.'+suffix,(0,-.56,0),(.39,.16,.16),NAVY,hammer,.04)
 
@@ -500,23 +536,32 @@ def world_rotation(name, rotation):
     bpy.context.view_layer.update()
 
 def reach_hand(suffix, wrist_target, hand_rotation, amount=1):
-    """Analytic two-bone IK; elbows bend outwards, never swap handed frames."""
+    """Two-bone IK with an anatomical approach into the requested palm frame."""
     shoulder,elbow,wrist=map(Vector,side_positions[suffix])
-    goal=wrist.lerp(Vector(wrist_target),amount)
     first=(elbow-shoulder).length;second=(wrist-elbow).length
-    direction=goal-shoulder;distance=min(direction.length,first+second-.001)
+    root_delta=rig.pose.bones['Root'].matrix@rig.data.bones['Root'].matrix_local.inverted()
+    goal=root_delta@wrist.lerp(Vector(wrist_target),amount);shoulder=root_delta@shoulder
+    rest=rig.data.bones['Hand.'+suffix].matrix_local.to_quaternion()
+    palm_rotation=root_delta.to_quaternion()@rest.slerp(hand_rotation@rest,amount)
+    direction=goal-shoulder;distance=max(abs(first-second)+.001,min(direction.length,first+second-.001))
     direction.normalize();goal=shoulder+direction*distance
     along=(first*first-second*second+distance*distance)/(2*distance)
-    bend=Vector((1 if suffix=='L' else -1,0,-.25))
-    bend=(bend-direction*bend.dot(direction)).normalized()
+    # Choose the elbow point nearest a straight continuation of the hand.
+    # The old fixed sideways pole forced the wrist into a sharp bend to keep
+    # the magnifier upright, even though the two-bone reach itself was valid.
+    ideal=goal-(palm_rotation@Vector((0,1,0)))*second
+    bend=ideal-(shoulder+direction*along);bend-=direction*bend.dot(direction)
+    if bend.length<.001:
+        bend=Vector((1 if suffix=='L' else -1,0,-.25));bend-=direction*bend.dot(direction)
+    bend.normalize()
     joint=shoulder+direction*along+bend*math.sqrt(max(0,first*first-along*along))
+    plane=(joint-shoulder).cross(goal-joint).normalized()
+    if plane.dot(root_delta.to_quaternion()@Vector((0,-1,0)))<0:plane=-plane
     for name,start,end in [('UpperArm.'+suffix,shoulder,joint),('Forearm.'+suffix,joint,goal)]:
-        rest=rig.data.bones[name].matrix_local.to_quaternion()
-        original=bone_specs[name][1]-bone_specs[name][0]
-        rotation=original.rotation_difference(end-start)@rest
+        axis=(end-start).normalized();across=axis.cross(plane).normalized()
+        rotation=Matrix((across,axis,plane)).transposed().to_quaternion()
         world_rotation(name,rotation)
-    rest=rig.data.bones['Hand.'+suffix].matrix_local.to_quaternion()
-    world_rotation('Hand.'+suffix,rest.slerp(hand_rotation@rest,amount))
+    world_rotation('Hand.'+suffix,palm_rotation)
 
 for name,duration in CLIPS.items():
     action=bpy.data.actions.new(name);rig.animation_data.action=action
@@ -556,16 +601,17 @@ for name,duration in CLIPS.items():
             # Front is -Y in Blender. Positive fore/aft coordinates are never
             # guessed from Euler signs: a real wrist target is solved in 3D.
             if name=='Closeup_Thumb_R':
-                reach_hand('R',(-.82,-.93,.32),Quaternion((0,1,0),-math.pi/2),envelope)
+                reach_hand('R',(-.86,-.55,.22),Quaternion((0,1,0),-math.pi/2),envelope)
                 rig.pose.bones['Hand.R'].scale=(1+.42*envelope,)*3
             else:
                 # The lens is 1.02 units above the grip, directly in front of
                 # the eye, with its normal towards the viewer.
-                reach_hand('R',(-.25,-.86,-.45),Quaternion((0,1,0),0),envelope)
+                reach_hand('R',(-.44,-.57,-.465),Quaternion((0,1,0),-math.pi/2),envelope)
         elif name.startswith('Inspect'):
             suffix='L' if name=='InspectRight' else 'R'
             target={'InspectLeft':(-1.55,-.18,-.15),'InspectRight':(1.55,-.18,-.15),'InspectUp':(-.60,-.35,.55),'InspectDown':(-1.10,-.18,-.45)}[name]
-            reach_hand(suffix,target,Quaternion((0,1,0),math.pi if name=='InspectDown' else 0))
+            palm_turn=math.pi/2 if suffix=='L' else -math.pi/2
+            reach_hand(suffix,target,Quaternion((0,1,0),palm_turn+(math.pi if name=='InspectDown' else 0)))
         if name in ('Think','Build') or name.startswith(('Inspect','Closeup')):
             suffix='L' if name=='InspectRight' else 'R'
             for p in rig.pose.bones:
@@ -575,7 +621,7 @@ for name,duration in CLIPS.items():
                         # A fist rolls from the knuckle to the fingertip. An
                         # equal 77-degree rotation at every joint buried the
                         # fingertip in the glove and pinched the visible folds.
-                        curl=({'01':.85,'02':1.15,'03':.65}[p.name.split('.')[1]] if not p.name.startswith('Thumb') else -.65)*envelope
+                        curl=({'01':.75,'02':.95,'03':.60}[p.name.split('.')[1]] if not p.name.startswith('Thumb') else -.45)*envelope
                     elif name=='Closeup_Inspect_R':curl*=envelope
                     rotate(p.name,curl,0,0)
         if name=='Closeup_Thumb_R':
@@ -587,10 +633,18 @@ for name,duration in CLIPS.items():
                 target=original.rotation_difference(Vector((0,-.03,1)))@rest
                 current=rig.pose.bones[key].matrix.to_quaternion()
                 world_rotation(key,current.slerp(target,envelope))
+        # A real intermediate joint turns the elbow loops as a volume. It
+        # avoids collapsing the ring by averaging two widely opposed matrices.
+        bpy.context.view_layer.update()
+        for suffix in ('L','R'):
+            upper=rig.pose.bones['UpperArm.'+suffix];fore=rig.pose.bones['Forearm.'+suffix]
+            joint=rig.pose.bones['Elbow.'+suffix]
+            joint.matrix=Matrix.LocRotScale(fore.head,upper.matrix.to_quaternion().slerp(fore.matrix.to_quaternion(),.5),Vector((1,1,1)))
+        bpy.context.view_layer.update()
         for p in rig.pose.bones:
             p.keyframe_insert('rotation_quaternion',frame=frame)
             p.keyframe_insert('scale',frame=frame)
-            if p.name=='Root':p.keyframe_insert('location',frame=frame)
+            if p.name=='Root' or p.name.startswith('Elbow.'):p.keyframe_insert('location',frame=frame)
     track=rig.animation_data.nla_tracks.new();track.name=name
     track.strips.new(name,0,action)
     track.mute=True
@@ -680,4 +734,16 @@ for name,seconds in [('Wave',1.2),('Closeup_Thumb_R',1.6),('Closeup_Inspect_R',1
         eye.scale=(1.35,1.35,1.35) if name=='Closeup_Inspect_R' and suffix=='R' else (1,1,1)
     if name=='Build':camera.data.lens=42;camera.location.x=-.4
     scene.render.filepath=str(OUT/f'pose-{name}.png');bpy.ops.render.render(write_still=True)
+    ROOT.rotation_euler.z=.24
+    scene.render.filepath=str(OUT/f'pose-{name}-quarter.png');bpy.ops.render.render(write_still=True)
+    ROOT.rotation_euler.z=0
+    if name.startswith('Closeup'):
+        previous_camera=(camera.location.copy(),camera.rotation_euler.copy(),camera.data.type,camera.data.lens,camera.data.ortho_scale)
+        bpy.context.view_layer.update()
+        palm=rig.pose.bones['Hand.R'];focus=palm.head+palm.matrix.to_3x3()@Vector((0,.15,0))
+        camera.data.type='ORTHO';camera.data.ortho_scale=1.18
+        for view,offset in [('front',Vector((0,-3,0))),('quarter',Vector((-1.4,-3,.3)))]:
+            camera.location=focus+offset;camera.rotation_euler=(focus-camera.location).to_track_quat('-Z','Y').to_euler()
+            scene.render.filepath=str(OUT/f'hand-{name}-{view}.png');bpy.ops.render.render(write_still=True)
+        camera.location,camera.rotation_euler,camera.data.type,camera.data.lens,camera.data.ortho_scale=previous_camera
 print('BUDDY_ASSET_EXPORT_COMPLETE',str(OUT))

@@ -5,6 +5,7 @@ import http.server
 import json
 import math
 from pathlib import Path
+import re
 import struct
 import threading
 from urllib.parse import urlparse
@@ -39,6 +40,54 @@ def clip_catalogue():
     assert all(node_names.count(name) == 1 for name in RIG_NAMES), 'Missing or duplicated handed rig nodes'
     joints = {node_names[index] for skin in gltf.get('skins', []) for index in skin.get('joints', [])}
     assert {'Hand.L', 'Hand.R'} <= joints, 'Hands are not separate joints in the shipped skin'
+    data_length, data_chunk = struct.unpack_from('<I4s', binary, 20 + json_length)
+    assert data_chunk == b'BIN\x00', 'Missing production GLB skin data'
+    data = memoryview(binary)[28 + json_length:28 + json_length + data_length]
+
+    def vectors(accessor_index):
+        accessor = gltf['accessors'][accessor_index]
+        assert accessor['type'] == 'VEC4' and not accessor.get('sparse'), 'Unsupported hand skin accessor'
+        view = gltf['bufferViews'][accessor['bufferView']]
+        assert view.get('buffer', 0) == 0, 'Hand skin is outside the production GLB'
+        formats = {5121: ('B', 1), 5123: ('H', 2), 5126: ('f', 4)}
+        assert accessor['componentType'] in formats, 'Unsupported hand skin component type'
+        code, size = formats[accessor['componentType']]
+        offset = view.get('byteOffset', 0) + accessor.get('byteOffset', 0)
+        stride = view.get('byteStride', size * 4)
+        return [struct.unpack_from('<' + code * 4, data, offset + item * stride)
+                for item in range(accessor['count'])]
+
+    hand_weights = {}
+    for side in ('L', 'R'):
+        name = f'HandMesh.{side}'
+        assert node_names.count(name) == 1, f'Missing or duplicated {name}'
+        hand = nodes[node_names.index(name)]
+        skin = gltf['skins'][hand['skin']]['joints']
+        weighted_digits, vertices = set(), 0
+        for primitive_index, primitive in enumerate(gltf['meshes'][hand['mesh']]['primitives']):
+            joint_rows = vectors(primitive['attributes']['JOINTS_0'])
+            weight_rows = vectors(primitive['attributes']['WEIGHTS_0'])
+            assert len(joint_rows) == len(weight_rows), f'{name}: mismatched hand skin rows'
+            for vertex, (joint_row, weight_row) in enumerate(zip(joint_rows, weight_rows)):
+                vertices += 1
+                chains = set()
+                for joint, weight in zip(joint_row, weight_row):
+                    assert math.isfinite(weight) and weight >= 0, f'{name}: invalid hand weight'
+                    if weight == 0:
+                        continue
+                    joint_name = node_names[skin[joint]]
+                    digit = re.fullmatch(r'(Index|Middle|Ring|Pinky|Thumb)\.\d{2}\.([LR])', joint_name)
+                    if digit:
+                        chain = f'{digit[1]}.{digit[2]}'
+                        chains.add(chain)
+                        weighted_digits.add(chain)
+                # A palm plus one finger's own joints is valid. Two different
+                # digit chains pulling the same vertex deform the curled hand.
+                assert len(chains) <= 1, f'{name} primitive {primitive_index} vertex {vertex}: mixed digit chains {sorted(chains)}'
+        expected_digits = {f'{digit}.{side}' for digit in ('Index', 'Middle', 'Ring', 'Pinky', 'Thumb')}
+        assert vertices > 0 and weighted_digits == expected_digits, f'{name}: missing actual weighted fingers'
+        hand_weights[side] = {'vertices': vertices, 'weighted_digits': sorted(weighted_digits), 'mixed_digit_vertices': 0}
+    REPORT['hand_weight_contract'] = hand_weights
     clips = {clip.get('name'): clip for clip in gltf.get('animations', [])}
     required = {value[0] for value in POSES.values()} | {
         'Idle', 'Build', 'Closeup_Inspect_R', 'InspectLeft', 'InspectRight', 'InspectUp', 'InspectDown',

@@ -4,7 +4,7 @@ This report describes the implemented source and its reviewed boundaries. Exact 
 
 ## Result
 
-The website uses the same Blender-authored 3D key, pound and heart as the logged-in platform, rendered through OGL. The rig has separate anatomical left and right hands and positive scales. Following Israel's rejection of the flat hologram finish on 16 November, the revised character has rounded, polished navy/teal surfaces, pearl gloves and layered eyes. Its studio-lighting material uses the authored roughness, metallic and clearcoat values; full-body transparency and scan bands are removed. Authored poses include a foreground thumbs-up and an approaching magnifier with an enlarged eye. The supplied v2-refined package remains the identity reference.
+The website and held platform source share one Blender-authored 3D key, pound and heart, rendered through OGL. Israel's latest explicit choice on 16 November restores the original orange-edged `v2-refined` character: teal face and hands, navy arms and body depth, small navy almond eyes and a simple smile. The rig has separate anatomical left and right hands and positive scales. Its shared projection material adds translucent depth, luminous edges, reconstruction lines and a slow light sweep while preserving the company colours and readable face. Authored poses include a foreground thumbs-up and an approaching magnifier with an enlarged eye. Earlier style iterations below are historical, not the current asset description.
 
 There is one persistent website actor. Its interrupted flights retain velocity and settle into corner, page, chat and inspection destinations. Page sections still choose the form. The new page-detail action reads visible published text, enlarges it beside the original and directs the same Buddy to it. It never reads a form field or asks the model to invent a figure. Changed or hidden source text dismisses the reading aid. Escape, keyboard focus, short viewports and route changes have explicit handling.
 
@@ -85,3 +85,22 @@ their actual value. It does not submit a form or fill search, hidden, honeypot,
 readonly or disabled controls, and keeps existing placeholder text visible.
 Password fixture contents are masked in the report. All pixel-presence and
 contrast assertions, colour floors and resource ceilings remain unchanged.
+
+## Original identity and arm repair, 16 November
+
+The owner explicitly selected the original orange-edged `v2-refined` design.
+This replacement restores the familiar silhouettes, teal face and hands, navy
+depth and arms, orange perimeter and small almond eyes. The later white gloves,
+large white eyes and cheek volumes are removed. The shared projection material
+reduces glossy reflections, restores translucent depth and adds a slow light
+sweep. Face and hands remain readable; reconstruction lines are bounded to at
+least four CSS pixels apart to avoid subpixel aliasing in the chat portrait.
+
+Hand weights now keep each finger on its own joint chain and palm. Ordered arm
+loops and dedicated elbow bend joints preserve bent-arm shape, with corrected
+palm grips for the props. The artwork CI reads actual GLB skin weights and
+rejects vertices pulled by different fingers; its existing gesture, transition,
+construction, handedness, native-size and clipping checks remain unchanged.
+Authoring previews are separate from browser proof. This candidate requires its
+own complete CI gate and hosted verification; previous releases do not certify
+the new geometry or material. The private platform retains its release hold.

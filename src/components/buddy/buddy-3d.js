@@ -75,23 +75,19 @@ export function applyBuddyForeground(nodes, form, name, amount) {
     hand = nodes.get("Hand.R");
   if (name === "Closeup_Thumb_R" && hand) hand.scale.multiply(1 + 0.3 * close);
   if (name !== "Closeup_Inspect_R") return;
-  const glass = nodes.get("Magnifier.R"),
-    factor = 1 + 0.25 * close;
-  if (glass) glass.scale.multiply(factor);
+  const factor = 1 + 0.25 * close;
   // Blender's prop -Y axis becomes local +Z in this exported glTF. The handle
   // telescopes from its fixed grip; moving the lens never moves the hand root.
-  const faceY = { property: 0.48, investment: 0.86, support: 0.45 }[form];
-  const extension = ((faceY - 0.576) * close) / factor;
+  // The authored close-up centres the lens on the key's eye at Y=.555.
+  // Other forms telescope to their eye height; aperture growth is about its
+  // centre so it cannot pull the handle out of the corrected palm grip.
+  const eyeY = { property: 0.555, investment: 1.0475, support: 0.125 }[form];
+  const extension = (eyeY - 0.555) * close;
   for (const part of ["GlassRing.R", "GlassLens.R", "LensCentre.R"]) {
     const node = nodes.get(part);
     if (node) node.position.z += extension;
   }
-  const handle = nodes.get("GlassHandle.R");
-  if (handle) {
-    const length = Math.max(0.15, 0.62 + extension) / 0.62;
-    handle.position.z *= length;
-    handle.scale.y *= length;
-  }
+  sizeBuddyLens(nodes, "R", factor);
 }
 
 /** Calibrate the aperture about its centre, never by lengthening the grip. */
@@ -686,8 +682,8 @@ export async function createBuddyRenderer(canvas, library) {
                 (faceState[0] + sign * faceState[5]) * (1 - blink * 0.9),
               );
               if (name === "Closeup_Inspect_R" && suffix === "R") {
-                // The rounded eyeball advances as it grows, keeping its back
-                // inside the sculpted socket and its front behind the glass.
+                // The domed eye advances as it grows, keeping its back
+                // inside the face panel and its front behind the glass.
                 eye.position.z += close * 0.045;
                 const k = 1 + close * 0.95;
                 eye.scale.set(
@@ -727,6 +723,11 @@ export async function createBuddyRenderer(canvas, library) {
         materials.forEach((program) => {
           program.uniforms.time.value = materialSeconds;
           program.uniforms.opacity.value = opacity;
+          // Keep reconstruction lines at least four CSS pixels apart even
+          // in the small chat portrait, avoiding subpixel moire as he moves.
+          program.uniforms.rasterFrequency.value = Math.min(
+            170, (Math.PI * height) / (4 * 8 * Math.tan((16 * Math.PI) / 180)),
+          );
         });
         frameOpacity = opacity;
         scene.updateMatrixWorld();
