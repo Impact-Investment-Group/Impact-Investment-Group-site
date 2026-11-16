@@ -75,3 +75,13 @@ checks after it settles. All clearance, layout, one-actor and persistent-canvas
 assertions remain. This changes verification only; the reviewed model and
 production runtime are unchanged. The replacement still requires the complete
 release gate and hosted verification.
+
+The same run's final visual gate reported an unmeasurable empty, placeholderless
+phone input on the investor registration page. Its screenshot confirms that the
+field contains no glyphs; the collector had looked for the input's navy text in
+its empty box. The contrast fixture now enters deterministic example text into
+rendered, editable, empty placeholderless form fields before capture and reads
+their actual value. It does not submit a form or fill search, hidden, honeypot,
+readonly or disabled controls, and keeps existing placeholder text visible.
+Password fixture contents are masked in the report. All pixel-presence and
+contrast assertions, colour floors and resource ceilings remain unchanged.

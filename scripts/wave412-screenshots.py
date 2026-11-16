@@ -401,6 +401,43 @@ def dark_shares(path: Path, masks) -> tuple[float, float]:
     )
 
 
+def seed_text_contrast(page):
+    """Give empty, placeholderless form controls real glyphs to measure.
+
+    Only CI's local page receives these fixtures; no form is submitted. Keep
+    placeholders untouched so their own contrast remains covered, and exclude
+    search controls whose values could remove the surrounding page content.
+    """
+    controls = page.locator('main form input, main form textarea')
+    seeded = []
+    for index in range(controls.count()):
+        control = controls.nth(index)
+        field = control.evaluate("""element => {
+          const type = element.tagName === 'TEXTAREA' ? 'textarea' : element.type;
+          if (!['text','email','tel','url','password','textarea'].includes(type) ||
+              element.matches(':disabled') || element.readOnly || element.value || element.placeholder ||
+              element.closest('[hidden], [inert], [aria-hidden="true"], .sr-only, .visually-hidden')) return null;
+          for (let parent = element; parent; parent = parent.parentElement) {
+            const style = getComputedStyle(parent);
+            if (style.display === 'none' || style.visibility !== 'visible' || Number(style.opacity) === 0) return null;
+          }
+          const rect = element.getBoundingClientRect();
+          if (rect.width < 2 || rect.height < 2 || rect.right <= 0 || rect.left >= innerWidth ||
+              rect.bottom + scrollY <= 0 || rect.top + scrollY >= document.documentElement.scrollHeight) return null;
+          return {type, name:element.id || element.name || element.tagName.toLowerCase()};
+        }""")
+        if not field:
+            continue
+        value = {'email': 'contrast@example.invalid', 'tel': '07700 900123',
+                 'url': 'https://example.invalid', 'password': 'ContrastPreview123!'}
+        control.fill(value.get(field['type'], 'Contrast preview text'))
+        seeded.append(field)
+    if seeded:
+        page.evaluate('document.activeElement?.blur()')
+        print('  Typed-text contrast fixtures (not submitted): ' + json.dumps(seeded))
+    return bool(seeded)
+
+
 def settle(page):
     """Scroll the page once so no section is photographed mid-reveal.
 
@@ -772,7 +809,8 @@ async () => {
       if (element) {
         const style = getComputedStyle(element);
         const box = element.getBoundingClientRect();
-        entry.text = (element.innerText || element.textContent || '')
+        const isTextControl = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
+        entry.text = (isTextControl ? (element.type === 'password' ? 'masked password' : element.value) : (element.innerText || element.textContent || ''))
           .trim()
           .replace(/\s+/g, ' ')
           .slice(0, 60);
@@ -1053,6 +1091,8 @@ def main() -> None:
                 page = browser.new_page(viewport={"width": width, "height": 900})
                 page.goto(f"{base}{path}", wait_until="networkidle")
                 settle(page)
+                if seed_text_contrast(page):
+                    settle(page)
                 # ⚠ AND IT MUST HAVE ARRIVED. WAVE 415, rel414b MINOR 1. The
                 # old settle scrolled smoothly and waited blind; every number
                 # below is read off a page this line has now confirmed is at
