@@ -398,10 +398,15 @@ export function BuddyCharacter({
     async function load() {
       if (loading || renderer || disposed || failed) return;
       loading = true;
+      let phase = "module";
+      delete container.dataset.buddyFailure;
+      delete container.dataset.buddyError;
       try {
         const module = await import("./buddy-3d.js");
+        phase = "model";
         const library = await module.loadBuddyModel();
         if (disposed) return;
+        phase = "renderer";
         const instance = await module.createBuddyRenderer(canvas, library);
         if (disposed) {
           instance.dispose();
@@ -410,12 +415,21 @@ export function BuddyCharacter({
         renderer = instance;
         options = optionsRef.current;
         currentForm = options.form;
+        phase = "first-frame";
         resize();
         setStatus("ready");
         if (reduced.matches || !options.animated) still();
         else resume();
-      } catch {
+      } catch (error) {
         if (!disposed) {
+          container.dataset.buddyFailure = phase;
+          // Static graphics diagnostics only. No stack, credentials or user text.
+          container.dataset.buddyError =
+            error instanceof Error
+              ? `${error.name}: ${error.message}`
+                  .replace(/https?:\/\/\S+/g, "[asset]")
+                  .slice(0, 180)
+              : "Graphics initialization failed";
           failed = true;
           stop();
           setStatus("failed");
@@ -427,6 +441,7 @@ export function BuddyCharacter({
     function lost(event: Event) {
       event.preventDefault();
       if (disposed) return;
+      container.dataset.buddyFailure = "context-lost";
       failed = true;
       stop();
       setStatus("failed");

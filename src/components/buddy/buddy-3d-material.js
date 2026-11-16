@@ -15,15 +15,17 @@ mat4 bone(float index) {
     texture2D(boneTexture,vec2((x+3.5)*s,(y+.5)*s)));
 }`;
 
+/** GLTFLoader.parseMaterials flattens the PBR base color onto its material. */
+export function hologramColor(material) {
+  return material?.baseColorFactor?.slice(0, 3) || [0.08, 0.55, 0.52];
+}
+
 /** The same GPU material is applied to every authored body, hand and prop. */
 export function hologramMaterial(gl, material, skinned = false) {
   const name = material?.name || "";
   const ink = name === "Face_Ink";
   const lens = name === "Hologram_Lens";
-  const color = material?.pbrMetallicRoughness?.baseColorFactor?.slice(
-    0,
-    3,
-  ) || [0.08, 0.55, 0.52];
+  const color = hologramColor(material);
   return new Program(gl, {
     vertex: `precision highp float;
       attribute vec3 position, normal;

@@ -51,6 +51,15 @@ const faces = {
   confident: [0.94, 0, -0.06, 1, 1.06, 0],
 };
 
+/** OGL's Quat is array-like and intentionally has no clone() method. */
+export function captureBuddyPose(node) {
+  return {
+    position: node.position.clone(),
+    quaternion: Array.from(node.quaternion),
+    scale: node.scale.clone(),
+  };
+}
+
 export function loadBuddyModel(url = BUDDY_MODEL_URL) {
   if (!models.has(url)) {
     const abort = new AbortController(),
@@ -177,9 +186,7 @@ export async function createBuddyRenderer(canvas, library) {
       gltf.nodes.map((node) => [
         node,
         {
-          position: node.position.clone(),
-          quaternion: node.quaternion.clone(),
-          scale: node.scale.clone(),
+          ...captureBuddyPose(node),
         },
       ]),
     );
@@ -210,9 +217,7 @@ export async function createBuddyRenderer(canvas, library) {
       [...probe.nodes.values()].map((node) => [
         node,
         {
-          position: node.position.clone(),
-          quaternion: node.quaternion.clone(),
-          scale: node.scale.clone(),
+          ...captureBuddyPose(node),
         },
       ]),
     );
@@ -393,8 +398,7 @@ export async function createBuddyRenderer(canvas, library) {
             gltf.nodes.map((node) => [
               node,
               {
-                position: node.position.clone(),
-                quaternion: node.quaternion.clone(),
+                ...captureBuddyPose(node),
               },
             ]),
           );
