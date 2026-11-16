@@ -96,7 +96,9 @@ reduces glossy reflections, restores translucent depth and adds a slow light
 sweep. Face and hands remain readable; reconstruction lines are bounded to at
 least four CSS pixels apart to avoid subpixel aliasing in the chat portrait.
 
-Hand weights now keep each finger on its own joint chain and palm. Ordered arm
+Hand weights now keep each finger on its own joint chain and palm. Enlarged
+authoring plates exposed voxel bridges that stretched between curled fingers;
+preserving separate digit surface topology removes that failure mode. Ordered arm
 loops and dedicated elbow bend joints preserve bent-arm shape, with corrected
 palm grips for the props. The artwork CI reads actual GLB skin weights and
 rejects vertices pulled by different fingers; its existing gesture, transition,
@@ -104,3 +106,11 @@ construction, handedness, native-size and clipping checks remain unchanged.
 Authoring previews are separate from browser proof. This candidate requires its
 own complete CI gate and hosted verification; previous releases do not certify
 the new geometry or material. The private platform retains its release hold.
+
+Focused artwork candidate `64328db3b`, run `43885753396`, captured 906 frames
+but failed support idle readability at 112px. Saved metrics show the same
+58-59% height at all native sizes, below the unchanged 60% floor; assertions
+after that first failure are unproven. The replacement enlarges only the heart
+body and face by 12%, retaining the arm and prop rig. Enlarged hand plates
+also drove the independent finger topology and thumb-root fixes. The revised
+material retains darker navy and more rounded orange highlights on bone white.

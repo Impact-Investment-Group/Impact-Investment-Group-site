@@ -41,10 +41,13 @@ white eyeballs, cheek volumes and pearl gloves. All bodies have real depth and
 rounded bevels; they are not image planes.
 
 Arms have ordered joint loops with smooth elbow and wrist weighting. Each hand
-has a continuous cuff, palm and five fingers. A finger vertex can follow its
-own joint chain and palm, never a neighbouring digit or the opposite hand.
+has a smooth cuff and palm with five separately shaped fingers rooted inside it.
+Keeping each digit's surface topology avoids voxel bridges that stretched into
+flaps when the fist closed. A finger vertex follows its own joint chain and
+palm, never a neighbouring digit or the opposite hand.
 Pose authoring aligns the forearm with the wrist and grip without reflected
-scales. CI inspects the shipped skin influences as well as posed hand matrices.
+scales. CI inspects shipped skin influences and cross-digit triangles as well
+as posed hand matrices.
 
 The runtime uses distinct face and hand materials to keep those features
 readable within the translucent projection. Navy, teal and orange retain their

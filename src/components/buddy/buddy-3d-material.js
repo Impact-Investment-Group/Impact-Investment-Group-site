@@ -30,8 +30,8 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
   const trace = name === "Hologram_Projection" ? 1 : 0;
   const face = name === "Hologram_Face";
   const hands = name === "Hologram_Hands";
-  const surfaceAlpha = !projection ? 1 : face ? 0.94 : hands ? 0.90 : name === "Hologram_Rim" ? 0.85 : 0.74;
-  const reconstruction = !projection ? 0 : face ? 0.45 : hands ? 0.65 : 1;
+  const surfaceAlpha = !projection ? 1 : face ? 0.94 : hands ? 0.90 : name === "Hologram_Rim" ? 0.92 : name === "Hologram_Deep" ? 0.86 : 0.82;
+  const reconstruction = !projection ? 0 : face ? 0.45 : hands || name === "Hologram_Rim" ? 0.65 : 1;
   const projectionColor = name === "Hologram_Rim" || emitter
     ? [1, 0.20, 0.055] : [0.045, 0.55, 0.49];
   const color = hologramColor(material);
@@ -98,14 +98,14 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
         vec3 color=albedo*sky*(1.0-metallic*.65);
         // Keep volume and sidewall shading, but projected surfaces emit their
         // own colour instead of reflecting four bright studio softboxes.
-        float physicalLight=1.0-projection*.55;
+        float physicalLight=1.0-projection*.30;
         color+=studioLight(n,v,vec3(-.6,.85,1.4),vec3(3.2,3.1,2.9),f0,albedo)*physicalLight;
         color+=studioLight(n,v,vec3(.9,.2,1.0),vec3(.65,1.05,.98),f0,albedo)*physicalLight;
         color+=studioLight(n,v,vec3(.15,.7,-1.0),vec3(.65,1.15,1.2),f0,albedo)*physicalLight;
         color+=studioLight(n,v,vec3(-.75,-.45,.6),vec3(.72,.20,.075),f0,albedo)*physicalLight;
         vec3 reflection=studioReflection(reflect(-v,n));
-        color+=reflection*(fresnel(nv,f0)*(1.0-roughness*.65)+coat*.11)*(1.0-projection*.85);
-        color+=albedo*projection*.38;
+        color+=reflection*(fresnel(nv,f0)*(1.0-roughness*.65)+coat*.11)*(1.0-projection*.70);
+        color+=albedo*projection*.25;
         // Orange stays on the perimeter, teal on face/hands and navy on the
         // stem/sidewalls. The dark facial ink has no reconstruction texture.
         float contour=pow(1.0-nv,2.0);

@@ -44,18 +44,22 @@ def clip_catalogue():
     assert data_chunk == b'BIN\x00', 'Missing production GLB skin data'
     data = memoryview(binary)[28 + json_length:28 + json_length + data_length]
 
-    def vectors(accessor_index):
+    def vectors(accessor_index, width=4):
         accessor = gltf['accessors'][accessor_index]
-        assert accessor['type'] == 'VEC4' and not accessor.get('sparse'), 'Unsupported hand skin accessor'
+        assert accessor['type'] == ('SCALAR' if width == 1 else 'VEC4') and not accessor.get('sparse'), 'Unsupported hand skin accessor'
         view = gltf['bufferViews'][accessor['bufferView']]
         assert view.get('buffer', 0) == 0, 'Hand skin is outside the production GLB'
-        formats = {5121: ('B', 1), 5123: ('H', 2), 5126: ('f', 4)}
+        formats = {5121: ('B', 1), 5123: ('H', 2), 5125: ('I', 4), 5126: ('f', 4)}
         assert accessor['componentType'] in formats, 'Unsupported hand skin component type'
         code, size = formats[accessor['componentType']]
         offset = view.get('byteOffset', 0) + accessor.get('byteOffset', 0)
-        stride = view.get('byteStride', size * 4)
-        return [struct.unpack_from('<' + code * 4, data, offset + item * stride)
+        stride = view.get('byteStride', size * width)
+        rows = [struct.unpack_from('<' + code * width, data, offset + item * stride)
                 for item in range(accessor['count'])]
+        if accessor.get('normalized'):
+            divisor = {5121: 255, 5123: 65535}[accessor['componentType']]
+            rows = [tuple(value / divisor for value in row) for row in rows]
+        return rows
 
     hand_weights = {}
     for side in ('L', 'R'):
@@ -63,14 +67,16 @@ def clip_catalogue():
         assert node_names.count(name) == 1, f'Missing or duplicated {name}'
         hand = nodes[node_names.index(name)]
         skin = gltf['skins'][hand['skin']]['joints']
-        weighted_digits, vertices = set(), 0
+        weighted_digits, vertices, triangles = set(), 0, 0
         for primitive_index, primitive in enumerate(gltf['meshes'][hand['mesh']]['primitives']):
             joint_rows = vectors(primitive['attributes']['JOINTS_0'])
             weight_rows = vectors(primitive['attributes']['WEIGHTS_0'])
             assert len(joint_rows) == len(weight_rows), f'{name}: mismatched hand skin rows'
+            dominant_digits = []
             for vertex, (joint_row, weight_row) in enumerate(zip(joint_rows, weight_rows)):
                 vertices += 1
-                chains = set()
+                chains, chain_weights = set(), {}
+                digit_weight = 0
                 for joint, weight in zip(joint_row, weight_row):
                     assert math.isfinite(weight) and weight >= 0, f'{name}: invalid hand weight'
                     if weight == 0:
@@ -80,13 +86,28 @@ def clip_catalogue():
                     if digit:
                         chain = f'{digit[1]}.{digit[2]}'
                         chains.add(chain)
+                        digit_weight += weight
+                        chain_weights[chain] = chain_weights.get(chain, 0) + weight
                         weighted_digits.add(chain)
+                dominant_digits.append(max(chain_weights, key=chain_weights.get) if digit_weight > .5 else None)
                 # A palm plus one finger's own joints is valid. Two different
                 # digit chains pulling the same vertex deform the curled hand.
                 assert len(chains) <= 1, f'{name} primitive {primitive_index} vertex {vertex}: mixed digit chains {sorted(chains)}'
+            assert primitive.get('mode', 4) == 4, f'{name}: unsupported hand topology'
+            indices = ([row[0] for row in vectors(primitive['indices'], 1)]
+                       if 'indices' in primitive else list(range(len(joint_rows))))
+            assert len(indices) % 3 == 0, f'{name}: incomplete hand triangles'
+            assert all(isinstance(index, int) and 0 <= index < len(joint_rows) for index in indices), f'{name}: invalid hand indices'
+            for index in range(0, len(indices), 3):
+                triangles += 1
+                chains = {dominant_digits[vertex] for vertex in indices[index:index + 3]} - {None}
+                # Palm-majority web roots may join the hand; two different
+                # digit-majority regions must never share a membrane face.
+                assert len(chains) <= 1, f'{name} primitive {primitive_index} triangle {index // 3}: bridged digit chains {sorted(chains)}'
         expected_digits = {f'{digit}.{side}' for digit in ('Index', 'Middle', 'Ring', 'Pinky', 'Thumb')}
-        assert vertices > 0 and weighted_digits == expected_digits, f'{name}: missing actual weighted fingers'
-        hand_weights[side] = {'vertices': vertices, 'weighted_digits': sorted(weighted_digits), 'mixed_digit_vertices': 0}
+        assert vertices > 0 and triangles > 0 and weighted_digits == expected_digits, f'{name}: missing actual weighted fingers'
+        hand_weights[side] = {'vertices': vertices, 'triangles': triangles, 'weighted_digits': sorted(weighted_digits),
+                             'mixed_digit_vertices': 0, 'bridged_digit_triangles': 0}
     REPORT['hand_weight_contract'] = hand_weights
     clips = {clip.get('name'): clip for clip in gltf.get('animations', [])}
     required = {value[0] for value in POSES.values()} | {

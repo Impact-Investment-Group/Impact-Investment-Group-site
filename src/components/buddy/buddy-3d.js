@@ -81,7 +81,7 @@ export function applyBuddyForeground(nodes, form, name, amount) {
   // The authored close-up centres the lens on the key's eye at Y=.555.
   // Other forms telescope to their eye height; aperture growth is about its
   // centre so it cannot pull the handle out of the corrected palm grip.
-  const eyeY = { property: 0.555, investment: 1.0475, support: 0.125 }[form];
+  const eyeY = { property: 0.555, investment: 1.0475, support: 0.14 }[form];
   const extension = (eyeY - 0.555) * close;
   for (const part of ["GlassRing.R", "GlassLens.R", "LensCentre.R"]) {
     const node = nodes.get(part);
