@@ -4,6 +4,7 @@ import {
   type AmbientStep,
 } from "./buddy-ambient-director.js";
 import type { BuddyRenderer } from "./buddy-3d.js";
+import { frameBuddyInspection } from "./buddy-inspection-frame.js";
 
 export type BuddyForm = "property" | "investment" | "support";
 export type BuddyAction =
@@ -170,6 +171,8 @@ export function BuddyCharacter({
     let canvasWidth = 400,
       canvasHeight = 400,
       characterSize = 192;
+    let inspectionKey = "";
+    let inspectionFrame: ReturnType<typeof frameBuddyInspection> | undefined;
     function stop() {
       if (frame !== undefined) cancelAnimationFrame(frame);
       frame = undefined;
@@ -211,21 +214,30 @@ export function BuddyCharacter({
       const bodyX = options.ambient
         ? canvasWidth - characterSize / 2
         : canvasWidth / 2;
+      if (options.inspect) {
+        const key = [currentForm, characterSize, canvasWidth, canvasHeight,
+          options.inspect.hand, options.inspect.direction, options.inspect.radius].join(":");
+        if (key !== inspectionKey) {
+          inspectionFrame = frameBuddyInspection(renderer, {
+            form: currentForm, size: characterSize, width: canvasWidth,
+            height: canvasHeight, inspect: options.inspect,
+          });
+          inspectionKey = key;
+        }
+      } else {
+        inspectionKey = "";
+        inspectionFrame = undefined;
+      }
       renderer.draw({
         form: currentForm,
         action: acting,
         expression: options.expression,
         time: poseTime,
-        size: characterSize,
-        x: bodyX,
-        y: canvasHeight / 2,
-        attention: gaze,
-        inspect: options.inspect
-          ? {
-              ...options.inspect,
-              radius: (options.inspect.radius * characterSize) / 256,
-            }
-          : undefined,
+        size: inspectionFrame?.size ?? characterSize,
+        x: inspectionFrame?.x ?? bodyX,
+        y: inspectionFrame?.y ?? canvasHeight / 2,
+        attention: options.inspect ? undefined : gaze,
+        inspect: inspectionFrame?.inspect,
         transition: change
           ? { from: change.from, to: change.to, progress: change.elapsed / 3.2 }
           : undefined,

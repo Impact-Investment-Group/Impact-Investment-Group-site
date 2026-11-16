@@ -1253,6 +1253,29 @@ def missing_artwork(page, fixtures):
     no_overflow(page)
 
 
+def assert_inspector_artwork_frame(page):
+    """Read real rendered alpha, including the outer glass rim, at its actual slot size."""
+    page.wait_for_timeout(BUDDY_FORM_CHANGE_MS + 450)
+    frame = page.locator('[data-buddy-actor] canvas').evaluate("""canvas => {
+      const copy = document.createElement('canvas');
+      copy.width = canvas.width; copy.height = canvas.height;
+      const context = copy.getContext('2d'); context.drawImage(canvas,0,0);
+      const data = context.getImageData(0,0,copy.width,copy.height).data;
+      let left=copy.width, right=-1, top=copy.height, bottom=-1, painted=0;
+      for(let i=3;i<data.length;i+=4)if(data[i]>8){
+        const n=(i-3)/4,x=n%copy.width,y=Math.floor(n/copy.width);
+        painted++;left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);
+      }
+      return {left,right,top,bottom,painted,width:copy.width,height:copy.height,
+        cssWidth:canvas.getBoundingClientRect().width,cssHeight:canvas.getBoundingClientRect().height};
+    }""")
+    assert frame['painted'] > 500, f'Inspector character is blank: {frame}'
+    assert 0 < frame['left'] < frame['right'] < frame['width'] - 1, f'Inspector artwork clips horizontally: {frame}'
+    assert 0 < frame['top'] < frame['bottom'] < frame['height'] - 1, f'Inspector artwork clips vertically: {frame}'
+    assert 100 <= frame['cssWidth'] <= 150, f'Inspector proof missed the actual compact slot: {frame}'
+    return frame
+
+
 def inspect_page_details(page, fixtures):
     visit(page, '/platform/')
     chat = chat_open(page)
@@ -1264,6 +1287,7 @@ def inspect_page_details(page, fixtures):
     expect(page.locator('[data-buddy-chat]')).to_have_count(0)
     settled_actor(page, 'inspect')
     assert page.evaluate("window.__inspectionCanvas === document.querySelector('[data-buddy-actor] canvas')"), 'Page inspection remounted Buddy'
+    first_frame = assert_inspector_artwork_frame(page)
     value = inspector.locator('p').nth(1).inner_text()
     assert value and value in page.locator('main').inner_text(), 'Enlarged detail was not published page text'
     expect(inspector.get_by_role('button', name='Close page detail')).to_be_focused()
@@ -1271,6 +1295,8 @@ def inspect_page_details(page, fixtures):
     next_value = inspector.locator('p').nth(1).inner_text()
     assert next_value and next_value != value
     assert next_value in page.locator('main').inner_text()
+    next_frame = assert_inspector_artwork_frame(page)
+    (OUT / f"page-inspection-frame-{page.viewport_size['width']}.json").write_text(json.dumps({'first': first_frame, 'next': next_frame}, indent=2), encoding='utf-8')
     page.screenshot(path=str(OUT / f"page-inspection-{page.viewport_size['width']}.png"))
     page.keyboard.press('Escape')
     expect(inspector).to_have_count(0)

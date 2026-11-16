@@ -118,37 +118,42 @@ threading.Thread(target=server.serve_forever, daemon=True).start()
 BASE = f'http://127.0.0.1:{server.server_address[1]}'
 
 RENDER = """async ({kind,poses}) => {
-  const {loadBuddyModel, createBuddyRenderer} = await import('./buddy-3d-proof.js');
+  const {loadBuddyModel, createBuddyRenderer, frameBuddyInspection} = await import('./buddy-3d-proof.js');
   const model = await loadBuddyModel('/images/buddy/3d/buddy.glb');
   const canvas = document.createElement('canvas');
   const renderer = await createBuddyRenderer(canvas, model);
   if(typeof renderer.inspectRig!=='function')throw new Error('Production renderer lacks rig inspection');
   renderer.resize(512,512,1);
   const sheet = document.createElement('main'); sheet.id='sheet';
-  sheet.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px';
+  sheet.style.cssText=`display:grid;grid-template-columns:repeat(${kind==='native'?8:4},1fr);gap:12px;padding:20px`;
   document.body.append(sheet);
   const records=[],sequences=[];
-  function drawPose(options,settle=true) {
+  function drawPose(options,settle=true,layout={}) {
+    const side=layout.side||512, body=layout.body||300;
+    renderer.resize(side,side,1);
+    const frame=layout.inspectFit ? frameBuddyInspection(renderer,{form:options.form,size:body,width:side,height:side,inspect:options.inspect})
+      : {size:body,x:side/2,y:side/2};
     // Warm the actual clip cross-fade, then sample the exact requested time.
     // Negative/early samples cannot retain the preceding action's pose.
-    if(settle){renderer.draw({...options,time:0,size:300,x:256,y:256});
-      for(let i=1;i<=8;i++)renderer.draw({...options,time:i*.05,size:300,x:256,y:256});}
-    renderer.draw({...options,size:300,x:256,y:256});
+    if(settle){renderer.draw({...options,...frame,time:0});
+      for(let i=1;i<=8;i++)renderer.draw({...options,...frame,time:i*.05});}
+    renderer.draw({...options,...frame});
     return renderer.inspectRig();
   }
-  function cell(label, options) {
-    const rig=drawPose(options);
-    const copy=document.createElement('canvas');copy.width=512;copy.height=512;
+  function cell(label, options, layout={}) {
+    const side=layout.side||512;
+    const rig=drawPose(options,true,layout);
+    const copy=document.createElement('canvas');copy.width=side;copy.height=side;
     const ctx=copy.getContext('2d');ctx.drawImage(canvas,0,0);
-    const pixels=ctx.getImageData(0,0,512,512).data;
-    let painted=0,left=512,right=0,top=512,bottom=0;
-    for(let i=3;i<pixels.length;i+=4)if(pixels[i]>8){const n=(i-3)/4,x=n%512,y=Math.floor(n/512);painted++;left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+    const pixels=ctx.getImageData(0,0,side,side).data;
+    let painted=0,left=side,right=0,top=side,bottom=0;
+    for(let i=3;i<pixels.length;i+=4)if(pixels[i]>8){const n=(i-3)/4,x=n%side,y=Math.floor(n/side);painted++;left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
     const image=copy.toDataURL();
     const figure=document.createElement('figure');figure.style.cssText='margin:0;border:1px solid #d8dedb;border-radius:16px;overflow:hidden;background:#fdfdfb';
     const img=document.createElement('img');img.src=image;img.style.cssText='display:block;width:100%';
     const caption=document.createElement('figcaption');caption.textContent=label;caption.style.cssText='padding:8px 12px;font:13px Arial';
     figure.append(img,caption);sheet.append(figure);
-    records.push({label,painted,bounds:{left,right,top,bottom},image,rig});
+    records.push({label,painted,canvasSize:side,bodySize:layout.body||300,bounds:{left,right,top,bottom},image,rig});
   }
   const forms=['property','investment','support'];
   for(const form of forms){
@@ -158,6 +163,11 @@ RENDER = """async ({kind,poses}) => {
     if(kind==='construction')for(let i=0;i<16;i++)cell(`${form}: build ${i+1}/16`,{form,time:i*.62,ambient:{kind:'build',time:i*.62,variant:0}});
     if(kind==='closeups')for(const action of ['approve','inspect'])for(let i=0;i<8;i++)cell(`${form}: ${action} ${i+1}/8`,{form,action,time:.2+i*.4});
     if(kind==='hands')for(const direction of ['left','right','up','down'])cell(`${form}: glass ${direction}`,{form,time:1,inspect:{hand:direction==='right'?'left':'right',direction,radius:68}});
+    if(kind==='native')for(const side of [112,144,224,256]){
+      for(const [action,duration]of [['wave',2.4],['explain',2.8],['dance',4.8],['approve',3.2],['inspect',3.6]])
+        for(const fraction of [0,.25,.5,.75,1])cell(`${form}: ${action} ${side}px ${fraction}`,{form,action,time:duration*fraction},{side,body:side});
+      cell(`${form}: held page glass ${side}px`,{form,time:1,inspect:{hand:'left',direction:'right',radius:42}},{side,body:side,inspectFit:true});
+    }
   }
   const groups=kind==='tornado'?6:kind==='closeups'?6:3;
   const groupSize=records.length/groups;
@@ -167,7 +177,7 @@ RENDER = """async ({kind,poses}) => {
       rig:drawPose({form,action,time:fraction*duration},index===0)}));
     sequences.push({label:`${form}: ${action}`,minimum_distinct:3,articulated,frames});
   }
-  if(kind!=='poses')for(let i=0;i<groups;i++)sequences.push({label:`${kind}: group ${i+1}`,
+  if(kind!=='poses'&&kind!=='native')for(let i=0;i<groups;i++)sequences.push({label:`${kind}: group ${i+1}`,
     minimum_distinct:kind==='turns'||kind==='hands'?4:kind==='closeups'?6:12,
     articulated:kind==='construction'||kind==='closeups',
     frames:records.slice(i*groupSize,(i+1)*groupSize).map(({label,rig})=>({label,rig}))});
@@ -183,7 +193,7 @@ try:
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.goto(BASE, wait_until='networkidle')
-        for kind, expected, distinct in [('turns', 12, 4), ('poses', 39, 10), ('tornado', 96, 14), ('construction', 48, 14), ('closeups', 48, 7), ('hands', 12, 4)]:
+        for kind, expected, distinct in [('turns', 12, 4), ('poses', 39, 10), ('tornado', 96, 14), ('construction', 48, 14), ('closeups', 48, 7), ('hands', 12, 4), ('native', 312, 1)]:
             page.set_content(f'<html><body style="margin:0;background:#f9f9f4;color:#14366a"><h1 style="font:24px Arial;padding:24px">Buddy hologram: {kind}</h1></body></html>')
             result = page.evaluate(RENDER, {'kind': kind, 'poses': [
                 {'action': action, 'duration': duration, 'articulated': action in ARTICULATED}
@@ -205,7 +215,8 @@ try:
                 b = frame['bounds']
                 assert frame['painted'] > 500, f'Blank 3D frame: {frame["label"]}'
                 assert b['right'] - b['left'] > 12, f'Collapsed profile: {frame["label"]}'
-                assert 0 < b['left'] < b['right'] < 511 and 0 < b['top'] < b['bottom'] < 511, f'Clipped 3D character: {frame["label"]}'
+                edge = frame['canvasSize'] - 1
+                assert 0 < b['left'] < b['right'] < edge and 0 < b['top'] < b['bottom'] < edge, f'Clipped 3D character: {frame["label"]}'
             result['rig_checks'] = [validate_sequence(sequence) for sequence in result['sequences']]
             assert not errors, errors
         browser.close()

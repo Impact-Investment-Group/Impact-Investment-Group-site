@@ -28,6 +28,8 @@ Candidate `e7d364d67` passed the GPU proof, placement, cross-browser, unchanged 
 
 Candidate `d28c31e` passed the 3D artwork, placement, scrolling, performance, full-page, partner, Buddy and contrast checks. Pages `43790718080` was held only by the mobile carousel resume check; CodeQL `43790717652` passed. Its saved diagnostic showed a retained touch hover, no focus, zero scroll offset and a running visibility state, while the CSS animation was paused. The follow-up limits hover-to-pause to devices capable of hover; keyboard focus and native touch reading remain intact. The same movement assertion now exercises touch blur without a synthetic mouse move. This carousel check and its compact diagnostic upload run earlier in CI, with every publication gate still required.
 
+The complete `25b54b62d` workflow passed and deployed. Its public artifact matched 24 hosted file hashes. A native live-browser review confirmed the 3D actor, simple chat, a real public answer and page-value inspection, but found the held magnifier rim cropped inside the compact inspector canvas. The follow-up fits the projected character and lens together within that existing slot. The GPU proof now includes actual square canvas ratios, ordinary gestures and both foreground gestures, and the page-inspector journey checks real alpha bounds. Shared model geometry and materials are unchanged. Final outcomes remain tracked in Context after the replacement gate and live review.
+
 ## New interface wording
 
 - Explore this page with Buddy / Explore this page
