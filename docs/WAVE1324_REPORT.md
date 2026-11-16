@@ -30,6 +30,8 @@ Candidate `d28c31e` passed the 3D artwork, placement, scrolling, performance, fu
 
 The complete `25b54b62d` workflow passed and deployed. Its public artifact matched 24 hosted file hashes. A native live-browser review confirmed the 3D actor, simple chat, a real public answer and page-value inspection, but found the held magnifier rim cropped inside the compact inspector canvas. The follow-up fits the projected character and lens together within that existing slot. The GPU proof now includes actual square canvas ratios, ordinary gestures and both foreground gestures, and the page-inspector journey checks real alpha bounds. Shared model geometry and materials are unchanged. Final outcomes remain tracked in Context after the replacement gate and live review.
 
+The actual-size proof on `0999cfcdd` captured 312 frames and found 60 ordinary wave, explanation and dance frames with clipped fingertips. All held page-glass frames and both foreground gestures fit. The correction adds a fixed transparent horizontal arm envelope, preserving body size, gesture scale and the destination centre. Corner collision checks reserve that full footprint. Page slots are capped only when the padded actor would leave a narrow viewport. The production controller and native proof use the same framing helper; strict painted-pixel bounds remain in force. The final gate and publication results remain pending until recorded in Context.
+
 ## New interface wording
 
 - Explore this page with Buddy / Explore this page
