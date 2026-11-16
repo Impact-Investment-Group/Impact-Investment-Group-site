@@ -1,0 +1,75 @@
+name: Review Buddy 3D artwork
+run-name: Buddy artwork at ${{ github.ref_name }} (${{ github.sha }})
+
+on:
+  push:
+    branches:
+      - "feat/**"
+      - "codex/**"
+    paths:
+      - ".github/workflows/buddy-art-review.yml"
+      - "src/components/buddy/buddy-3d*.js"
+      - "src/components/buddy/buddy-canvas-frame.js"
+      - "src/components/buddy/buddy-inspection-frame.js"
+      - "public/images/buddy/3d/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: buddy-art-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github
+            src
+            public
+            scripts
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      # Bundle only the actual renderer and its framing helpers. This workflow
+      # has no application build, Pages permissions or deployment step.
+      - name: Prepare production Buddy renderer proof
+        run: bun scripts/build-buddy-3d-proof.mjs
+
+      # Keep the image digest and Python package aligned with deploy.yml.
+      - name: Start browser verification container
+        timeout-minutes: 5
+        run: |
+          docker run --detach --init --ipc=host --name buddy-art-review \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work --env CI=true \
+            mcr.microsoft.com/playwright/python:v1.65.0-noble@sha256:f9294526294a7bdfb8ca8aa7d815c049125a10e73b65d47fb9a80f5d74f284a6 \
+            sleep infinity
+          docker exec buddy-art-review python -m pip install playwright==1.65.0 pillow
+
+      - name: Capture and check actual Buddy geometry and gestures
+        run: docker exec buddy-art-review python scripts/site-buddy-3d.py
+
+      - name: Upload artwork and exact source provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddy-3d-review-${{ github.sha }}
+          path: docs/screenshots/wave909/buddy-3d
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Stop review container
+        if: always()
+        run: docker rm --force buddy-art-review || true

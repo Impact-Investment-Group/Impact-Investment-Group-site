@@ -21,24 +21,30 @@ scene = bpy.context.scene
 scene.render.fps = 30
 scene.world.color = (0.3, 0.3, 0.3)
 
-def material(name, color, emission=.13):
+def material(name, color, emission=0, metallic=.12, roughness=.25, coat=.35):
     m = bpy.data.materials.new(name)
     m.diffuse_color = (*color, 1)
     m.use_nodes = True
     bsdf = m.node_tree.nodes.get('Principled BSDF')
     bsdf.inputs['Base Color'].default_value = (*color, 1)
-    bsdf.inputs['Metallic'].default_value = .23
-    bsdf.inputs['Roughness'].default_value = .25
+    bsdf.inputs['Metallic'].default_value = metallic
+    bsdf.inputs['Roughness'].default_value = roughness
+    bsdf.inputs['Coat Weight'].default_value = coat
+    bsdf.inputs['Coat Roughness'].default_value = .18
     bsdf.inputs['Emission Color'].default_value = (*color, 1)
     bsdf.inputs['Emission Strength'].default_value = emission
     return m
 
-TEAL = material('Hologram_Teal', (.025, .44, .49))
-NAVY = material('Hologram_Deep', (.012, .10, .19))
-ORANGE = material('Hologram_Rim', (.12, .65, .62))
-EYE = material('Face_Ink', (.008, .045, .08), 0)
-LIGHT = material('Eye_Catchlight', (.75, 1, .96), .7)
-LENS = material('Hologram_Lens', (.26, .79, .75), .2)
+TEAL = material('Hologram_Teal', (.028, .34, .32), metallic=.12, roughness=.25)
+NAVY = material('Hologram_Deep', (.012, .037, .105), metallic=.30, roughness=.25)
+ORANGE = material('Hologram_Rim', (.18, .68, .65), .015, metallic=.55, roughness=.19)
+GLOVE = material('Glove_Pearl', (.88, .90, .85), metallic=.02, roughness=.36, coat=.16)
+WHITE = material('Eye_White', (.95, .97, .94), metallic=.02, roughness=.20)
+IRIS = material('Eye_Iris', (.015, .15, .18), metallic=.20, roughness=.22)
+EYE = material('Face_Ink', (.004, .012, .025), metallic=.04, roughness=.20)
+LIGHT = material('Eye_Catchlight', (.96, 1, .98), .15, metallic=0, roughness=.14)
+LENS = material('Hologram_Lens', (.60, .88, .85), metallic=0, roughness=.08)
+LENS.node_tree.nodes.get('Principled BSDF').inputs['Transmission Weight'].default_value=.93
 
 def empty(name, parent=None):
     o = bpy.data.objects.new(name, None)
@@ -142,18 +148,21 @@ forms={}
 face_locations={'property':(0,.48),'investment':(-.18,.86),'support':(0,.05)}
 for form in SHAPES:
     group=empty('Form_'+form,ROOT);forms[form]=group
-    contour('Body_'+form,SHAPES[form],NAVY,.16,.055,group)
+    contour('Body_'+form,SHAPES[form],NAVY,.19,.09,group)
     rim=SHAPES[form]
     if form=='property':rim='M -34 -112 C -37 -173 38 -173 35 -112 C 35 -104 50 -105 60 -100 C 82 -94 87 -80 87 -60 L 87 -25 C 87 -1 70 12 44 12 L -44 12 C -72 12 -87 0 -87 -25 L -87 -60 C -87 -88 -68 -102 -47 -104 Q -34 -105 -34 -112 Z M -16 -130 C -16 -106 18 -106 18 -130 C 18 -153 -16 -153 -16 -130 Z'
-    contour('Rim_'+form,rim,ORANGE,.045,.035,group,-.205)
-    if form=='property':contour('KeyTeeth','M 30 52 L 62 52 Q 75 52 75 65 L 75 74 Q 75 84 63 84 L 44 84 L 44 95 L 62 95 Q 75 95 75 107 Q 75 120 62 120 L 30 120 Z',ORANGE,.045,.035,group,-.205)
-    contour('Panel_'+form,PANELS[form],TEAL,.025,.025,group,-.275)
+    contour('Rim_'+form,rim,ORANGE,.045,.06,group,-.255)
+    if form=='property':contour('KeyTeeth','M 30 52 L 62 52 Q 75 52 75 65 L 75 74 Q 75 84 63 84 L 44 84 L 44 95 L 62 95 Q 75 95 75 107 Q 75 120 62 120 L 30 120 Z',ORANGE,.045,.055,group,-.255)
+    contour('Panel_'+form,PANELS[form],TEAL,.045,.065,group,-.325)
     fx,fz=face_locations[form]
-    face=empty('Face_'+form,group);face.location=(fx,-.327,fz)
+    face=empty('Face_'+form,group);face.location=(fx,-.445,fz)
     for side in (-1,1):
-        # Separate solid eyes with highlights retain expression in profile.
-        eye=sphere('Eye_'+form+('_L' if side>0 else '_R'),(side*.235,0,.075),(.12,.050,.145),EYE,face)
-        sphere('Catchlight_'+form+str(side),(side*.235-.025,-.046,.120),(.034,.018,.04),LIGHT,face,12)
+        # The animated pupil carries its layered iris and sclera. The complete
+        # eye therefore blinks and enlarges together, including the close-up.
+        eye=sphere('Eye_'+form+('_L' if side>0 else '_R'),(side*.235,-.018,.075),(.075,.040,.110),EYE,face)
+        sphere('Sclera_'+form+str(side),(0,.060,0),(.145,.085,.190),WHITE,eye,24)
+        sphere('Iris_'+form+str(side),(0,.015,0),(.098,.045,.132),IRIS,eye,24)
+        sphere('Catchlight_'+form+str(side),(side*.235-.025,-.071,.120),(.026,.012,.032),LIGHT,face,12)
         line('Brow_'+form+str(side),[(side*.235-.105,-.005,.30),(side*.235,-.015,.33),(side*.235+.10,0,.30)],.018,NAVY,face)
     line('Smile_'+form,[(-.15,-.015,-.17),(0,-.037,-.23),(.15,-.015,-.17)],.023,EYE,face)
     sphere('Mouth_'+form,(0,.008,-.20),(.095,.025,.040),EYE,face,16)
@@ -184,12 +193,12 @@ for side,suffix in ((1,'L'),(-1,'R')):
             a=(x,-.035,start[2]-length*segment/3);b=(x,-.035,start[2]-length*(segment+1)/3)
             name=f'{digit}.{segment+1:02d}.{suffix}'
             bone(name,a,b,'Hand.'+suffix if segment==0 else f'{digit}.{segment:02d}.{suffix}')
-            specs.append((name,a,b,.037 if digit!='Pinky' else .032))
+            specs.append((name,a,b,.045 if digit!='Pinky' else .039))
     thumb=[(wrist[0]-side*.13,-.045,wrist[2]-.10),(wrist[0]-side*.25,-.055,wrist[2]-.18),(wrist[0]-side*.29,-.055,wrist[2]-.29)]
     for segment in range(2):
         name=f'Thumb.{segment+1:02d}.{suffix}'
         bone(name,thumb[segment],thumb[segment+1],'Hand.'+suffix if segment==0 else f'Thumb.01.{suffix}')
-        specs.append((name,thumb[segment],thumb[segment+1],.057))
+        specs.append((name,thumb[segment],thumb[segment+1],.064))
     hand_parts[suffix]=specs
 bpy.ops.object.mode_set(mode='OBJECT');rig.select_set(False)
 
@@ -206,10 +215,10 @@ for side,suffix in ((1,'L'),(-1,'R')):
     for name,a,b in [('UpperArm.'+suffix,shoulder,elbow),('Forearm.'+suffix,elbow,wrist)]:
         pieces.append(weight(capsule('Sleeve_'+name,a,b,.10,NAVY),name))
     pieces.append(weight(sphere('Elbow_'+suffix,elbow,(.105,.105,.105),NAVY),'Forearm.'+suffix))
-    pieces.append(weight(sphere('Palm_'+suffix,(wrist[0],wrist[1],wrist[2]-.16),(.185,.095,.22),TEAL),'Hand.'+suffix))
+    pieces.append(weight(sphere('Palm_'+suffix,(wrist[0],wrist[1],wrist[2]-.16),(.195,.115,.22),GLOVE),'Hand.'+suffix))
     bpy.ops.mesh.primitive_torus_add(major_radius=.105,minor_radius=.025,major_segments=24,minor_segments=10,location=wrist)
     pieces.append(weight(finish(bpy.context.object,'Cuff_'+suffix,TEAL),'Hand.'+suffix))
-    for name,a,b,r in hand_parts[suffix]:pieces.append(weight(capsule('Finger_'+name,a,b,r),name))
+    for name,a,b,r in hand_parts[suffix]:pieces.append(weight(capsule('Finger_'+name,a,b,r,GLOVE),name))
     bpy.ops.object.select_all(action='DESELECT')
     for o in pieces:o.select_set(True)
     bpy.context.view_layer.objects.active=pieces[0];bpy.ops.object.join()
@@ -224,10 +233,11 @@ for side,suffix in ((1,'L'),(-1,'R')):
     bpy.ops.object.modifier_apply(modifier=simplify.name)
     # Voxel merging keeps a continuous skin; restore the intended sleeve/glove regions.
     teal_index=next(i for i,m in enumerate(hand.data.materials) if m==TEAL)
+    glove_index=next(i for i,m in enumerate(hand.data.materials) if m==GLOVE)
     navy_index=next(i for i,m in enumerate(hand.data.materials) if m==NAVY)
     for poly in hand.data.polygons:
         z=sum(hand.data.vertices[index].co.z for index in poly.vertices)/len(poly.vertices)
-        poly.material_index=teal_index if z<wrist[2]+.065 else navy_index
+        poly.material_index=glove_index if z<wrist[2]-.035 else teal_index if z<wrist[2]+.065 else navy_index
     hand.vertex_groups.clear()
     relevant={name:ends for name,ends in bone_specs.items() if name.endswith('.'+suffix)}
     groups={name:hand.vertex_groups.new(name=name) for name in relevant}
@@ -408,21 +418,13 @@ manifest['asset']={'file':'buddy.glb','bytes':len(binary),'sha256':hashlib.sha25
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 
 # Render authoring turntables, never application screenshots.
-scene.render.engine='CYCLES';scene.cycles.samples=24
+scene.render.engine='CYCLES';scene.cycles.samples=48;scene.cycles.use_denoising=True
 scene.render.resolution_x=700;scene.render.resolution_y=700;scene.render.resolution_percentage=100
 scene.render.image_settings.file_format='PNG';scene.render.film_transparent=True
-scene.view_settings.view_transform='Standard'
-# This Blender hologram preview uses the same core/edge/scan ideas as the GPU material.
-for mat in (TEAL,NAVY,ORANGE,LENS):
-    nodes=mat.node_tree.nodes;links=mat.node_tree.links
-    bsdf=nodes.get('Principled BSDF');output=nodes.get('Material Output')
-    layer=nodes.new('ShaderNodeLayerWeight');layer.inputs['Blend'].default_value=.3
-    ramp=nodes.new('ShaderNodeValToRGB');ramp.color_ramp.elements[0].position=.1;ramp.color_ramp.elements[0].color=(*mat.diffuse_color[:3],1)
-    ramp.color_ramp.elements[1].position=.85;ramp.color_ramp.elements[1].color=(.18,.85,.82,1)
-    links.new(layer.outputs['Fresnel'],ramp.inputs['Fac']);links.new(ramp.outputs['Color'],bsdf.inputs['Emission Color'])
-    bsdf.inputs['Emission Strength'].default_value=.35
-    transparent=nodes.new('ShaderNodeBsdfTransparent');mix=nodes.new('ShaderNodeMixShader');mix.inputs[0].default_value=.12 if mat==LENS else .62
-    links.new(transparent.outputs[0],mix.inputs[1]);links.new(bsdf.outputs[0],mix.inputs[2]);links.new(mix.outputs[0],output.inputs['Surface'])
+scene.view_settings.view_transform='AgX'
+# Authoring plates use the same opaque, physically shaded material roles as
+# the runtime. No extra transparency/emission makes these previews look better
+# than the exported model. The lens alone transmits light.
 for suffix in ('L','R'):
     bpy.data.objects['Magnifier.'+suffix].hide_render=True
     bpy.data.objects['Hammer.'+suffix].hide_render=True
@@ -439,7 +441,7 @@ for other,group in forms.items():hide_tree(group,other!='property')
 bpy.ops.object.camera_add(location=(0,-8,.4));camera=bpy.context.object;scene.camera=camera
 camera.data.type='ORTHO';camera.data.ortho_scale=4.4
 camera.rotation_euler=(Vector((0,0,0))-camera.location).to_track_quat('-Z','Y').to_euler()
-for pos,power,size in [((3,-4,5),650,4),((-4,-2,2),450,3),((0,3,4),850,3)]:
+for pos,power,size in [((-3,-4,5),850,4),((4,-2,2),400,3),((0,3,4),950,3)]:
     bpy.ops.object.light_add(type='AREA',location=pos);light=bpy.context.object;light.data.energy=power;light.data.shape='DISK';light.data.size=size
     light.rotation_euler=(-light.location).to_track_quat('-Z','Y').to_euler()
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'master.blend'))
