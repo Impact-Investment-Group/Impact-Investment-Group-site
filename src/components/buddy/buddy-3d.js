@@ -158,15 +158,21 @@ export function renderBuddyProjection(renderer, scene, camera) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   try {
     gl.colorMask(false, false, false, false);
+    // A fresh WebGL context uses LESS, although OGL 1.0.11 initially caches
+    // LEQUAL. Set both phases explicitly so equal-depth colour samples pass.
+    renderer.setDepthFunc(gl.LESS);
     for (const program of programs) {
       program.uniforms.depthPass.value = 1;
       program.depthWrite = true;
+      program.depthFunc = gl.LESS;
     }
     for (const mesh of surfaces) mesh.draw({ camera });
     for (const program of programs) {
       program.uniforms.depthPass.value = 0;
       program.depthWrite = false;
+      program.depthFunc = gl.LEQUAL;
     }
+    renderer.setDepthFunc(gl.LEQUAL);
     gl.colorMask(true, true, true, true);
     // Equal-depth samples pass LEQUAL using the identical deformation. No
     // surface alpha or brand colour is changed, and rear fragments fail depth.
@@ -179,8 +185,10 @@ export function renderBuddyProjection(renderer, scene, camera) {
     for (const program of programs) {
       program.uniforms.depthPass.value = 0;
       program.depthWrite = false;
+      program.depthFunc = gl.LEQUAL;
     }
     renderer.setDepthMask(false);
+    renderer.setDepthFunc(gl.LEQUAL);
   }
 }
 

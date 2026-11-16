@@ -11,6 +11,10 @@ on:
       - "src/components/buddy/buddy-3d*.js"
       - "src/components/buddy/buddy-canvas-frame.js"
       - "src/components/buddy/buddy-inspection-frame.js"
+      - "src/components/buddy/buddy-assistant.tsx"
+      - "src/hooks/use-speech-recognition*"
+      - "scripts/site-buddy*.py"
+      - "scripts/buddy-depth.test.mjs"
       - "public/images/buddy/3d/**"
   workflow_dispatch:
 
@@ -45,8 +49,8 @@ jobs:
       - name: Check Buddy depth ordering and continuous movement
         run: node --test scripts/buddy-depth.test.mjs scripts/buddy-placement.test.mjs
 
-      # Bundle only the actual renderer and its framing helpers. This workflow
-      # has no application build, Pages permissions or deployment step.
+      # Bundle the actual renderer and its framing helpers separately. This
+      # preview workflow has no Pages permissions or deployment step.
       - name: Prepare production Buddy renderer proof
         run: bun scripts/build-buddy-3d-proof.mjs
 
@@ -73,6 +77,15 @@ jobs:
         id: artwork
         run: docker exec buddy-art-review python scripts/site-buddy-3d.py
 
+      - name: Upload artwork and exact source provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddy-3d-review-${{ github.sha }}
+          path: docs/screenshots/wave909/buddy-3d
+          retention-days: 7
+          if-no-files-found: warn
+
       - name: Check speech bubbles and microphone draft lifecycle
         if: ${{ !cancelled() && (steps.artwork.outcome == 'success' || steps.artwork.outcome == 'failure') }}
         run: >-
@@ -88,15 +101,6 @@ jobs:
         with:
           name: buddy-speech-review-${{ github.sha }}
           path: docs/screenshots/wave909/buddy
-          retention-days: 7
-          if-no-files-found: warn
-
-      - name: Upload artwork and exact source provenance
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: buddy-3d-review-${{ github.sha }}
-          path: docs/screenshots/wave909/buddy-3d
           retention-days: 7
           if-no-files-found: warn
 

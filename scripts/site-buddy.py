@@ -189,7 +189,7 @@ def context_for(browser, width=1280, reduced=False, fail_engine=False, speech=Tr
     context = browser.new_context(viewport={"width": width, "height": 900}, reduced_motion="reduce" if reduced else "no-preference")
     fixtures = Fixtures(fail_engine=fail_engine)
     context.route("**/*", fixtures.handle)
-    context.add_init_script(INIT + SPEECH_INIT.replace('__SUPPORTED__', 'true' if speech else 'false'))
+    context.add_init_script(INIT + ";\n" + SPEECH_INIT.replace('__SUPPORTED__', 'true' if speech else 'false'))
     return context, fixtures
 
 
