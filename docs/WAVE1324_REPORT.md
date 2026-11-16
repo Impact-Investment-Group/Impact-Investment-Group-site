@@ -156,3 +156,8 @@ All application verification remains CI-only. The candidate artwork/speech
 workflow has no publication permission or deploy step; complete Pages gates
 and exact hosted checks are required before a new live claim. The private
 platform source remains under its existing independent release hold.
+
+The first GPU preview caught an OGL/WebGL initial depth-state mismatch; both
+passes now explicitly set their depth function, and the regression models the
+real initial mismatch. Speech lifecycle coverage also includes stopping then
+immediately restarting: the superseded recognizer cannot change the new draft.

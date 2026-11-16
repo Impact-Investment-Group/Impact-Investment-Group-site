@@ -459,6 +459,21 @@ def speech_input(page, fixtures):
     expect(question).to_have_value('Keep this after permission denial.')
     assert len(fixtures.requests) == 1
 
+    question.fill('Restart draft')
+    microphone.click()
+    chat.get_by_role('button', name='Stop listening', exact=True).click()
+    # Restart before the previous recognizer ends. Its final must not enter
+    # the new draft, and the fresh explicit attempt must actually capture.
+    microphone.click()
+    expect(chat.get_by_role('button', name='Stop listening', exact=True)).to_have_attribute('aria-pressed', 'true')
+    assert page.evaluate('window.__buddySpeech.instances.length') == 8
+    page.evaluate("window.__buddySpeech.result(6, 'stale stopped attempt', true, true)")
+    expect(question).to_have_value('Restart draft')
+    page.evaluate("window.__buddySpeech.result(7, 'from fresh speech', true); window.__buddySpeech.end(7)")
+    expect(question).to_have_value('Restart draft from fresh speech')
+    assert len(fixtures.requests) == 1, 'Restarted speech submitted without review'
+    question.fill('Keep this after permission denial.')
+
     # Remove the browser capability, then reopen to exercise the real fallback.
     chat.get_by_role('button', name='Close Buddy', exact=True).click()
     page.evaluate("Object.defineProperty(window, 'SpeechRecognition', {configurable:true, value:undefined})")
@@ -470,7 +485,7 @@ def speech_input(page, fixtures):
     send(chat, 'I can still type my question.')
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text('Fixture typed fallback still works.')
     assert len(fixtures.requests) == 2
-    assert page.evaluate('window.__buddySpeech.starts') == 6
+    assert page.evaluate('window.__buddySpeech.starts') == 8
     assert page.evaluate('window.__buddySpeech.mediaRequests') == 0
     no_overflow(page)
     chat.screenshot(path=str(OUT / f'speech-input-{page.viewport_size["width"]}.png'), animations='disabled')

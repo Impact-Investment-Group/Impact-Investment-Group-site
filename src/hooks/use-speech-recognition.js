@@ -23,6 +23,7 @@ export function useSpeechRecognition({ lang = 'en-GB', onFinal } = {}) {
   const [interim, setInterim] = useState('');
   const [error, setError] = useState(null);
   const recognitionRef = useRef(null);
+  const stoppingRef = useRef(false);
   const mountedRef = useRef(true);
   const onFinalRef = useRef(onFinal);
   onFinalRef.current = onFinal;
@@ -30,6 +31,7 @@ export function useSpeechRecognition({ lang = 'en-GB', onFinal } = {}) {
   const cancel = useCallback(() => {
     const rec = recognitionRef.current;
     recognitionRef.current = null;
+    stoppingRef.current = false;
     if (rec) {
       detach(rec);
       try { rec.abort(); } catch { /* Already ended. */ }
@@ -47,7 +49,13 @@ export function useSpeechRecognition({ lang = 'en-GB', onFinal } = {}) {
   useEffect(() => { cancel(); }, [Ctor, lang, cancel]);
 
   const start = useCallback(() => {
-    if (!mountedRef.current || recognitionRef.current) return false;
+    if (!mountedRef.current) return false;
+    if (recognitionRef.current) {
+      if (!stoppingRef.current) return false;
+      // Stop may still be awaiting its final/end events. An explicit restart
+      // replaces that attempt, while an incidental start cannot interrupt capture.
+      cancel();
+    }
     if (!supported) { setError('unsupported'); return false; }
     setError(null);
     setTranscript('');
@@ -90,6 +98,7 @@ export function useSpeechRecognition({ lang = 'en-GB', onFinal } = {}) {
       rec.onend = () => {
         if (!current()) return;
         recognitionRef.current = null;
+        stoppingRef.current = false;
         detach(rec);
         setListening(false);
         setInterim('');
@@ -107,6 +116,7 @@ export function useSpeechRecognition({ lang = 'en-GB', onFinal } = {}) {
   const stop = useCallback(() => {
     const rec = recognitionRef.current;
     if (!rec) return;
+    stoppingRef.current = true;
     setListening(false);
     try { rec.stop(); }
     catch { cancel(); }
