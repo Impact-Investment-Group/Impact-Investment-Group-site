@@ -3,7 +3,6 @@ import {
   Camera,
   Transform,
   Vec3,
-  Mat4,
   GLTFLoader,
   GLTFAnimation,
 } from "ogl";
@@ -67,6 +66,31 @@ export function blendBuddyPose(node, previous, amount) {
   node.position.lerp(previous.position, weight);
   node.quaternion.slerp(previous.quaternion, weight);
   node.scale.lerp(previous.scale, weight);
+}
+
+/** Foreground accents leave the authored wrist/forearm joint untouched. */
+export function applyBuddyForeground(nodes, form, name, amount) {
+  const close = clamp(amount, 0, 1),
+    hand = nodes.get("Hand.R");
+  if (name === "Closeup_Thumb_R" && hand) hand.scale.multiply(1 + 0.3 * close);
+  if (name !== "Closeup_Inspect_R") return;
+  const glass = nodes.get("Magnifier.R"),
+    factor = 1 + 0.25 * close;
+  if (glass) glass.scale.multiply(factor);
+  // Blender's prop -Y axis becomes local +Z in this exported glTF. The handle
+  // telescopes from its fixed grip; moving the lens never moves the hand root.
+  const faceY = { property: 0.48, investment: 0.86, support: 0.05 }[form];
+  const extension = ((faceY - 0.576) * close) / factor;
+  for (const part of ["GlassRing.R", "GlassLens.R", "LensCentre.R"]) {
+    const node = nodes.get(part);
+    if (node) node.position.z += extension;
+  }
+  const handle = nodes.get("GlassHandle.R");
+  if (handle) {
+    const length = Math.max(0.15, 0.62 + extension) / 0.62;
+    handle.position.z *= length;
+    handle.scale.y *= length;
+  }
 }
 
 /** GPU bitmap sizing must never replace the caller's CSS layout contract. */
@@ -240,8 +264,6 @@ export async function createBuddyRenderer(canvas, library) {
       closeState = 0;
     let faceState = null;
     const point = new Vec3();
-    const offset = new Vec3(),
-      inverseParent = new Mat4();
     const bodyBounds = new Map();
     scene.updateMatrixWorld();
     for (const form of forms) {
@@ -270,15 +292,6 @@ export async function createBuddyRenderer(canvas, library) {
         },
       ]),
     );
-    function moveInCharacterFrame(node, root, x, y, z) {
-      if (!node?.parent || !root) return;
-      inverseParent.copy(node.parent.worldMatrix).inverse();
-      offset
-        .set(x, y, z)
-        .scaleRotateMatrix4(root.worldMatrix)
-        .scaleRotateMatrix4(inverseParent);
-      node.position.add(offset);
-    }
     function restore(graph, rests) {
       for (const [node, state] of rests) {
         node.position.copy(state.position);
@@ -348,8 +361,8 @@ export async function createBuddyRenderer(canvas, library) {
       if (!glass || !centre) return 0;
       const p = project(centre);
       point
-        .set(0.375, -1.02, 0)
-        .applyMatrix4(glass.worldMatrix)
+        .set(0.375, 0, 0)
+        .applyMatrix4(centre.worldMatrix)
         .applyMatrix4(camera.viewMatrix)
         .applyMatrix4(camera.projectionMatrix);
       const actual = Math.hypot(
@@ -511,27 +524,7 @@ export async function createBuddyRenderer(canvas, library) {
           root.rotation.y = viewYaw + (attention?.x || 0) * 0.1;
           root.rotation.x = (attention?.y || 0) * 0.035;
         }
-        if (close && root) {
-          scene.updateMatrixWorld();
-          const hand = nodes.get("Hand.R");
-          if (name === "Closeup_Thumb_R" && hand) {
-            moveInCharacterFrame(hand, root, -0.36 * close, 0, 0.4 * close);
-            hand.scale.multiply(1 + 0.3 * close);
-          } else if (name === "Closeup_Inspect_R" && hand) {
-            const faceY = { property: 0.48, investment: 0.86, support: 0.05 }[
-              form
-            ];
-            moveInCharacterFrame(
-              hand,
-              root,
-              -0.114 * close,
-              (faceY - 0.576) * close,
-              0.55 * close,
-            );
-            const glass = nodes.get("Magnifier.R");
-            if (glass) glass.scale.multiply(1 + 0.25 * close);
-          }
-        }
+        if (close) applyBuddyForeground(nodes, form, name, close);
         let opacity = 1;
         if (transition && root) {
           const p = clamp(transition.progress, 0, 1);
