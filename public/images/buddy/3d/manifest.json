@@ -1,0 +1,64 @@
+{
+  "version": "buddy-hologram-3d-v1",
+  "authoring": "Blender 5.2.4 LTS",
+  "forms": [
+    "property",
+    "investment",
+    "support"
+  ],
+  "clips": {
+    "Idle": 4,
+    "Wave": 2.4,
+    "Listen": 3.2,
+    "Think": 3.4,
+    "Talk": 2.8,
+    "Explain": 2.8,
+    "Reassure": 3,
+    "Approve": 2,
+    "Celebrate": 3,
+    "Dance": 4.8,
+    "Stretch": 4.2,
+    "Peek": 4.6,
+    "Polish": 6.6,
+    "Build": 9.4,
+    "Glide": 2.0,
+    "InspectLeft": 2,
+    "InspectRight": 2,
+    "InspectUp": 2,
+    "InspectDown": 2,
+    "Closeup_Thumb_R": 3.2,
+    "Closeup_Inspect_R": 3.6
+  },
+  "handedness": {
+    "L": "character left, front-view screen right",
+    "R": "character right, front-view screen left"
+  },
+  "hands": {
+    "L": {
+      "mesh": "HandMesh.L",
+      "bone": "Hand.L",
+      "grip": "Grip.L"
+    },
+    "R": {
+      "mesh": "HandMesh.R",
+      "bone": "Hand.R",
+      "grip": "Grip.R"
+    }
+  },
+  "coordinates": {
+    "gltfUp": "+Y",
+    "front": "+Z",
+    "characterLeft": "+X"
+  },
+  "geometry": "authored closed meshes and a separate five-digit skeleton on each side",
+  "hologram": "shared runtime GPU material, no image-plane character",
+  "asset": {
+    "file": "buddy.glb",
+    "bytes": 3119488,
+    "sha256": "cd581cf2e64670e69425de45f47d2d401e38f3b0eac1a22dd962ef4f6a8b3d81",
+    "nodes": 131,
+    "meshes": 72,
+    "primitives": 74,
+    "trianglesAllForms": 98408
+  }
+}
