@@ -1,4 +1,5 @@
 """CI-only inspection of real skinned 3D geometry, hands and authored movement."""
+import base64
 import functools
 import http.server
 import json
@@ -189,6 +190,13 @@ try:
                 for action, (_clip, duration) in POSES.items()
             ]})
             page.screenshot(path=str(OUT / f'buddy-3d-{kind}.png'), full_page=True)
+            if kind == 'closeups':
+                # Keep native renderer pixels for a readable gesture review,
+                # alongside the complete frame sheet and numerical evidence.
+                for form_index, form in enumerate(['property', 'investment', 'support']):
+                    for offset, gesture in [(3, 'thumb'), (12, 'magnifier')]:
+                        source = page.locator('#sheet figure img').nth(form_index * 16 + offset).get_attribute('src')
+                        (OUT / f'{form}-closeup-{gesture}.png').write_bytes(base64.b64decode(source.split(',', 1)[1]))
             REPORT['checks'].append(result)
             assert len(result['frames']) == expected, 'Missing authored views'
             assert all(n >= distinct for n in result['distinct']), f'{kind}: repeated poses or frames'
