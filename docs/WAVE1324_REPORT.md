@@ -1,10 +1,10 @@
-# Wave 1324: hologram Buddy
+# Wave 1324: 3D Buddy
 
 This report describes the implemented source and its reviewed boundaries. Exact final CI, publication and live observations are recorded in the Context Library's `Platform/CI-Runs.md` and `Platform/Live-State.md`; the candidate outcomes below do not independently establish a live release.
 
 ## Result
 
-The website uses the same Blender-authored 3D key, pound and heart as the logged-in platform, rendered through OGL. The rig has separate anatomical left and right hands and positive scales. The new material provides translucent cyan surfaces, scan bands, edge light and opaque facial details. Authored poses include a foreground thumbs-up and an approaching magnifier with an enlarged eye. The supplied v2-refined package remains the identity reference.
+The website uses the same Blender-authored 3D key, pound and heart as the logged-in platform, rendered through OGL. The rig has separate anatomical left and right hands and positive scales. Following Israel's rejection of the flat hologram finish on 16 November, the revised character has rounded, polished navy/teal surfaces, pearl gloves and layered eyes. Its studio-lighting material uses the authored roughness, metallic and clearcoat values; full-body transparency and scan bands are removed. Authored poses include a foreground thumbs-up and an approaching magnifier with an enlarged eye. The supplied v2-refined package remains the identity reference.
 
 There is one persistent website actor. Its interrupted flights retain velocity and settle into corner, page, chat and inspection destinations. Page sections still choose the form. The new page-detail action reads visible published text, enlarges it beside the original and directs the same Buddy to it. It never reads a form field or asks the model to invent a figure. Changed or hidden source text dismisses the reading aid. Escape, keyboard focus, short viewports and route changes have explicit handling.
 
@@ -39,3 +39,9 @@ The actual-size proof on `0999cfcdd` captured 312 frames and found 60 ordinary w
 - Close page detail / Next detail
 
 CI outcomes, final asset hashes and publication evidence will be recorded after those steps occur. The website does not expose private property tools; those belong to the authenticated platform and retain its reader permissions.
+
+## Polished character refinement, 16 November
+
+The owner's later feedback replaces the flat hologram finish with a more dimensional character. The model has deeper bevels, convex face panels, separate pearl glove material and layered eyes. Shared studio lighting now honours roughness, metallic and clearcoat values; scanlines and whole-body translucency are gone. Existing expressions, form transitions, construction, foreground gestures and single-actor placement remain.
+
+The first branch-only artwork review at `1eb3245` passed all seven production-renderer sets (567 frames, including 312 actual-size frames); its six source hashes and downloaded artifact digest matched. Visual review then identified eye-surface intersections in the enlarged-eye pose and pinched fist folds, prompting an additional model correction. This earlier review does not certify the final model. The final full website gate, exact deployment identity and live review are recorded separately in Context. No local application tests or builds ran, and no runtime resource ceiling was raised.

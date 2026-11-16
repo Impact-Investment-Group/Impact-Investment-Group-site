@@ -159,10 +159,16 @@ for form in SHAPES:
     for side in (-1,1):
         # The animated pupil carries its layered iris and sclera. The complete
         # eye therefore blinks and enlarges together, including the close-up.
-        eye=sphere('Eye_'+form+('_L' if side>0 else '_R'),(side*.235,-.018,.075),(.075,.040,.110),EYE,face)
-        sphere('Sclera_'+form+str(side),(0,.060,0),(.145,.085,.190),WHITE,eye,24)
-        sphere('Iris_'+form+str(side),(0,.015,0),(.098,.045,.132),IRIS,eye,24)
-        sphere('Catchlight_'+form+str(side),(side*.235-.025,-.071,.120),(.026,.012,.032),LIGHT,face,12)
+        eye=sphere('Eye_'+form+('_L' if side>0 else '_R'),(side*.235,-.145,.075),(.075,.018,.110),EYE,face)
+        sclera=sphere('Sclera_'+form+str(side),(0,.065,0),(.145,.045,.190),WHITE,eye,24)
+        # A shallow convex front and a longer hidden back attach the white to
+        # the face. Its visible perimeter stays clear of the panel even at the
+        # 1.95x magnified-eye pose; intersecting rims caused stippled outlines.
+        for vertex in sclera.data.vertices:
+            if vertex.co.y>0:vertex.co.y*=3
+        sclera.data.update()
+        sphere('Iris_'+form+str(side),(0,.024,0),(.105,.014,.140),IRIS,eye,24)
+        sphere('Catchlight_'+form+str(side),(side*.235-.025,-.178,.120),(.026,.008,.032),LIGHT,face,12)
         line('Brow_'+form+str(side),[(side*.235-.105,-.005,.30),(side*.235,-.015,.33),(side*.235+.10,0,.30)],.018,NAVY,face)
     line('Smile_'+form,[(-.15,-.015,-.17),(0,-.037,-.23),(.15,-.015,-.17)],.023,EYE,face)
     sphere('Mouth_'+form,(0,.008,-.20),(.095,.025,.040),EYE,face,16)
@@ -384,7 +390,10 @@ for name,duration in CLIPS.items():
                 if p.name.endswith('.'+suffix) and p.name.split('.')[0] in ('Index','Middle','Ring','Pinky','Thumb'):
                     curl=.9 if not p.name.startswith('Thumb') else .45
                     if name=='Closeup_Thumb_R':
-                        curl=(1.35 if not p.name.startswith('Thumb') else -.65)*envelope
+                        # A fist rolls from the knuckle to the fingertip. An
+                        # equal 77-degree rotation at every joint buried the
+                        # fingertip in the glove and pinched the visible folds.
+                        curl=({'01':.85,'02':1.15,'03':.65}[p.name.split('.')[1]] if not p.name.startswith('Thumb') else -.65)*envelope
                     elif name=='Closeup_Inspect_R':curl*=envelope
                     rotate(p.name,curl,0,0)
         if name=='Closeup_Thumb_R':
@@ -418,13 +427,30 @@ manifest['asset']={'file':'buddy.glb','bytes':len(binary),'sha256':hashlib.sha25
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 
 # Render authoring turntables, never application screenshots.
-scene.render.engine='CYCLES';scene.cycles.samples=48;scene.cycles.use_denoising=True
+scene.render.engine='CYCLES';scene.cycles.samples=64;scene.cycles.use_denoising=True
 scene.render.resolution_x=700;scene.render.resolution_y=700;scene.render.resolution_percentage=100
 scene.render.image_settings.file_format='PNG';scene.render.film_transparent=True
 scene.view_settings.view_transform='AgX'
 # Authoring plates use the same opaque, physically shaded material roles as
 # the runtime. No extra transparency/emission makes these previews look better
 # than the exported model. The lens alone transmits light.
+# Keep studio illumination identical across every form. The optional bone
+# backdrop is a camera-only surface, never a brighter environment light.
+scene.world.use_nodes=True
+world_nodes=scene.world.node_tree.nodes;world_links=scene.world.node_tree.links
+world_nodes.clear()
+world_output=world_nodes.new('ShaderNodeOutputWorld')
+studio_background=world_nodes.new('ShaderNodeBackground')
+studio_background.inputs['Color'].default_value=(.30,.34,.38,1)
+studio_background.inputs['Strength'].default_value=.35
+bone_background=world_nodes.new('ShaderNodeBackground')
+bone_background.inputs['Color'].default_value=(.947,.947,.930,1)
+light_path=world_nodes.new('ShaderNodeLightPath')
+world_mix=world_nodes.new('ShaderNodeMixShader')
+world_links.new(light_path.outputs['Is Camera Ray'],world_mix.inputs[0])
+world_links.new(studio_background.outputs[0],world_mix.inputs[1])
+world_links.new(bone_background.outputs[0],world_mix.inputs[2])
+world_links.new(world_mix.outputs[0],world_output.inputs['Surface'])
 for suffix in ('L','R'):
     bpy.data.objects['Magnifier.'+suffix].hide_render=True
     bpy.data.objects['Hammer.'+suffix].hide_render=True
@@ -451,8 +477,7 @@ for form in forms:
         ROOT.rotation_euler.z=angle
         scene.render.filepath=str(OUT/f'{form}-{view}.png');bpy.ops.render.render(write_still=True)
     ROOT.rotation_euler.z=0
-    scene.render.film_transparent=False;scene.world.use_nodes=True
-    scene.world.node_tree.nodes.get('Background').inputs['Color'].default_value=(.947,.939,.896,1)
+    scene.render.film_transparent=False
     scene.render.filepath=str(OUT/f'{form}-bone.png');bpy.ops.render.render(write_still=True)
     scene.render.film_transparent=True
 for other,group in forms.items():hide_tree(group,other!='property')

@@ -87,8 +87,8 @@ export function hologramMaterial(gl, material, skinned = false) {
         color+=studioLight(n,v,vec3(.15,.7,-1.0),vec3(.65,1.15,1.2),f0);
         vec3 reflection=studioReflection(reflect(-v,n));
         color+=reflection*(fresnel(nv,f0)*(1.0-roughness*.65)+coat*.11);
-        // A restrained cool edge retains the digital identity without stripes,
-        // transparency sorting or a washed-out face and hands.
+        // A restrained cool edge retains the digital identity without stripes
+        // or washing out the face and hands.
         color+=vec3(.025,.12,.14)*edge*coat+emission;
         color+=vec3(.06,.65,.55)*glow;
         // Gentle photographic highlight compression, then one linear-to-sRGB conversion.

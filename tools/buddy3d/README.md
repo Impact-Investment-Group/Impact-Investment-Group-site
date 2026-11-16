@@ -1,4 +1,4 @@
-# Buddy hologram master
+# Buddy 3D character master
 
 `master.blend` is the editable Blender master for one Buddy character with three
 symbol bodies, an articulated five-digit hand on each side, grip sockets,
@@ -20,7 +20,7 @@ blender.exe --background --python tools/buddy3d/author_buddy.py -- OUTPUT_DIRECT
 
 The authoring output includes GLB, master, a hash/count manifest, transparent
 fallbacks, front/profile/back views and isolated pose previews. Runtime assets
-are in `public/images/buddy/3d`. The same GLB and fallback
+are in `iip-frontend/iip-web/public/images/buddy/3d`. The same GLB and fallback
 images are copied to the public website; its master is a source copy.
 
 The official Windows ZIP was checked against Blender's published SHA256 file:
@@ -31,7 +31,15 @@ Blender's GPL applies to Blender software, not to these authored output models:
 GPL-2.0-or-later licence. The OGL 1.0.11 runtime is Unlicense:
 <https://github.com/oframe/ogl>.
 
-The runtime applies the shared hologram GPU material and expression transforms
+The current finish follows Israel's 16 November rejection of the flat, striped
+hologram. Rounded body bevels and a convex face are paired with polished navy
+and teal surfaces, pearl gloves, layered eye whites/irises/pupils and restrained
+cool edge reflections. The runtime honours the GLB's metallic, roughness,
+clearcoat and emission values with a small studio-lighting shader. Body and
+hands are opaque; the magnifier aperture remains transparent. There is no
+scanline texture or full-body transparency.
+
+The runtime applies the shared studio GPU material and expression transforms
 to the actual geometry. PNGs are only the source-faithful fallback if WebGL or
 the model is unavailable. The manifest records the entire library, including
 all three mutually exclusive forms; it is not a claim that all its triangles
