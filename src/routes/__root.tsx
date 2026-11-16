@@ -1,8 +1,7 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
-  createRootRouteWithContext,
+  createRootRoute,
   useRouter,
   useRouterState,
   HeadContent,
@@ -105,7 +104,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -199,11 +198,10 @@ function useRouteEnter(): "a" | "b" | undefined {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
   const routeEnter = useRouteEnter();
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <ImageFade />
       <SiteMotion />
       <div className="flex min-h-screen flex-col bg-page">
@@ -224,6 +222,6 @@ function RootComponent() {
       </div>
       <BackToTop />
       <BuddyLauncher />
-    </QueryClientProvider>
+    </>
   );
 }

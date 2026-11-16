@@ -427,6 +427,14 @@ with sync_playwright() as pw:
             page.goto(base + "/contact/?enquiry=investor&role=Investor", wait_until="networkidle")
             expect(page.locator("#enquiry-form-title")).to_have_text("Investor enquiry")
             expect(page.locator("#role")).to_have_value("Investor")
+            # Search values are JSON-decoded by the router. Invalid types must
+            # not override a valid enquiry or populate the role field.
+            page.goto(base + "/contact/?enquiry=investor&type=true&role=%5B%22Investor%22%5D&unexpected=ignored", wait_until="networkidle")
+            expect(page.locator("#enquiry-form-title")).to_have_text("Investor enquiry")
+            expect(page.locator("#role")).to_have_value("")
+            page.goto(base + "/contact/?enquiry=123&type=%7B%22id%22%3A%22support%22%7D&role=false", wait_until="networkidle")
+            expect(page.locator("#enquiry-form-title")).to_have_text("Register your interest")
+            expect(page.locator("#role")).to_have_value("")
 
         def check_crafted_state(name):
             check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Interactive state overflows")

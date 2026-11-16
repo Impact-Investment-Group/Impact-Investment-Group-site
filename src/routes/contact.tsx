@@ -1,15 +1,21 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { z } from "zod";
 import { ContactLayout } from "@/components/contact/contact-layout";
 import { enquiryRouteIds, type EnquiryRouteId } from "@/content/contact";
 import { contactDetails } from "@/content/site";
 
-const searchSchema = z.object({
-  enquiry: z.string().optional().catch(undefined),
-  type: z.string().optional().catch(undefined),
-  role: z.string().optional().catch(undefined),
-});
+type ContactSearch = { enquiry?: string; type?: string; role?: string };
+
+// Route search is eager on every page. Accept only these optional strings;
+// the form and API retain their separate submission validation.
+function validateContactSearch(search: Record<string, unknown>): ContactSearch {
+  const clean: ContactSearch = {};
+  for (const key of ["enquiry", "type", "role"] as const) {
+    const value = search[key];
+    if (typeof value === "string") clean[key] = value;
+  }
+  return clean;
+}
 
 function toRouteId(value: string | undefined): EnquiryRouteId {
   return enquiryRouteIds.includes(value as EnquiryRouteId) ? (value as EnquiryRouteId) : "waitlist";
@@ -17,7 +23,7 @@ function toRouteId(value: string | undefined): EnquiryRouteId {
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
-  validateSearch: (search) => searchSchema.parse(search),
+  validateSearch: validateContactSearch,
   head: () => ({
     meta: [
       { title: "Contact — Impact Investment Group" },

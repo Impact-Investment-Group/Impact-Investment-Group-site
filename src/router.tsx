@@ -1,13 +1,9 @@
-import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
 export const getRouter = () => {
-  const queryClient = new QueryClient();
-
   const router = createRouter({
     routeTree,
-    context: { queryClient },
     scrollRestoration: true,
     /* WAVE 413. Stated rather than inherited, because it is a decision: a
        forward navigation goes to the top of the new page INSTANTLY, and back
