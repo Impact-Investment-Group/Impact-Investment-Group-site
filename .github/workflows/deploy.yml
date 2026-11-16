@@ -106,6 +106,7 @@ jobs:
       # dependencies, avoiding apt mirror outages on fresh hosted runners.
       # Keep its Playwright version in sync with the Python package below.
       - name: Start browser verification container
+        id: browser_container
         timeout-minutes: 5
         run: |
           docker run --detach --init --ipc=host --name site-browser-checks \
@@ -116,7 +117,7 @@ jobs:
           docker exec site-browser-checks python -m pip install playwright==1.65.0 pillow
 
       - name: Capture and check Buddy views and transformation frames
-        if: inputs.source_ref == ''
+        if: ${{ !cancelled() && steps.browser_container.outcome == 'success' && inputs.source_ref == '' }}
         run: docker exec site-browser-checks python scripts/site-buddy-3d.py
 
       - name: Share Buddy artwork for review during the remaining checks
@@ -128,17 +129,20 @@ jobs:
           retention-days: 7
 
       - name: Check one Buddy moving between page and chat placements
-        if: inputs.source_ref == ''
+        if: ${{ !cancelled() && steps.browser_container.outcome == 'success' && inputs.source_ref == '' }}
         run: docker exec site-browser-checks python scripts/site-buddy-placement.py
 
       - name: Check Firefox and WebKit scrolling
+        if: ${{ !cancelled() && steps.browser_container.outcome == 'success' }}
         run: docker exec site-browser-checks python scripts/site-scroll-smoke.py
 
       - name: Check pricing and lightweight motion
+        if: ${{ !cancelled() && steps.browser_container.outcome == 'success' }}
         run: docker exec site-browser-checks python scripts/site-motion-pricing.py
 
       - name: Check every page and interactive journeys
         id: browser_checks
+        if: ${{ !cancelled() && steps.browser_container.outcome == 'success' }}
         run: docker exec site-browser-checks python scripts/wave909-experience.py
 
       - name: Check the interactive partner ecosystem
