@@ -1047,7 +1047,7 @@ def main() -> None:
     incomplete_tally: list[tuple[str, int, int, int, int, int]] = []
 
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])
         for path, slug in PAGES:
             for width in WIDTHS:
                 page = browser.new_page(viewport={"width": width, "height": 900})

@@ -30,7 +30,7 @@ def check_coming_soon(page):
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
 
 with sync_playwright() as pw:
-    browser = pw.chromium.launch()
+    browser = pw.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])
     for width in (390, 768, 1280, 1440):
         context = browser.new_context(viewport={"width": width, "height": 900}, has_touch=width < 1024, is_mobile=width < 1024)
         context.route("**/*", lambda route: route.abort() if route.request.method == "POST" else route.continue_())

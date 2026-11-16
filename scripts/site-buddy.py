@@ -400,6 +400,11 @@ def floating_placement_and_minimise(page, fixtures):
     expect(chat.get_by_role("button", name=CHAT_COPY_ALLOWED["questions"][0], exact=True)).to_be_focused()
     close.focus()
     page.keyboard.press("Shift+Tab")
+    explore = chat.get_by_role("button", name="Explore this page with Buddy", exact=True)
+    expect(explore).to_be_focused()
+    # Explore is now the first control; leaving that boundary must still
+    # return to the page rather than trap focus inside a non-modal panel.
+    page.keyboard.press("Shift+Tab")
     assert page.evaluate("""(() => {
       const active = document.activeElement;
       return Boolean(active && active !== document.body &&
@@ -1072,7 +1077,9 @@ def ambient_companion(page, fixtures):
     # first scene. Real elapsed time and the real canvas controller still run.
     page.add_init_script('Math.random = () => 0.999;')
     prop_requests = []
+    model_requests = []
     page.on('request', lambda request: prop_requests.append(request.url) if 'play-props-v1.webp' in request.url else None)
+    page.on('request', lambda request: model_requests.append(request.url) if '/images/buddy/3d/buddy.glb' in request.url else None)
     visit(page)
     no_animation_controls(page)
     widget = page.locator('[data-buddy-widget]')
@@ -1084,10 +1091,24 @@ def ambient_companion(page, fixtures):
     assert not prop_requests, 'Scenery loaded during the quiet initial page request'
     find_ambient_corner(page)
     expect(character).to_have_attribute('data-buddy-ambient', 'rest')
+    expect(character).to_have_attribute('data-buddy-status', 'ready')
+    assert len(model_requests) == 1, 'The authored character and scenery must share one loaded GLB'
+    def scenery_pixels():
+        return canvas.evaluate('''canvas => {
+          const copy = document.createElement('canvas');
+          copy.width = canvas.width; copy.height = canvas.height;
+          const context = copy.getContext('2d'); context.drawImage(canvas, 0, 0);
+          const pixels = context.getImageData(0, 0, Math.floor(canvas.width * .31), canvas.height).data;
+          let painted = 0;
+          for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 16) painted++;
+          return painted;
+        }''')
+    quiet_pixels = scenery_pixels()
     focused = page.evaluate('document.activeElement?.tagName')
     expect(character).to_have_attribute('data-buddy-ambient', 'build', timeout=24000)
-    assert prop_requests, 'The autonomous construction did not request its supplied scenery'
     page.wait_for_timeout(2800)
+    assert scenery_pixels() > quiet_pixels + 25, 'Autonomous construction did not paint its 3D scenery beside Buddy'
+    assert len(model_requests) == 1 and not prop_requests, 'Construction refetched the model or used retired raster scenery'
     assert canvas.evaluate('n => getComputedStyle(n).pointerEvents') == 'none'
     scene_box, character_box = canvas.bounding_box(), page.locator('[data-buddy-actor]').bounding_box()
     assert scene_box['x'] >= 0 and scene_box['x'] + scene_box['width'] <= page.viewport_size['width'] + 1, 'Ambient scenery leaves the viewport'

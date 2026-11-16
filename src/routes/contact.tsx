@@ -12,7 +12,8 @@ function validateContactSearch(search: Record<string, unknown>): ContactSearch {
   const clean: ContactSearch = {};
   for (const key of ["enquiry", "type", "role"] as const) {
     const value = search[key];
-    if (typeof value === "string") clean[key] = value;
+    // Router validation merges into raw search, so invalid values need clearing.
+    clean[key] = typeof value === "string" ? value : undefined;
   }
   return clean;
 }

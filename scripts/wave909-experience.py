@@ -62,7 +62,9 @@ def check(condition, message):
 
 
 with sync_playwright() as pw:
-    browser = pw.chromium.launch()
+    # Use the same software GPU as the direct Buddy/placement proofs. These
+    # journeys assert real 3D readiness in the CI container, not its fallback.
+    browser = pw.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])
     for width in [390, 1280]:
         context = browser.new_context(viewport={"width": width, "height": 900}, reduced_motion="reduce")
         context.route("**/*", lambda route: route.abort() if route.request.method == "POST" else route.continue_())
