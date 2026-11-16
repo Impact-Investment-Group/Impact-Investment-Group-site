@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowUpRight, ChevronDown, RotateCcw, Send, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, RotateCcw, Search, Send, X } from "lucide-react";
+import { PAGE_INSPECTION_EVENT } from "./buddy-page-inspector";
 import { BUDDY_FORM_CHANGE_MS } from "./buddy-character";
 import { BuddySlot } from "./buddy-slot";
 import { BuddyWidget } from "./buddy-launcher";
@@ -237,7 +238,15 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
 
   const submit = (message: string) => {
     const text = message.trim();
+    if (/^(?:show|enlarge|explore|magnify)\b.{0,40}\b(?:this page|page details|page figures)\b/i.test(text) && !busy) {
+      inspectPage();
+      return;
+    }
     if (readiness === "ready" && text && text.length <= 1000 && !busy) void ask({ message: text, history: turns.slice(-6), topic });
+  };
+  const inspectPage = () => {
+    changeOpen(false);
+    requestAnimationFrame(() => window.dispatchEvent(new Event(PAGE_INSPECTION_EVENT)));
   };
   const clearConversation = () => {
     cancel(false);
@@ -260,6 +269,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
               <Dialog.Title className="font-heading text-lg font-bold">{buddyCopy.name}</Dialog.Title>
             </div>
             <div className="flex">
+              <button type="button" aria-label="Explore this page with Buddy" title="Explore this page" disabled={busy} onClick={inspectPage} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page-alt")}><Search className="size-4" aria-hidden="true" /></button>
               <button type="button" aria-label={buddyCopy.clear} title={buddyCopy.clear} disabled={!turns.length && !draft} onClick={clearConversation} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page-alt")}><RotateCcw className="size-4" aria-hidden="true" /></button>
               <Dialog.Close aria-label={buddyCopy.close} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page-alt")}><X className="size-5" aria-hidden="true" /></Dialog.Close>
             </div>

@@ -78,7 +78,7 @@ jobs:
 
       - name: Prepare real Buddy renderer visual proof
         if: inputs.source_ref == ''
-        run: bun scripts/build-buddy-proof.mjs
+        run: bun scripts/build-buddy-3d-proof.mjs
 
       # STATIC_BUILD switches vite.config.ts to prerender with no Nitro server.
       - name: Build static site
@@ -139,7 +139,7 @@ jobs:
 
       - name: Capture and check Buddy views and transformation frames
         if: ${{ !cancelled() && inputs.source_ref == '' && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}
-        run: docker exec site-browser-checks python scripts/site-buddy-artwork.py
+        run: docker exec site-browser-checks python scripts/site-buddy-3d.py
 
       - name: Check the complete local authority carousel
         if: ${{ !cancelled() && (steps.browser_checks.outcome == 'success' || steps.browser_checks.outcome == 'failure') }}

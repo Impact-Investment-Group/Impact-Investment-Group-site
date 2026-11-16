@@ -3,7 +3,7 @@ import { Heart, Home, PoundSterling } from "lucide-react";
 import type { BuddyAction, BuddyExpression, BuddyForm } from "./buddy-character";
 import { cn } from "@/lib/utils";
 
-export type BuddyPlacement = "page" | "corner" | "chat";
+export type BuddyPlacement = "page" | "corner" | "chat" | "inspect";
 
 /** A destination for the one root actor, never a second character renderer. */
 export function BuddySlot({ form = "property", action = "idle", expression = "warm", kind = "page", className }: {

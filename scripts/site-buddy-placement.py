@@ -87,7 +87,7 @@ def settled_in_slot(page, kind):
 
 
 with sync_playwright() as playwright:
-    browser = playwright.chromium.launch()
+    browser = playwright.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])
     try:
         for width in (390, 768, 1280):
             for reduced in (False, True):

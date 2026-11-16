@@ -3,6 +3,7 @@ import { useLocation } from "@tanstack/react-router";
 import { Minus } from "lucide-react";
 import { BuddyActor } from "./buddy-actor";
 import { BuddySlot } from "./buddy-slot";
+import { BuddyPageInspector } from "./buddy-page-inspector";
 import { buddyLauncherLabel, isBuddyTopic, type BuddyTopic } from "@/content/buddy";
 import { useBuddyPageContext } from "@/hooks/use-buddy-page-context";
 
@@ -91,6 +92,7 @@ export function BuddyLauncher() {
 
   return <>
     <BuddyActor />
+    <BuddyPageInspector />
     {Assistant ? <Assistant initialTopic={options.current.topic} initialTrigger={options.current.trigger} contextTopic={contextTopic} />
       : <BuddyWidget topic={contextTopic} onOpen={() => open()} loading={loading} failed={failed} />}
   </>;

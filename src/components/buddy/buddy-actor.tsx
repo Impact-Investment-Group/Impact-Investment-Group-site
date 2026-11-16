@@ -96,7 +96,8 @@ export function BuddyActor() {
       position = followBuddyDestination(position, target, previousTime ? (now - previousTime) / 1000 : .016, reduced.matches);
       previousTime = now;
       node.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) scale(${position.size / 256})`;
-      const moving = Math.abs(position.x - target.x) + Math.abs(position.y - target.y) + Math.abs(position.size - target.size) > .12;
+      const moving = Math.abs(position.x - target.x) + Math.abs(position.y - target.y) + Math.abs(position.size - target.size) > .12 ||
+        Object.values(position.velocity ?? {}).some(value => Math.abs(value) > .5);
       node.dataset.buddyTravelling = String(moving);
       if (moving) frame = window.requestAnimationFrame(tick);
     }
@@ -152,7 +153,8 @@ export function BuddyActor() {
     <BuddyCharacter form={performance.form} action={performance.action} expression={performance.expression}
       animated={performance.visible} continuousIdle playfulIdle={performance.kind === "page"}
       ambient={performance.kind === "corner" && performance.ambient && performance.action !== "listen"}
-      attention={attention} ambientCanvasClassName="h-72 w-96" className="w-full" />
+      attention={attention} inspect={performance.kind === "inspect" ? { hand: "left", direction: "right", radius: 42 } : undefined}
+      ambientCanvasClassName="h-72 w-96" className="w-full" />
     {performance.kind !== "chat" && <button type="button" aria-label={buddyLauncherLabel} aria-haspopup="dialog"
       onClick={() => openBuddy(performance.form)}
       className="pointer-events-auto absolute inset-0 rounded-2xl bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600" />}

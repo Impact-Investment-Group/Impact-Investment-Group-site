@@ -51,3 +51,25 @@ test("reduced motion puts the same actor directly in its destination", () => {
   const target = { x: 40, y: 60, size: 48 };
   assert.deepEqual(followBuddyDestination({ x: 800, y: 500, size: 192 }, target, .016, true), target);
 });
+
+test("flight preserves momentum when scrolling changes its destination", () => {
+  const start = { x: 950, y: 600, size: 192 };
+  const destination = { x: 400, y: 240, size: 256 };
+  const moving = followBuddyDestination(start, destination, .08);
+  const retargeted = followBuddyDestination(moving, { x: 1000, y: 650, size: 192 }, .001);
+  assert.ok(moving.velocity.x < 0);
+  assert.ok(retargeted.velocity.x < 0, "a new slot cannot instantly reverse his flight");
+  assert.ok(Math.abs(retargeted.x - moving.x) < 4, "the displayed position is continuous");
+});
+
+test("flight settles at the same destination at different refresh rates", () => {
+  const target = { x: 40, y: 60, size: 48 };
+  for (const hz of [30, 60, 120]) {
+    let shown = { x: 1000, y: 600, size: 256 };
+    for (let i = 0; i < hz * 2; i++) shown = followBuddyDestination(shown, target, 1 / hz);
+    assert.equal(shown.x, target.x);
+    assert.equal(shown.y, target.y);
+    assert.equal(shown.size, target.size);
+    assert.equal(shown.velocity.x, 0);
+  }
+});

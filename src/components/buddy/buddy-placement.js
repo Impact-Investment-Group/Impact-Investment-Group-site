@@ -5,11 +5,14 @@ export function selectBuddyDestination(slots, current, viewport) {
   const corner = slots.find(slot => slot.kind === "corner" && slot.width > 0 && slot.height > 0);
   // Removing the corner slot is the existing user's Minimize choice.
   if (!corner) return null;
+  const inspection = slots.find(slot => slot.kind === "inspect" && slot.width > 0 && slot.height > 0 && slot.bottom > 0 && slot.top < viewport.height);
+  if (inspection) return inspection;
   const eligible = slots.filter(slot => {
     if (slot.kind !== "page" || slot.width < 40 || slot.height < 40) return false;
     const visibleWidth = Math.max(0, Math.min(slot.right, viewport.width) - Math.max(0, slot.left));
     const visibleHeight = Math.max(0, Math.min(slot.bottom, viewport.height - 24) - Math.max(80, slot.top));
-    return visibleWidth * visibleHeight >= slot.width * slot.height * .65 &&
+    const threshold = slot.id === current ? .45 : .65;
+    return visibleWidth * visibleHeight >= slot.width * slot.height * threshold &&
       slot.top + slot.height / 2 > viewport.height * .17 && slot.top + slot.height / 2 < viewport.height * .8;
   });
   const distance = slot => Math.abs(slot.top + slot.height / 2 - viewport.height * .46);
@@ -25,11 +28,23 @@ export function buddyDestinationRect(slot) {
   return { x: slot.left + (slot.width - size) / 2, y: slot.top + (slot.height - size) / 2, size };
 }
 
-/** Time-based following preserves the displayed position when a destination changes. */
+/** Critically damped flight carries velocity through interruptions and retargets. */
 export function followBuddyDestination(current, target, seconds, reducedMotion = false) {
   if (!current || reducedMotion) return { ...target };
-  const progress = 1 - Math.exp(-Math.max(0, Math.min(.08, seconds)) * 11);
-  return Object.fromEntries(["x", "y", "size"].map(key => [key,
-    Math.abs(target[key] - current[key]) < .12 ? target[key] : current[key] + (target[key] - current[key]) * progress,
-  ]));
+  const dt = Math.max(0, Math.min(.08, Number.isFinite(seconds) ? seconds : 0));
+  const frequency = 12;
+  const decay = Math.exp(-frequency * dt);
+  const result = { velocity: {} };
+  for (const key of ["x", "y", "size"]) {
+    const distance = current[key] - target[key];
+    const velocity = current.velocity?.[key] ?? 0;
+    const impulse = velocity + frequency * distance;
+    result[key] = target[key] + (distance + impulse * dt) * decay;
+    result.velocity[key] = (velocity - frequency * impulse * dt) * decay;
+    if (Math.abs(result[key] - target[key]) < .08 && Math.abs(result.velocity[key]) < .5) {
+      result[key] = target[key];
+      result.velocity[key] = 0;
+    }
+  }
+  return result;
 }

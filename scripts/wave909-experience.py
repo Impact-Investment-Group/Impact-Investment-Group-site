@@ -157,9 +157,9 @@ with sync_playwright() as pw:
                     expect(page.locator("[data-buddy-actor]")).to_have_count(1)
                     expect(page.locator("[data-buddy-form]")).to_have_count(1)
                     character = page.locator("[data-buddy-actor] [data-buddy-form]")
-                    expect(character).to_have_attribute("data-buddy-version", "v4-vector")
-                    expect(character).to_have_attribute("data-buddy-artwork", "vector")
-                    expect(character).to_have_attribute("data-buddy-hands", "vector")
+                    expect(character).to_have_attribute("data-buddy-version", "v5-hologram")
+                    expect(character).to_have_attribute("data-buddy-artwork", "3d-glb")
+                    expect(character).to_have_attribute("data-buddy-hands", "rigged-left-right")
                     expect(character).to_have_attribute("data-buddy-status", "ready")
                     check(character.locator("canvas").evaluate("n => n.width > 0 && n.height > 0"), "Replacement Buddy artwork has no canvas size")
                     slot = page.locator('main [data-buddy-slot="page"]:visible').first

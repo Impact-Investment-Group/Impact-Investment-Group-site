@@ -51,18 +51,21 @@ INIT = """(() => {
   window.__buddyShowcaseDraws = 0;
   window.__buddyAmbientDraws = 0;
   window.__buddyAmbientKinds = [];
-  const clearRect = CanvasRenderingContext2D.prototype.clearRect;
-  CanvasRenderingContext2D.prototype.clearRect = function (...args) {
-    if (this.canvas.closest('[data-buddy-form]')) window.__buddyDraws++;
-    if (this.canvas.closest('[data-buddy-actor][data-buddy-placement="page"]')) window.__buddyShowcaseDraws++;
-    const companion = this.canvas.closest('[data-buddy-actor][data-buddy-placement="corner"] [data-buddy-ambient]');
+  function record(canvas) {
+    if (canvas.closest('[data-buddy-form]')) window.__buddyDraws++;
+    if (canvas.closest('[data-buddy-actor][data-buddy-placement="page"]')) window.__buddyShowcaseDraws++;
+    const companion = canvas.closest('[data-buddy-actor][data-buddy-placement="corner"] [data-buddy-ambient]');
     if (companion) {
       window.__buddyAmbientDraws++;
       const kind = companion.dataset.buddyAmbient;
       if (window.__buddyAmbientKinds.at(-1) !== kind) window.__buddyAmbientKinds.push(kind);
     }
-    return clearRect.apply(this, args);
-  };
+  }
+  for (const Context of [window.WebGLRenderingContext, window.WebGL2RenderingContext]) {
+    if (!Context) continue;
+    const clear = Context.prototype.clear;
+    Context.prototype.clear = function (...args) { record(this.canvas); return clear.apply(this,args); };
+  }
   window.__buddyFetchOptions = [];
   window.__buddyRequestAborted = 0;
   window.__buddyIgnoreAbort = false;
@@ -144,7 +147,7 @@ class Fixtures:
         if request.method == "POST":
             self.unexpected_posts.append(request.url)
             route.abort()
-        elif self.fail_engine and 'buddy-rig' in path and path.endswith('.js'):
+        elif self.fail_engine and 'buddy-3d' in path and path.endswith('.js'):
             route.abort()
         elif request.url.startswith(BASE + "/"):
             route.continue_()
@@ -265,11 +268,11 @@ def assert_canvas_artwork(character):
     canvas = character.locator("canvas")
     expect(canvas).to_be_visible()
     expect(canvas).to_have_count(1)
-    expect(character).to_have_attribute("data-buddy-version", "v4-vector")
-    expect(character).to_have_attribute("data-buddy-artwork", "vector")
-    expect(character).to_have_attribute("data-buddy-hands", "vector")
+    expect(character).to_have_attribute("data-buddy-version", "v5-hologram")
+    expect(character).to_have_attribute("data-buddy-artwork", "3d-glb")
+    expect(character).to_have_attribute("data-buddy-hands", "rigged-left-right")
     expect(character).to_have_attribute("data-buddy-status", "ready")
-    assert canvas.evaluate("n => n.getContext('2d').getImageData(0, 0, n.width, n.height).data.some((v, i) => i % 4 === 3 && v > 0)"), "Buddy's canvas is blank"
+    assert canvas.evaluate("n => { const c=document.createElement('canvas');c.width=n.width;c.height=n.height;const x=c.getContext('2d');x.drawImage(n,0,0);return x.getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0); }"), "Buddy's canvas is blank"
     return canvas
 
 
@@ -1208,7 +1211,7 @@ def missing_artwork(page, fixtures):
     expect(character).to_have_attribute("data-buddy-status", "failed")
     fallback = character.locator('img[alt=""]')
     expect(fallback).to_be_visible()
-    expect(fallback).to_have_attribute("src", "/images/buddy/key-hero-v2.png")
+    expect(fallback).to_have_attribute("src", "/images/buddy/3d/property.png")
     page.wait_for_function("document.querySelector('[data-buddy-actor] img')?.naturalWidth > 0")
     bounds = character.bounding_box()
     assert bounds["width"] >= 44 and bounds["height"] >= 44, "Missing artwork collapsed the floating character"
@@ -1220,6 +1223,32 @@ def missing_artwork(page, fixtures):
     no_overflow(page)
 
 
+def inspect_page_details(page, fixtures):
+    visit(page, '/platform/')
+    chat = chat_open(page)
+    page.evaluate("window.__inspectionCanvas = document.querySelector('[data-buddy-actor] canvas')")
+    before = len(fixtures.requests)
+    chat.get_by_role('button', name='Explore this page with Buddy').click()
+    inspector = page.locator('[data-buddy-page-inspector]')
+    expect(inspector).to_be_visible()
+    expect(page.locator('[data-buddy-chat]')).to_have_count(0)
+    settled_actor(page, 'inspect')
+    assert page.evaluate("window.__inspectionCanvas === document.querySelector('[data-buddy-actor] canvas')"), 'Page inspection remounted Buddy'
+    value = inspector.locator('p').nth(1).inner_text()
+    assert value and value in page.locator('main').inner_text(), 'Enlarged detail was not published page text'
+    expect(inspector.get_by_role('button', name='Close page detail')).to_be_focused()
+    inspector.get_by_role('button', name='Next detail').click()
+    next_value = inspector.locator('p').nth(1).inner_text()
+    assert next_value and next_value != value
+    assert next_value in page.locator('main').inner_text()
+    page.screenshot(path=str(OUT / f"page-inspection-{page.viewport_size['width']}.png"))
+    page.keyboard.press('Escape')
+    expect(inspector).to_have_count(0)
+    expect(page.locator('[data-buddy-form]')).to_have_count(1)
+    assert len(fixtures.requests) == before, 'Reading published page details made an AI request'
+    no_overflow(page)
+
+
 try:
     retired_artwork = ROOT / "dist/client/images/ai-team"
     assert not retired_artwork.exists() or not any(retired_artwork.rglob("*")), "Retired mascot artwork is still published"
@@ -1228,7 +1257,7 @@ try:
     assert hashlib.sha256(atlas).hexdigest() == V2_ATLAS_SHA256, "Built Buddy atlas differs from the supplied v2-refined package"
     REPORT["checks"].append({"name": "preserved-v2-reference-atlas", "status": "pass", "bytes": len(atlas), "sha256": V2_ATLAS_SHA256})
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])
         cases = [
             ("floating-placement-minimise", floating_placement_and_minimise, {}),
             ("simple-chat-disclosure", simple_chat_disclosure, {}),
@@ -1246,6 +1275,7 @@ try:
             ("reduced-motion", reduced_motion, {"reduced": True}),
             ("artwork-fallback", missing_artwork, {"fail_engine": True, "reduced": True}),
             ("short-viewport", short_viewport, {"reduced": True}),
+            ("inspect-page-details", inspect_page_details, {}),
         ]
         unknown = set(ARGS.case) - {name for name, _, _ in cases}
         if unknown:
