@@ -1,6 +1,6 @@
 # Wave 1324: hologram Buddy
 
-Implementation and source review are in progress. This report does not claim a passing application build or a live release.
+Implementation and source review are in progress. The direct GPU proofs and placement journey passed on the second candidate, but its performance gate blocked publication. This report does not claim a passing complete application gate or a live release.
 
 ## Result
 
@@ -17,6 +17,10 @@ Blender previews are asset-authoring output. Application tests, builds and brows
 CI checks the actual production renderer and GLB, all three forms, front/profile/back views, six form transitions, close-ups, construction, anatomical hands and the published-page inspection journey. The production source hashes are captured with the diagnostic bundle. Existing website journeys continue to check a single canvas, chat cancellation, model failure, hidden/reduced motion and viewport overflow. GLB structure and animation channels are checked separately from changing shader pixels.
 
 Framework: [OGL](https://github.com/oframe/ogl), version 1.0.11, Unlicense. Authoring: Blender; authored character source and manifest are kept with the platform. No hosted design subscription or remote asset-generation service is required at runtime.
+
+The first candidate, `471f5de`, failed Pages `43784399036` before publication because the renderer expected a quaternion clone method that OGL does not provide. The next candidate, `ff866838`, passed direct production GPU proofs, placement and cross-browser scrolling, but Pages `43785025687` failed the unchanged homepage JavaScript budget. Both exact-source CodeQL workflows passed. The following source removes unused eager React Query scaffolding and replaces only the contact route's optional string-query schema with an equivalent allowlist; actual form/API validation remains unchanged. No budget is raised and Buddy is not delayed to avoid measurement.
+
+Visual inspection of the second candidate also found pale hand contrast, weak foreground gestures and off-centre page/corner framing. The framing fault was OGL writing inline canvas CSS dimensions over the Tailwind layout. The follow-up keeps layout sizing with CSS, strengthens the hologram treatment and foreground poses, and choreographs individual construction bricks, hammer work, roof settlement, drifting smoke and the glowing hinged door. These refinements require their own exact-source CI and image review before publication can be claimed.
 
 ## New interface wording
 

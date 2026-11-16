@@ -119,6 +119,14 @@ jobs:
         if: inputs.source_ref == ''
         run: docker exec site-browser-checks python scripts/site-buddy-3d.py
 
+      - name: Share Buddy artwork for review during the remaining checks
+        if: ${{ !cancelled() && inputs.source_ref == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddy-3d-review-${{ github.sha }}
+          path: docs/screenshots/wave909/buddy-3d
+          retention-days: 7
+
       - name: Check one Buddy moving between page and chat placements
         if: inputs.source_ref == ''
         run: docker exec site-browser-checks python scripts/site-buddy-placement.py
