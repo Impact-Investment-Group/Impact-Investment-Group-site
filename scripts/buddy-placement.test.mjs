@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { buddyDestinationRect, followBuddyDestination, selectBuddyDestination } from "../src/components/buddy/buddy-placement.js";
 
+import { buddyCanvasLayout } from "../src/components/buddy/buddy-canvas-frame.js";
+
 const viewport = { width: 1280, height: 800 };
 const slot = (id, kind, top, left = 600, size = 192) => ({ id, kind, top, left, width: size, height: size, right: left + size, bottom: top + size });
 const corner = slot("corner", "corner", 550, 1050);
@@ -72,4 +74,42 @@ test("flight settles at the same destination at different refresh rates", () => 
     assert.equal(shown.size, target.size);
     assert.equal(shown.velocity.x, 0);
   }
+});
+
+
+test("ordinary arm padding preserves body scale and its destination centre", () => {
+  for (const size of [48, 112, 144, 224, 256]) {
+    const frame = buddyCanvasLayout({ size });
+    assert.equal(frame.size, size);
+    assert.equal(frame.width, size * 1.25);
+    assert.equal(frame.height, size);
+    assert.equal(-size / 8 + frame.x, size / 2);
+    assert.equal(frame.y, size / 2);
+  }
+});
+
+test("ambient scenery retains its body anchor with the same right arm margin", () => {
+  const size = 256;
+  const frame = buddyCanvasLayout({ size, ambient: true });
+  assert.equal(frame.size, size);
+  assert.equal(frame.width, 448);
+  assert.equal(frame.height, 288);
+  assert.equal(-160 + frame.x, size / 2);
+  assert.equal(-16 + frame.y, size / 2);
+  assert.equal(-160 + frame.width, size + size / 8);
+});
+
+test("the fitted inspection composition keeps its square reading-aid slot", () => {
+  assert.deepEqual(buddyCanvasLayout({ size: 144, inspect: true }),
+    { width: 144, height: 144, size: 144, x: 72, y: 72 });
+});
+
+test("a narrow phone keeps the complete page-actor arm envelope inside the viewport", () => {
+  const target = buddyDestinationRect(slot("page", "page", 180, 16, 288), 320);
+  assert.ok(target.x - target.size / 8 >= 8 - 1e-9);
+  assert.ok(target.x + target.size * 9 / 8 <= 312 + 1e-9);
+  assert.ok(Math.abs(target.y + target.size / 2 - 324) < 1e-9);
+  const desktop = buddyDestinationRect(slot("page", "page", 180, 300, 288), 1280);
+  assert.equal(desktop.size, 288);
+  assert.equal(desktop.x, 300);
 });

@@ -23,9 +23,13 @@ export function selectBuddyDestination(slots, current, viewport) {
   return previous && (!candidate || distance(previous) < distance(candidate) + 72) ? previous : candidate ?? corner;
 }
 
-export function buddyDestinationRect(slot) {
-  const size = Math.min(slot.width, slot.height, 288);
-  return { x: slot.left + (slot.width - size) / 2, y: slot.top + (slot.height - size) / 2, size };
+export function buddyDestinationRect(slot, viewportWidth) {
+  const paddedPage = slot.kind === "page" && Number.isFinite(viewportWidth);
+  const limit = paddedPage ? Math.max(1, (viewportWidth - 16) / 1.25) : 288;
+  const size = Math.min(slot.width, slot.height, 288, limit);
+  let x = slot.left + (slot.width - size) / 2;
+  if (paddedPage) x = Math.max(8 + size / 8, Math.min(viewportWidth - 8 - size * 9 / 8, x));
+  return { x, y: slot.top + (slot.height - size) / 2, size };
 }
 
 /** Critically damped flight carries velocity through interruptions and retargets. */

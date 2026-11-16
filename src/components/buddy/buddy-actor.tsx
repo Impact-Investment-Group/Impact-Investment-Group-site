@@ -76,7 +76,7 @@ export function BuddyActor() {
         }
       }
       if (!next || !destination) { target = undefined; node.style.visibility = "hidden"; assign({ ...current, visible: false }); return; }
-      const preferred = buddyDestinationRect(next);
+      const preferred = buddyDestinationRect(next, window.innerWidth);
       const corner = next.kind === "corner" ? safeBuddyCorner(preferred) : null;
       target = corner ?? preferred;
       node.dataset.buddyTargetX = String(target.x);
@@ -157,7 +157,7 @@ export function BuddyActor() {
       animated={performance.visible} continuousIdle playfulIdle={performance.kind === "page"}
       ambient={performance.kind === "corner" && performance.ambient && performance.action !== "listen"}
       attention={attention} inspect={performance.kind === "inspect" ? { hand: "left", direction: "right", radius: 42 } : undefined}
-      ambientCanvasClassName="h-72 w-96" className="w-full" />
+      ambientCanvasClassName="h-9/8 w-7/4" className="w-full" />
     {performance.kind !== "chat" && <button type="button" aria-label={buddyLauncherLabel} aria-haspopup="dialog"
       onClick={() => openBuddy(performance.form)}
       className="pointer-events-auto absolute inset-0 rounded-2xl bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600" />}

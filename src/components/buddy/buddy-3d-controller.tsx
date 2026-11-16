@@ -5,6 +5,7 @@ import {
 } from "./buddy-ambient-director.js";
 import type { BuddyRenderer } from "./buddy-3d.js";
 import { frameBuddyInspection } from "./buddy-inspection-frame.js";
+import { buddyCanvasFrame } from "./buddy-canvas-frame.js";
 
 export type BuddyForm = "property" | "investment" | "support";
 export type BuddyAction =
@@ -93,7 +94,7 @@ export function BuddyCharacter({
   continuousIdle = false,
   playfulIdle = false,
   ambient = false,
-  ambientCanvasClassName = "h-44 w-64 sm:h-56 sm:w-80",
+  ambientCanvasClassName = "h-9/8 w-7/4",
   attention,
   replayKey,
   className,
@@ -211,9 +212,8 @@ export function BuddyCharacter({
           poseTime = quietTime;
         }
       }
-      const bodyX = options.ambient
-        ? canvasWidth - characterSize / 2
-        : canvasWidth / 2;
+      const frame = buddyCanvasFrame({ size: characterSize, width: canvasWidth,
+        height: canvasHeight, ambient: options.ambient });
       if (options.inspect) {
         const key = [currentForm, characterSize, canvasWidth, canvasHeight,
           options.inspect.hand, options.inspect.direction, options.inspect.radius].join(":");
@@ -234,8 +234,8 @@ export function BuddyCharacter({
         expression: options.expression,
         time: poseTime,
         size: inspectionFrame?.size ?? characterSize,
-        x: inspectionFrame?.x ?? bodyX,
-        y: inspectionFrame?.y ?? canvasHeight / 2,
+        x: inspectionFrame?.x ?? frame.x,
+        y: inspectionFrame?.y ?? frame.y,
         attention: options.inspect ? undefined : gaze,
         inspect: inspectionFrame?.inspect,
         transition: change
@@ -577,10 +577,12 @@ export function BuddyCharacter({
         width={400}
         height={400}
         className={join(
-          "absolute",
+          "pointer-events-none absolute",
           ambient
-            ? "pointer-events-none right-0 top-1/2 -translate-y-1/2"
-            : "inset-0 h-full w-full",
+            ? "right-0 top-1/2 translate-x-1/14 -translate-y-1/2"
+            : inspect
+              ? "inset-0 h-full w-full"
+              : "left-1/2 top-0 h-full w-5/4 -translate-x-1/2",
           ambient && ambientCanvasClassName,
           status !== "ready" && "invisible",
         )}

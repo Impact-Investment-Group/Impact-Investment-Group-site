@@ -118,7 +118,7 @@ threading.Thread(target=server.serve_forever, daemon=True).start()
 BASE = f'http://127.0.0.1:{server.server_address[1]}'
 
 RENDER = """async ({kind,poses}) => {
-  const {loadBuddyModel, createBuddyRenderer, frameBuddyInspection} = await import('./buddy-3d-proof.js');
+  const {loadBuddyModel, createBuddyRenderer, frameBuddyInspection, buddyCanvasLayout} = await import('./buddy-3d-proof.js');
   const model = await loadBuddyModel('/images/buddy/3d/buddy.glb');
   const canvas = document.createElement('canvas');
   const renderer = await createBuddyRenderer(canvas, model);
@@ -130,9 +130,11 @@ RENDER = """async ({kind,poses}) => {
   const records=[],sequences=[];
   function drawPose(options,settle=true,layout={}) {
     const side=layout.side||512, body=layout.body||300;
-    renderer.resize(side,side,1);
-    const frame=layout.inspectFit ? frameBuddyInspection(renderer,{form:options.form,size:body,width:side,height:side,inspect:options.inspect})
-      : {size:body,x:side/2,y:side/2};
+    const viewport=layout.native ? buddyCanvasLayout({size:body,inspect:Boolean(layout.inspectFit)})
+      : {width:side,height:side,size:body,x:side/2,y:side/2};
+    renderer.resize(viewport.width,viewport.height,1);
+    const frame=layout.inspectFit ? frameBuddyInspection(renderer,{form:options.form,size:body,width:viewport.width,height:viewport.height,inspect:options.inspect})
+      : viewport;
     // Warm the actual clip cross-fade, then sample the exact requested time.
     // Negative/early samples cannot retain the preceding action's pose.
     if(settle){renderer.draw({...options,...frame,time:0});
@@ -143,17 +145,18 @@ RENDER = """async ({kind,poses}) => {
   function cell(label, options, layout={}) {
     const side=layout.side||512;
     const rig=drawPose(options,true,layout);
-    const copy=document.createElement('canvas');copy.width=side;copy.height=side;
+    const copy=document.createElement('canvas');copy.width=canvas.width;copy.height=canvas.height;
+    const width=copy.width,height=copy.height;
     const ctx=copy.getContext('2d');ctx.drawImage(canvas,0,0);
-    const pixels=ctx.getImageData(0,0,side,side).data;
-    let painted=0,left=side,right=0,top=side,bottom=0;
-    for(let i=3;i<pixels.length;i+=4)if(pixels[i]>8){const n=(i-3)/4,x=n%side,y=Math.floor(n/side);painted++;left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+    const pixels=ctx.getImageData(0,0,width,height).data;
+    let painted=0,left=width,right=0,top=height,bottom=0;
+    for(let i=3;i<pixels.length;i+=4)if(pixels[i]>8){const n=(i-3)/4,x=n%width,y=Math.floor(n/width);painted++;left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
     const image=copy.toDataURL();
     const figure=document.createElement('figure');figure.style.cssText='margin:0;border:1px solid #d8dedb;border-radius:16px;overflow:hidden;background:#fdfdfb';
     const img=document.createElement('img');img.src=image;img.style.cssText='display:block;width:100%';
     const caption=document.createElement('figcaption');caption.textContent=label;caption.style.cssText='padding:8px 12px;font:13px Arial';
     figure.append(img,caption);sheet.append(figure);
-    records.push({label,painted,canvasSize:side,bodySize:layout.body||300,bounds:{left,right,top,bottom},image,rig});
+    records.push({label,painted,canvasSize:side,canvasWidth:width,canvasHeight:height,bodySize:layout.body||300,bounds:{left,right,top,bottom},image,rig});
   }
   const forms=['property','investment','support'];
   for(const form of forms){
@@ -165,8 +168,8 @@ RENDER = """async ({kind,poses}) => {
     if(kind==='hands')for(const direction of ['left','right','up','down'])cell(`${form}: glass ${direction}`,{form,time:1,inspect:{hand:direction==='right'?'left':'right',direction,radius:68}});
     if(kind==='native')for(const side of [112,144,224,256]){
       for(const [action,duration]of [['wave',2.4],['explain',2.8],['dance',4.8],['approve',3.2],['inspect',3.6]])
-        for(const fraction of [0,.25,.5,.75,1])cell(`${form}: ${action} ${side}px ${fraction}`,{form,action,time:duration*fraction},{side,body:side});
-      cell(`${form}: held page glass ${side}px`,{form,time:1,inspect:{hand:'left',direction:'right',radius:42}},{side,body:side,inspectFit:true});
+        for(const fraction of [0,.25,.5,.75,1])cell(`${form}: ${action} ${side}px ${fraction}`,{form,action,time:duration*fraction},{side,body:side,native:true});
+      cell(`${form}: held page glass ${side}px`,{form,time:1,inspect:{hand:'left',direction:'right',radius:42}},{side,body:side,native:true,inspectFit:true});
     }
   }
   const groups=kind==='tornado'?6:kind==='closeups'?6:3;
@@ -215,8 +218,8 @@ try:
                 b = frame['bounds']
                 assert frame['painted'] > 500, f'Blank 3D frame: {frame["label"]}'
                 assert b['right'] - b['left'] > 12, f'Collapsed profile: {frame["label"]}'
-                edge = frame['canvasSize'] - 1
-                assert 0 < b['left'] < b['right'] < edge and 0 < b['top'] < b['bottom'] < edge, f'Clipped 3D character: {frame["label"]}'
+                right_edge, bottom_edge = frame['canvasWidth'] - 1, frame['canvasHeight'] - 1
+                assert 0 < b['left'] < b['right'] < right_edge and 0 < b['top'] < b['bottom'] < bottom_edge, f'Clipped 3D character: {frame["label"]}'
             result['rig_checks'] = [validate_sequence(sequence) for sequence in result['sequences']]
             assert not errors, errors
         browser.close()

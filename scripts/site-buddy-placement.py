@@ -73,21 +73,23 @@ def canvas_layout(page):
     layout = page.locator("[data-buddy-actor] [data-buddy-form]").evaluate("""container => {
       const canvas = container.querySelector('canvas');
       const expanded = canvas.classList.contains('right-0');
+      const inspecting = container.closest('[data-buddy-actor]').dataset.buddyPlacement === 'inspect';
       const c = canvas.getBoundingClientRect(), a = container.getBoundingClientRect();
-      const drawX = expanded ? canvas.clientWidth - container.clientWidth / 2 : canvas.clientWidth / 2;
-      return {expanded, inlineWidth:canvas.style.width, inlineHeight:canvas.style.height,
+      const drawX = expanded ? canvas.clientWidth - container.clientWidth * 5 / 8 : canvas.clientWidth / 2;
+      return {expanded, inspecting, inlineWidth:canvas.style.width, inlineHeight:canvas.style.height,
         containerWidth:container.clientWidth, containerHeight:container.clientHeight,
         canvasWidth:canvas.clientWidth, canvasHeight:canvas.clientHeight,
         centreX:a.x + a.width / 2, centreY:a.y + a.height / 2,
         drawX:c.x + drawX * c.width / canvas.clientWidth, drawY:c.y + c.height / 2,
-        rightError:c.right - a.right};
+        rightError:c.right - a.right - (inspecting ? 0 : a.width / 8),
+        canvasLeft:c.left,canvasRight:c.right,viewportWidth:innerWidth};
     }""")
     assert not layout["inlineWidth"] and not layout["inlineHeight"], f"OGL overrode canvas CSS layout: {layout}"
-    expected_width = 384 if layout["expanded"] else layout["containerWidth"]
-    expected_height = 288 if layout["expanded"] else layout["containerHeight"]
+    expected_width = layout["containerWidth"] * (1 if layout["inspecting"] else 1.75 if layout["expanded"] else 1.25)
+    expected_height = layout["containerHeight"] * (1.125 if layout["expanded"] else 1)
     assert abs(layout["canvasWidth"] - expected_width) < 1, f"Canvas width does not follow its active layout: {layout}"
     assert abs(layout["canvasHeight"] - expected_height) < 1, f"Canvas height does not follow its active layout: {layout}"
-    assert abs(layout["rightError"]) < 1, f"Canvas lost its actor right anchor: {layout}"
+    assert abs(layout["rightError"]) < 1, f"Canvas lost its fixed arm-padding anchor: {layout}"
     assert abs(layout["drawX"] - layout["centreX"]) < 1 and abs(layout["drawY"] - layout["centreY"]) < 1, f"Rendered origin shifted away from the actor centre: {layout}"
     # A slot or ambient change can precede the ResizeObserver by one frame.
     page.wait_for_function("""() => {
@@ -109,11 +111,13 @@ def settled_in_slot(page, kind):
           if (kind === 'corner') return Math.abs(a.x - Number(actor.dataset.buddyTargetX)) < 1 &&
             Math.abs(a.y - Number(actor.dataset.buddyTargetY)) < 1 &&
             Math.abs(a.width - Number(actor.dataset.buddyTargetSize)) < 1 &&
-            Math.abs(a.right - s.right) < 1 && a.top >= 80;
+            Math.abs(a.right + a.width / 8 - s.right) < 1 && a.top >= 80;
           return Math.abs(a.x + a.width / 2 - s.x - s.width / 2) < 1 &&
             Math.abs(a.y + a.height / 2 - s.y - s.height / 2) < 1;
         }""", arg=kind)
-        canvas_layout(page)
+        layout = canvas_layout(page)
+        if kind == 'corner':
+            assert layout['canvasLeft'] >= -1 and layout['canvasRight'] <= layout['viewportWidth'] + 1, f"Corner arm envelope leaves the viewport: {layout}"
     except Exception:
         evidence = page.evaluate("""() => ({scrollY, width:innerWidth, height:innerHeight,
           elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot]')].map(el => ({
@@ -261,7 +265,7 @@ with sync_playwright() as playwright:
             page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
             settled_in_slot(page, "corner")
             assert page.locator(selector).evaluate("""el => {
-              const a = document.querySelector('[data-buddy-actor]').getBoundingClientRect();
+              const a = document.querySelector('[data-buddy-actor] canvas').getBoundingClientRect();
               const b = el.getBoundingClientRect();
               return a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom;
             }"""), f"Corner Buddy obscures {selector}"
