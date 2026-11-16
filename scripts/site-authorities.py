@@ -107,14 +107,33 @@ def simple_contract(page):
     overflow(page)
 
 
+def running_animation(page, track_selector=TRACK):
+    # Focus removes the CSS animation entirely. On blur a new player is created:
+    # computed animation-play-state says "running" even while its play task is
+    # pending. Wait for the native timeline, not an arbitrary readiness delay.
+    page.wait_for_function("""selector => {
+      const node = document.querySelector(selector);
+      if (!node || getComputedStyle(node).animationName === 'none') return false;
+      const animation = node.getAnimations().find(item => item.animationName === 'logo-marquee');
+      return animation && !animation.pending && animation.playState === 'running'
+        && animation.startTime !== null && animation.currentTime !== null;
+    }""", arg=track_selector)
+
+
 def sample_motion(page, track_selector=TRACK):
     # A bounded sample of painted frames measures motion; no readiness sleeps.
     return page.locator(track_selector).evaluate("""node => new Promise(resolve => {
       const x = () => node.getBoundingClientRect().x;
-      let frames = 0, first, started;
+      const playback = () => node.getAnimations().map(animation => ({
+        name: animation.animationName, pending: animation.pending,
+        playState: animation.playState, startTime: animation.startTime,
+        currentTime: animation.currentTime,
+      }));
+      let frames = 0, first, started, initialPlayback;
       function frame(now) {
-        if (started === undefined) { started = now; first = x(); }
-        if (++frames >= 12) resolve({delta:x()-first, elapsed:now-started});
+        if (started === undefined) { started = now; first = x(); initialPlayback = playback(); }
+        if (++frames >= 12) resolve({delta:x()-first, elapsed:now-started,
+          initialPlayback, finalPlayback: playback()});
         else requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
@@ -170,8 +189,9 @@ def reading_controls(page, touch=False, lane_selector=LANE, track_selector=TRACK
     lane.evaluate("node => node.blur()")
     page.mouse.move(0, 0)
     expect(lane).to_have_js_property("scrollLeft", 0)
-    page.wait_for_function("selector => getComputedStyle(document.querySelector(selector)).animationPlayState === 'running'", arg=track_selector)
-    assert sample_motion(page, track_selector)["delta"] < -0.5, "Carousel does not resume after reading"
+    running_animation(page, track_selector)
+    resumed = sample_motion(page, track_selector)
+    assert resumed["delta"] < -0.5, f"Carousel does not resume after reading: {resumed}"
     expect(lane).to_have_js_property("scrollLeft", 0)
 
 
@@ -181,7 +201,7 @@ def motion_journey(page, touch=False):
     home(page)
     simple_contract(page)
     assert not catalogue_requests, "Simple carousel must not require a directory fetch"
-    page.wait_for_function("selector => getComputedStyle(document.querySelector(selector)).animationPlayState === 'running'", arg=TRACK)
+    running_animation(page)
     visible_logos_decode(page)
     metrics = page.locator(TRACK).evaluate("""track => {
       const first=track.children[0].getBoundingClientRect(), clone=track.children[382].getBoundingClientRect();
@@ -299,7 +319,7 @@ def data_journey(page, touch=False, static=False, no_js=False):
         viewport = lane.bounding_box()
         assert last["x"] < viewport["x"] + viewport["width"] and last["x"] + last["width"] > viewport["x"], "Final data provider is unreachable"
     else:
-        page.wait_for_function("selector => getComputedStyle(document.querySelector(selector)).animationPlayState === 'running'", arg=DATA_TRACK)
+        running_animation(page, DATA_TRACK)
         assert sample_motion(page, DATA_TRACK)["delta"] < -0.5, "Data carousel is not moving"
         reading_controls(page, touch=touch, lane_selector=DATA_LANE, track_selector=DATA_TRACK)
         # Seek the actual CSS animation to each image credit, including late
@@ -371,6 +391,24 @@ try:
             except Exception as error:
                 REPORT["failures"].append({"case": name, "error": str(error)})
                 print(f"FAIL {name}: {error}", flush=True)
+                state = page.locator(".logo-marquee").evaluate_all("""lanes => lanes.map(lane => {
+                  const track = lane.querySelector('.logo-marquee__track');
+                  const bounds = node => { const box = node.getBoundingClientRect();
+                    return {x:box.x, y:box.y, width:box.width, height:box.height}; };
+                  return {label:lane.getAttribute('aria-label'), bounds:bounds(lane),
+                    trackBounds:bounds(track), focused:lane.matches(':focus-within'),
+                    hovered:lane.matches(':hover'), scrollLeft:lane.scrollLeft,
+                    motion:lane.dataset.motion, interactive:lane.dataset.interactive,
+                    visibility:document.visibilityState,
+                    animationName:getComputedStyle(track).animationName,
+                    animationPlayState:getComputedStyle(track).animationPlayState,
+                    animations:track.getAnimations().map(animation => ({
+                      name:animation.animationName, pending:animation.pending,
+                      playState:animation.playState, startTime:animation.startTime,
+                      currentTime:animation.currentTime,
+                    }))};
+                })""")
+                (OUT / f"failure-{name}.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
                 page.screenshot(path=str(OUT / f"failure-{name}.png"))
             finally:
                 context.close()
