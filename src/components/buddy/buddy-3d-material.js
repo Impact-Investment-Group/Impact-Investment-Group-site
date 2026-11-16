@@ -44,11 +44,15 @@ export function hologramMaterial(gl, material, skinned = false) {
       void main(){
         vec3 n=normalize(vNormal),v=normalize(vView);
         float edge=pow(1.0-abs(dot(n,v)),2.0);
-        float light=.50+.50*max(0.0,dot(n,normalize(vec3(-.5,.8,1.0))));
-        float scan=.87+.13*sin(vWorld.y*105.0-time*.55);
-        vec3 hologram=baseColor*light*scan+vec3(.10,.72,.73)*edge*.78;
+        vec3 lightDirection=normalize(vec3(-.5,.8,1.0));
+        float light=.24+.76*max(0.0,dot(n,lightDirection));
+        float scan=.92+.08*sin(vWorld.y*105.0-time*.55);
+        float specular=pow(max(0.0,dot(reflect(-lightDirection,n),v)),40.0);
+        vec3 core=baseColor*light*scan*.72;
+        vec3 contour=mix(core,vec3(.005,.045,.075),edge*.58);
+        vec3 hologram=contour+vec3(.02,.38,.42)*pow(edge,3.0)*.60+vec3(.15,.55,.60)*specular*.60;
         vec3 color=mix(hologram,baseColor,ink)+vec3(.04,.65,.58)*glow;
-        float alpha=mix(.62+.27*edge,1.0,ink)*opacity;
+        float alpha=mix(.86+.10*edge,1.0,ink)*opacity;
         alpha=mix(alpha,(.10+.35*edge)*opacity,lens);
         gl_FragColor=vec4(pow(max(color,vec3(0.0)),vec3(1.0/2.2)),alpha);
       }`,

@@ -3,6 +3,7 @@ import {
   Camera,
   Transform,
   Vec3,
+  Mat4,
   GLTFLoader,
   GLTFAnimation,
 } from "ogl";
@@ -68,6 +69,30 @@ export function blendBuddyPose(node, previous, amount) {
   node.scale.lerp(previous.scale, weight);
 }
 
+/** GPU bitmap sizing must never replace the caller's CSS layout contract. */
+export function preserveBuddyCanvasLayout(canvas, operation) {
+  const width = canvas.style.width,
+    height = canvas.style.height;
+  try {
+    return operation();
+  } finally {
+    canvas.style.width = width;
+    canvas.style.height = height;
+  }
+}
+
+function broadenRibbon(geometry) {
+  const attribute = geometry.attributes.position,
+    positions = attribute.data;
+  for (let i = 0; i < positions.length; i += 3) {
+    const t = clamp((positions[i + 1] + 1.7) / 3.4, 0, 1);
+    const centre = 0.4 + 1.05 * Math.sin(Math.PI * t) ** 0.65;
+    const edge = Math.hypot(positions[i], positions[i + 2]) - centre;
+    positions[i + 1] += clamp(edge, -0.08, 0.08) * 2.6;
+  }
+  attribute.needsUpdate = true;
+}
+
 export function loadBuddyModel(url = BUDDY_MODEL_URL) {
   if (!models.has(url)) {
     const abort = new AbortController(),
@@ -127,14 +152,18 @@ function clonePoseGraph(gltf) {
 
 /** One explicit drawing owner. No RAF is created inside the renderer. */
 export async function createBuddyRenderer(canvas, library) {
-  const renderer = new Renderer({
+  const renderer = preserveBuddyCanvasLayout(
     canvas,
-    alpha: true,
-    antialias: true,
-    dpr: 1,
-    powerPreference: "low-power",
-    preserveDrawingBuffer: true,
-  });
+    () =>
+      new Renderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        dpr: 1,
+        powerPreference: "low-power",
+        preserveDrawingBuffer: true,
+      }),
+  );
   const gl = renderer.gl;
   try {
     let gltf;
@@ -181,6 +210,7 @@ export async function createBuddyRenderer(canvas, library) {
         materials.push(program);
       }
       node.program = programCache.get(key);
+      if (node.name?.startsWith("VortexRibbon_")) broadenRibbon(node.geometry);
       node.onBeforeRender(() => {
         const effect = meshEffects.get(node);
         node.program.uniforms.opacity.value =
@@ -206,9 +236,12 @@ export async function createBuddyRenderer(canvas, library) {
         },
       ]),
     );
-    let captured = null;
+    let captured = null,
+      closeState = 0;
     let faceState = null;
     const point = new Vec3();
+    const offset = new Vec3(),
+      inverseParent = new Mat4();
     const bodyBounds = new Map();
     scene.updateMatrixWorld();
     for (const form of forms) {
@@ -237,6 +270,15 @@ export async function createBuddyRenderer(canvas, library) {
         },
       ]),
     );
+    function moveInCharacterFrame(node, root, x, y, z) {
+      if (!node?.parent || !root) return;
+      inverseParent.copy(node.parent.worldMatrix).inverse();
+      offset
+        .set(x, y, z)
+        .scaleRotateMatrix4(root.worldMatrix)
+        .scaleRotateMatrix4(inverseParent);
+      node.position.add(offset);
+    }
     function restore(graph, rests) {
       for (const [node, state] of rests) {
         node.position.copy(state.position);
@@ -326,12 +368,12 @@ export async function createBuddyRenderer(canvas, library) {
     }
     function place(root, size, x, y, closeup = 0) {
       const viewHeight = 2 * 8 * Math.tan((16 * Math.PI) / 180);
-      const scale = ((size / height) * viewHeight) / 4;
+      const scale = ((size / height) * viewHeight) / 4.4;
       root.scale.set(scale);
       root.position.set(
-        ((x - width / 2) * viewHeight) / height,
-        ((height / 2 - y) * viewHeight) / height,
-        closeup * 0.85,
+        (((x - width / 2) * viewHeight) / height) * (1 - (closeup * 1.25) / 8),
+        (((height / 2 - y) * viewHeight) / height) * (1 - (closeup * 1.25) / 8),
+        closeup * 1.25,
       );
     }
     function resetProbe() {
@@ -341,7 +383,7 @@ export async function createBuddyRenderer(canvas, library) {
       width = Math.max(1, w);
       height = Math.max(1, h);
       renderer.dpr = clamp(dpr, 1, 2);
-      renderer.setSize(width, height);
+      preserveBuddyCanvasLayout(canvas, () => renderer.setSize(width, height));
       camera.perspective({ aspect: width / height });
     }
     resize(400, 400, 1);
@@ -432,7 +474,7 @@ export async function createBuddyRenderer(canvas, library) {
           blendTime = 0;
           lastName = name;
         }
-        const delta = Math.min(0.08, Math.max(0, time - lastTime));
+        const delta = Math.min(0.35, Math.max(0, time - lastTime));
         lastTime = time;
         blendTime = Math.min(1, blendTime + delta / 0.35);
         restore(scene, rest);
@@ -462,11 +504,33 @@ export async function createBuddyRenderer(canvas, library) {
                 clamp(time / (name === "Closeup_Thumb_R" ? 3.2 : 3.6), 0, 1),
             ) ** 2
           : 0;
-        place(scene, size, x, y, close);
+        closeState += (close - closeState) * (1 - Math.exp(-delta * 12));
+        place(scene, size, x, y, closeState);
         const root = nodes.get("BuddyRoot");
         if (root) {
           root.rotation.y = viewYaw + (attention?.x || 0) * 0.1;
           root.rotation.x = (attention?.y || 0) * 0.035;
+        }
+        if (close && root) {
+          scene.updateMatrixWorld();
+          const hand = nodes.get("Hand.R");
+          if (name === "Closeup_Thumb_R" && hand) {
+            moveInCharacterFrame(hand, root, -0.36 * close, 0, 0.4 * close);
+            hand.scale.multiply(1 + 0.3 * close);
+          } else if (name === "Closeup_Inspect_R" && hand) {
+            const faceY = { property: 0.48, investment: 0.86, support: 0.05 }[
+              form
+            ];
+            moveInCharacterFrame(
+              hand,
+              root,
+              -0.114 * close,
+              (faceY - 0.576) * close,
+              0.55 * close,
+            );
+            const glass = nodes.get("Magnifier.R");
+            if (glass) glass.scale.multiply(1 + 0.25 * close);
+          }
         }
         let opacity = 1;
         if (transition && root) {
@@ -476,8 +540,8 @@ export async function createBuddyRenderer(canvas, library) {
           form = p < 0.5 ? transition.from : transition.to;
           configure(nodes, form, undefined, size);
           opacity =
-            0.4 +
-            0.6 *
+            0.7 +
+            0.3 *
               (p < 0.5
                 ? 1 - smooth((p - 0.22) / 0.25)
                 : smooth((p - 0.53) / 0.3));
@@ -486,6 +550,7 @@ export async function createBuddyRenderer(canvas, library) {
           if (vortex) {
             vortex.visible = p > 0.03 && p < 0.98;
             vortex.rotation.y = -turn * 0.7;
+            effectFor(vortex, 1, 0.12);
           }
         }
         if (build) {
@@ -592,7 +657,7 @@ export async function createBuddyRenderer(canvas, library) {
                 (faceState[0] + sign * faceState[5]) * (1 - blink * 0.9),
               );
               if (name === "Closeup_Inspect_R" && suffix === "R") {
-                const k = 1 + close * 0.35;
+                const k = 1 + close * 0.95;
                 eye.scale.set(
                   eye.scale.x * k,
                   eye.scale.y * k,

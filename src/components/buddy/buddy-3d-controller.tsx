@@ -154,7 +154,6 @@ export function BuddyCharacter({
           "reassure",
           "wave",
           "explain",
-          "approve",
           "inspect",
         );
         for (let i = quietBag.length - 1; i > 0; i--) {
