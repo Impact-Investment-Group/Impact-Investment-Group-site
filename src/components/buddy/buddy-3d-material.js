@@ -39,7 +39,7 @@ export function hologramMaterial(gl, material, skinned = false) {
       }`,
     fragment: `precision highp float;
       uniform vec3 baseColor;
-      uniform float time, opacity, ink, lens;
+      uniform float time, opacity, ink, lens, glow;
       varying vec3 vNormal,vView,vWorld;
       void main(){
         vec3 n=normalize(vNormal),v=normalize(vView);
@@ -47,7 +47,7 @@ export function hologramMaterial(gl, material, skinned = false) {
         float light=.50+.50*max(0.0,dot(n,normalize(vec3(-.5,.8,1.0))));
         float scan=.87+.13*sin(vWorld.y*105.0-time*.55);
         vec3 hologram=baseColor*light*scan+vec3(.10,.72,.73)*edge*.78;
-        vec3 color=mix(hologram,baseColor,ink);
+        vec3 color=mix(hologram,baseColor,ink)+vec3(.04,.65,.58)*glow;
         float alpha=mix(.62+.27*edge,1.0,ink)*opacity;
         alpha=mix(alpha,(.10+.35*edge)*opacity,lens);
         gl_FragColor=vec4(pow(max(color,vec3(0.0)),vec3(1.0/2.2)),alpha);
@@ -56,6 +56,7 @@ export function hologramMaterial(gl, material, skinned = false) {
       baseColor: { value: color },
       time: { value: 0 },
       opacity: { value: 1 },
+      glow: { value: 0 },
       ink: { value: ink ? 1 : 0 },
       lens: { value: lens ? 1 : 0 },
     },

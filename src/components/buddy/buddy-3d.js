@@ -7,6 +7,7 @@ import {
   GLTFAnimation,
 } from "ogl";
 import { hologramMaterial } from "./buddy-3d-material.js";
+import { sampleBuddyBuild } from "./buddy-3d-build.js";
 
 export const BUDDY_FORM_CHANGE_MS = 3200;
 export const BUDDY_MODEL_URL = "/images/buddy/3d/buddy.glb";
@@ -58,6 +59,13 @@ export function captureBuddyPose(node) {
     quaternion: Array.from(node.quaternion),
     scale: node.scale.clone(),
   };
+}
+
+export function blendBuddyPose(node, previous, amount) {
+  const weight = 1 - clamp(amount, 0, 1);
+  node.position.lerp(previous.position, weight);
+  node.quaternion.slerp(previous.quaternion, weight);
+  node.scale.lerp(previous.scale, weight);
 }
 
 export function loadBuddyModel(url = BUDDY_MODEL_URL) {
@@ -150,6 +158,8 @@ export async function createBuddyRenderer(canvas, library) {
     const camera = new Camera(gl, { fov: 32, near: 0.1, far: 50 });
     camera.position.z = 8;
     camera.lookAt([0, 0, 0]);
+    const meshEffects = new Map();
+    let frameOpacity = 1;
     const materials = [],
       programCache = new Map(),
       geometries = new Set(),
@@ -171,6 +181,12 @@ export async function createBuddyRenderer(canvas, library) {
         materials.push(program);
       }
       node.program = programCache.get(key);
+      node.onBeforeRender(() => {
+        const effect = meshEffects.get(node);
+        node.program.uniforms.opacity.value =
+          frameOpacity * (effect?.opacity ?? 1);
+        node.program.uniforms.glow.value = effect?.glow ?? 0;
+      });
       geometries.add(node.geometry);
       if (node.boneTexture) textures.add(node.boneTexture);
       if (previous?.program) gl.deleteProgram(previous.program);
@@ -227,6 +243,12 @@ export async function createBuddyRenderer(canvas, library) {
         node.quaternion.copy(state.quaternion);
         node.scale.copy(state.scale);
       }
+    }
+    function effectFor(node, opacity = 1, glow = 0) {
+      const effect = { opacity, glow };
+      node?.traverse((part) => {
+        if (part.geometry) meshEffects.set(part, effect);
+      });
     }
     function applyClip(graph, name, time) {
       const clip = graph.get(name) || graph.get("Idle");
@@ -389,10 +411,15 @@ export async function createBuddyRenderer(canvas, library) {
         viewYaw = 0,
       } = {}) {
         if (disposed) return;
+        meshEffects.clear();
         const kind = ambient?.kind;
+        const build =
+          kind === "build" ? sampleBuddyBuild(ambient.time || 0) : null;
         const name = inspect
           ? inspectName(inspect)
-          : clips[kind || action] || "Idle";
+          : build?.finished
+            ? "Approve"
+            : clips[kind || action] || "Idle";
         if (name !== lastName) {
           captured = new Map(
             gltf.nodes.map((node) => [
@@ -409,12 +436,19 @@ export async function createBuddyRenderer(canvas, library) {
         lastTime = time;
         blendTime = Math.min(1, blendTime + delta / 0.35);
         restore(scene, rest);
-        applyClip(animations, name, inspect ? 1 : (ambient?.time ?? time));
+        applyClip(
+          animations,
+          name,
+          inspect
+            ? 1
+            : build?.finished
+              ? ambient.time - 5.4
+              : (ambient?.time ?? time),
+        );
         if (captured && blendTime < 1) {
           const a = smooth(blendTime);
           for (const [node, previous] of captured) {
-            node.position.lerp(previous.position, 1 - a);
-            node.quaternion.slerp(previous.quaternion, 1 - a);
+            blendBuddyPose(node, previous, a);
           }
         }
         configure(nodes, form, inspect, size);
@@ -454,35 +488,54 @@ export async function createBuddyRenderer(canvas, library) {
             vortex.rotation.y = -turn * 0.7;
           }
         }
-        if (kind === "build") {
-          const t = ambient.time || 0,
-            phase = clamp(t / 9.4, 0, 1),
-            house = nodes.get("House"),
+        if (build) {
+          const house = nodes.get("House"),
             hammer = nodes.get("Hammer.R");
-          const finish = 1 - smooth((phase - 0.86) / 0.13);
-          if (house) {
-            house.visible = phase > 0.12 && phase < 1;
-            house.scale.set(Math.max(0.001, finish));
-          }
-          if (hammer) hammer.visible = phase > 0.06 && phase < 0.92;
-          for (let i = 0; i < 4; i++) {
-            const row = nodes.get("HouseCourse_" + i);
-            if (row) {
-              const grow = smooth((phase - 0.15 - i * 0.12) / 0.08);
-              row.visible = grow > 0;
-              row.scale.y = Math.max(0.001, grow);
-            }
+          if (house) house.visible = build.visible;
+          effectFor(house, build.opacity);
+          if (hammer) hammer.visible = build.hammerVisible;
+          for (const brick of build.bricks) {
+            const node = nodes.get(brick.name);
+            if (!node) continue;
+            node.visible = brick.visible;
+            node.position.x += brick.x;
+            node.position.y += brick.y;
+            node.position.z += brick.z;
+            node.rotation.z += brick.tilt;
+            node.scale.x *= brick.scaleX;
+            node.scale.y *= brick.scaleY;
+            effectFor(node, brick.opacity);
           }
           const roof = nodes.get("HouseRoof");
           if (roof) {
-            roof.visible = phase > 0.68;
-            roof.scale.y = Math.max(0.001, smooth((phase - 0.68) / 0.1));
+            roof.visible = build.roof.visible;
+            roof.position.y += build.roof.y;
+            roof.rotation.z += build.roof.tilt;
+          }
+          const door = nodes.get("HouseDoor");
+          if (door) {
+            door.visible = build.door.visible;
+            door.position.x += build.door.x;
+            door.position.z += build.door.z;
+            door.rotation.y -= build.door.angle;
+            effectFor(door, build.opacity, build.door.glow);
+          }
+          const window = nodes.get("HouseWindow");
+          if (window) {
+            window.visible = build.window.visible;
+            effectFor(window, build.opacity, build.window.glow);
           }
           const dust = nodes.get("BuildDust");
-          if (dust) {
-            dust.visible = phase > 0.15 && phase < 0.98;
-            const puff = 0.55 + 0.45 * Math.abs(Math.sin(t * 5));
-            dust.scale.set(Math.max(0.001, puff * finish));
+          if (dust) dust.visible = true;
+          for (const puff of build.dust) {
+            const node = nodes.get(puff.name);
+            if (!node) continue;
+            node.visible = puff.visible;
+            node.position.x += puff.x;
+            node.position.y += puff.y;
+            node.position.z += puff.z;
+            node.scale.set(puff.scale);
+            effectFor(node, puff.opacity, 0.18);
           }
         }
         // Variant changes are bounded accents on the authored take, not mirrored
@@ -505,17 +558,18 @@ export async function createBuddyRenderer(canvas, library) {
           );
           root.rotation.y += ((ambient.variant || 0) - 1) * 0.07 * envelope;
         }
-        const automatic =
-          {
-            listen: "curious",
-            think: "thoughtful",
-            talk: "warm",
-            explain: "confident",
-            reassure: "reassuring",
-            approve: "delighted",
-            celebrate: "delighted",
-            inspect: "focused",
-          }[action] || "warm";
+        const automatic = build?.finished
+          ? "delighted"
+          : {
+              listen: "curious",
+              think: "thoughtful",
+              talk: "warm",
+              explain: "confident",
+              reassure: "reassuring",
+              approve: "delighted",
+              celebrate: "delighted",
+              inspect: "focused",
+            }[action] || "warm";
         const targetFace =
           faces[expression === "automatic" ? automatic : expression] ||
           faces.warm;
@@ -566,6 +620,7 @@ export async function createBuddyRenderer(canvas, library) {
           program.uniforms.time.value = time;
           program.uniforms.opacity.value = opacity;
         });
+        frameOpacity = opacity;
         scene.updateMatrixWorld();
         camera.updateMatrixWorld();
         fitLens(nodes, inspect);
