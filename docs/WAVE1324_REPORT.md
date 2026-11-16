@@ -1,6 +1,6 @@
 # Wave 1324: hologram Buddy
 
-Implementation and source review are in progress. The direct GPU proofs and placement journey passed on the second candidate, but its performance gate blocked publication. This report does not claim a passing complete application gate or a live release.
+This report describes the implemented source and its reviewed boundaries. Exact final CI, publication and live observations are recorded in the Context Library's `Platform/CI-Runs.md` and `Platform/Live-State.md`; the candidate outcomes below do not independently establish a live release.
 
 ## Result
 
@@ -23,6 +23,8 @@ The first candidate, `471f5de`, failed Pages `43784399036` before publication be
 Visual inspection of the second candidate also found pale hand contrast, weak foreground gestures and off-centre page/corner framing. The framing fault was OGL writing inline canvas CSS dimensions over the Tailwind layout. The follow-up keeps layout sizing with CSS, strengthens the hologram treatment and foreground poses, and choreographs individual construction bricks, hammer work, roof settlement, drifting smoke and the glowing hinged door. These refinements require their own exact-source CI and image review before publication can be claimed.
 
 Candidate `056fdc7` rendered all six artwork sets with clearer depth, a connected foreground thumb and the enlarged eye, but Pages `43787689176` failed the vertical magnifier clipping assertion. CodeQL `43787688682` passed; later browser and performance checks did not run. The next correction keeps the lens centre fixed during aperture calibration instead of scaling the entire handle away from the grip, and keeps the enlarged eye's catchlight visible. Subsequent independent browser checks collect their own outcomes even after an artwork failure; any failed check still blocks deployment.
+
+Candidate `e7d364d67` passed the GPU proof, placement, cross-browser, unchanged size budget and contrast checks, but Pages `43788376097` failed three journey gates. The contact query allowlist now explicitly writes undefined for invalid known values because the router merges its validated search over the raw search. Buddy's keyboard boundary check now starts from the new first header control, and autonomous construction is checked against actual GPU scenery pixels from the shared GLB instead of a retired PNG request. The carousel's resume measurement waits for the recreated native CSS animation to leave its pending state before retaining the same painted-motion assertion; failure diagnostics include its timeline and geometry. The general page, motion and contrast browsers now use the same software GPU as the dedicated Buddy proofs. No production carousel behavior, motion threshold, resource ceiling or accessibility requirement is relaxed.
 
 ## New interface wording
 
