@@ -160,13 +160,14 @@ RENDER = """async ({kind,poses}) => {
   }
   const forms=['property','investment','support'];
   for(const form of forms){
-    if(kind==='turns')for(const [name,viewYaw]of[['front',0],['left',Math.PI/2],['back',Math.PI],['right',-Math.PI/2]])cell(`${form}: ${name}`,{form,time:1,viewYaw});
+    if(kind==='turns')for(const [name,viewYaw]of[['front',0],['three-quarter',.24],['left',Math.PI/2],['back',Math.PI],['right',-Math.PI/2]])cell(`${form}: ${name}`,{form,time:1,viewYaw});
     if(kind==='poses')for(const {action}of poses)cell(`${form}: ${action}`,{form,action,time:1.2});
     if(kind==='tornado')for(const to of forms.filter(x=>x!==form))for(let i=0;i<16;i++)cell(`${form} to ${to}: ${i+1}/16`,{form,time:i*.21,transition:{from:form,to,progress:i/15}});
     if(kind==='construction')for(let i=0;i<16;i++)cell(`${form}: build ${i+1}/16`,{form,time:i*.62,ambient:{kind:'build',time:i*.62,variant:0}});
     if(kind==='closeups')for(const action of ['approve','inspect'])for(let i=0;i<8;i++)cell(`${form}: ${action} ${i+1}/8`,{form,action,time:.2+i*.4});
     if(kind==='hands')for(const direction of ['left','right','up','down'])cell(`${form}: glass ${direction}`,{form,time:1,inspect:{hand:direction==='right'?'left':'right',direction,radius:68}});
-    if(kind==='native')for(const side of [112,144,224,256]){
+    if(kind==='native')for(const side of [112,144,160,192,208,224,256,288]){
+      cell(`${form}: idle ${side}px`,{form,action:'idle',time:1},{side,body:side,native:true});
       for(const [action,duration]of [['wave',2.4],['explain',2.8],['dance',4.8],['approve',3.2],['inspect',3.6]])
         for(const fraction of [0,.25,.5,.75,1])cell(`${form}: ${action} ${side}px ${fraction}`,{form,action,time:duration*fraction},{side,body:side,native:true});
       cell(`${form}: held page glass ${side}px`,{form,time:1,inspect:{hand:'left',direction:'right',radius:42}},{side,body:side,native:true,inspectFit:true});
@@ -196,13 +197,17 @@ try:
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.goto(BASE, wait_until='networkidle')
-        for kind, expected, distinct in [('turns', 12, 4), ('poses', 39, 10), ('tornado', 96, 14), ('construction', 48, 14), ('closeups', 48, 7), ('hands', 12, 4), ('native', 312, 1)]:
+        for kind, expected, distinct in [('turns', 15, 5), ('poses', 39, 10), ('tornado', 96, 14), ('construction', 48, 14), ('closeups', 48, 7), ('hands', 12, 4), ('native', 648, 1)]:
             page.set_content(f'<html><body style="margin:0;background:#f9f9f4;color:#14366a"><h1 style="font:24px Arial;padding:24px">Buddy hologram: {kind}</h1></body></html>')
             result = page.evaluate(RENDER, {'kind': kind, 'poses': [
                 {'action': action, 'duration': duration, 'articulated': action in ARTICULATED}
                 for action, (_clip, duration) in POSES.items()
             ]})
             page.screenshot(path=str(OUT / f'buddy-3d-{kind}.png'), full_page=True)
+            if kind == 'turns':
+                for form_index, form in enumerate(['property', 'investment', 'support']):
+                    source = page.locator('#sheet figure img').nth(form_index * 5 + 1).get_attribute('src')
+                    (OUT / f'{form}-three-quarter.png').write_bytes(base64.b64decode(source.split(',', 1)[1]))
             if kind == 'closeups':
                 # Keep native renderer pixels for a readable gesture review,
                 # alongside the complete frame sheet and numerical evidence.
@@ -217,6 +222,8 @@ try:
                 validate_rig(frame)
                 b = frame['bounds']
                 assert frame['painted'] > 500, f'Blank 3D frame: {frame["label"]}'
+                if kind == 'native' and ': idle ' in frame['label']:
+                    assert (b['bottom'] - b['top']) / frame['bodySize'] >= .60, f'Undersized resting character: {frame["label"]}'
                 assert b['right'] - b['left'] > 12, f'Collapsed profile: {frame["label"]}'
                 right_edge, bottom_edge = frame['canvasWidth'] - 1, frame['canvasHeight'] - 1
                 assert 0 < b['left'] < b['right'] < right_edge and 0 < b['top'] < b['bottom'] < bottom_edge, f'Clipped 3D character: {frame["label"]}'

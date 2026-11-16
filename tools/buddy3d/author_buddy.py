@@ -40,8 +40,8 @@ def brand_color(value):
     rgb=[int(value[index:index+2],16)/255 for index in (0,2,4)]
     return tuple(c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4 for c in rgb)
 
-TEAL = material('Hologram_Teal', brand_color('258D8A'), .025, metallic=.12, roughness=.25)
-NAVY = material('Hologram_Deep', brand_color('14366A'), .015, metallic=.30, roughness=.25)
+TEAL = material('Hologram_Teal', brand_color('258D8A'), .025, metallic=.06, roughness=.36, coat=.18)
+NAVY = material('Hologram_Deep', brand_color('14366A'), .015, metallic=.06, roughness=.36, coat=.18)
 ORANGE = material('Hologram_Rim', brand_color('E15E31'), .05, metallic=.35, roughness=.22)
 EMITTER = material('Hologram_Emitter', brand_color('E15E31'), .42, metallic=.10, roughness=.20)
 PROJECTION = material('Hologram_Projection', brand_color('258D8A'), .40, metallic=.05, roughness=.22)
@@ -52,6 +52,9 @@ EYE = material('Face_Ink', (.004, .012, .025), metallic=.04, roughness=.20)
 LIGHT = material('Eye_Catchlight', (.96, 1, .98), .15, metallic=0, roughness=.14)
 LENS = material('Hologram_Lens', (.60, .88, .85), metallic=0, roughness=.08)
 LENS.node_tree.nodes.get('Principled BSDF').inputs['Transmission Weight'].default_value=.93
+CHARACTER = material('Hologram_Character',(1,1,1),metallic=.06,roughness=.36,coat=.18)
+vertex_colour=CHARACTER.node_tree.nodes.new('ShaderNodeVertexColor');vertex_colour.layer_name='Color'
+CHARACTER.node_tree.links.new(vertex_colour.outputs['Color'],CHARACTER.node_tree.nodes.get('Principled BSDF').inputs['Base Color'])
 
 def empty(name, parent=None):
     o = bpy.data.objects.new(name, None)
@@ -74,8 +77,8 @@ def finish(o, name, mat, parent=None):
     o.parent = parent
     return o
 
-def sphere(name, pos, scale, mat=TEAL, parent=None, segments=20):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=12, location=pos)
+def sphere(name, pos, scale, mat=TEAL, parent=None, segments=20, rings=12):
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=rings, location=pos)
     o = bpy.context.object
     o.scale = scale
     return finish(o, name, mat, parent)
@@ -177,54 +180,164 @@ def contour(name, source, mat, depth, bevel, parent, front=0):
     bpy.context.view_layer.objects.active=o;bpy.ops.object.modifier_apply(modifier=normal.name)
     return o
 
+def sweep(name, points, radii, mat=TEAL, parent=None, radius=.23):
+    obj=line(name,points,radius,mat,parent)
+    obj.data.bevel_resolution=4;obj.data.resolution_u=12;obj.data.use_fill_caps=True
+    for point,value in zip(obj.data.splines[0].bezier_points,radii):point.radius=value
+    return obj
+
+def pill(name,a,b,radius,mat=TEAL):
+    a,b=Vector(a),Vector(b)
+    obj=sphere(name,(a+b)/2,(radius,)*3,mat,segments=32,rings=20)
+    half=(b-a).length/2
+    for vertex in obj.data.vertices:vertex.co.z+=half if vertex.co.z>=0 else -half
+    obj.rotation_mode='QUATERNION';obj.rotation_quaternion=(b-a).to_track_quat('Z','Y')
+    return obj
+
+def ring_volume(name, levels, mat=TEAL):
+    vertices=[];faces=[];segments=48
+    smooth_levels=[]
+    for step in range(len(levels)-1):
+        points=[levels[max(0,step-1)],levels[step],levels[step+1],levels[min(len(levels)-1,step+2)]]
+        for sample in range(8):
+            t=sample/8
+            smooth_levels.append(tuple(.5*(2*points[1][axis]+(-points[0][axis]+points[2][axis])*t+(2*points[0][axis]-5*points[1][axis]+4*points[2][axis]-points[3][axis])*t*t+(-points[0][axis]+3*points[1][axis]-3*points[2][axis]+points[3][axis])*t*t*t) for axis in range(3)))
+    smooth_levels.append(levels[-1])
+    for z,width,depth in smooth_levels:
+        for index in range(segments):
+            angle=2*math.pi*index/segments
+            vertices.append((width*math.cos(angle),depth*math.sin(angle),z))
+    for row in range(len(smooth_levels)-1):
+        for index in range(segments):
+            a=row*segments+index;b=row*segments+(index+1)%segments
+            faces.append((a,a+segments,b+segments,b))
+    faces.append(tuple(range(segments)))
+    faces.append(tuple((len(smooth_levels)-1)*segments+index for index in reversed(range(segments))))
+    mesh=bpy.data.meshes.new(name);mesh.from_pydata(vertices,[],faces);mesh.update()
+    obj=bpy.data.objects.new(name,mesh);scene.collection.objects.link(obj)
+    obj.data.materials.append(mat)
+    return obj
+
+def sculpt(name, pieces, parent, voxel=.027):
+    obj=join_details(name,pieces,parent)
+    bpy.context.view_layer.objects.active=obj;obj.select_set(True)
+    bpy.ops.object.transform_apply(location=True,rotation=True,scale=True)
+    remesh=obj.modifiers.new('Blended sculptural volumes','REMESH');remesh.mode='VOXEL';remesh.voxel_size=voxel;remesh.use_smooth_shade=True
+    bpy.ops.object.modifier_apply(modifier=remesh.name)
+    smooth=obj.modifiers.new('Soft continuous character surface','SMOOTH');smooth.factor=.60;smooth.iterations=7
+    bpy.ops.object.modifier_apply(modifier=smooth.name)
+    simplify=obj.modifiers.new('Efficient curved topology','DECIMATE');simplify.ratio=.52
+    bpy.ops.object.modifier_apply(modifier=simplify.name)
+    for poly in obj.data.polygons:poly.use_smooth=True
+    obj.data.validate(clean_customdata=False)
+    obj.select_set(False)
+    return obj
+
+def mouth_bowl(name, parent):
+    vertices=[(0,.085,0)];faces=[];steps=8;segments=48
+    for row in range(1,steps+1):
+        radius=row/steps
+        for index in range(segments):
+            angle=2*math.pi*index/segments
+            x=.265*radius*math.cos(angle)
+            z=.125*radius*math.sin(angle)+.025*(x/.265)**2
+            vertices.append((x,.085-.125*radius*radius,z))
+    for index in range(segments):faces.append((0,1+(index+1)%segments,1+index))
+    for row in range(steps-1):
+        start=1+row*segments
+        for index in range(segments):
+            a=start+index;b=start+(index+1)%segments
+            faces.append((a,b,b+segments,a+segments))
+    mesh=bpy.data.meshes.new(name);mesh.from_pydata(vertices,[],faces);mesh.update()
+    obj=bpy.data.objects.new(name,mesh);scene.collection.objects.link(obj);obj.parent=parent
+    obj.data.materials.append(EYE)
+    for poly in mesh.polygons:poly.use_smooth=True
+    return obj
+
 forms={}
-face_locations={'property':(0,.48),'investment':(-.18,.86),'support':(0,.05)}
-for form in SHAPES:
+face_locations={'property':(0,.48),'investment':(-.18,.86),'support':(0,.45)}
+for form in ('property','investment','support'):
     group=empty('Form_'+form,ROOT);forms[form]=group
-    contour('Body_'+form,SHAPES[form],NAVY,.19,.09,group)
-    rim=SHAPES[form]
-    if form=='property':rim='M -34 -112 C -37 -173 38 -173 35 -112 C 35 -104 50 -105 60 -100 C 82 -94 87 -80 87 -60 L 87 -25 C 87 -1 70 12 44 12 L -44 12 C -72 12 -87 0 -87 -25 L -87 -60 C -87 -88 -68 -102 -47 -104 Q -34 -105 -34 -112 Z M -16 -130 C -16 -106 18 -106 18 -130 C 18 -153 -16 -153 -16 -130 Z'
-    contour('Rim_'+form,rim,NAVY,.045,.06,group,-.255)
-    if form=='property':contour('KeyTeeth','M 30 52 L 62 52 Q 75 52 75 65 L 75 74 Q 75 84 63 84 L 44 84 L 44 95 L 62 95 Q 75 95 75 107 Q 75 120 62 120 L 30 120 Z',ORANGE,.045,.055,group,-.255)
-    contour('Panel_'+form,PANELS[form],TEAL,.045,.065,group,-.325)
-    details=[outline('InsetSeam_'+form,PANELS[form],NAVY,.012,group,-.443)]
-    details.append(outline('BrandedEdge_'+form,rim,ORANGE,.022,group,-.365))
-    # A restrained emitter and recessed optical traces belong to the body,
-    # never an external cone that could obscure nearby text on the page.
-    emitter_z={'property':-1.29,'investment':-1.23,'support':-.86}[form]
-    surface={'property':-.285,'investment':-.365,'support':-.443}[form]
-    details.append(sphere('EmitterSocket_'+form,(0,surface-.010,emitter_z),(.095,.025,.065),NAVY,group,12))
-    details.append(sphere('EmitterJewel_'+form,(0,surface-.035,emitter_z),(.057,.015,.038),EMITTER,group,12))
-    trace_height={'property':.64,'investment':.19,'support':.27}[form]
-    for index in (-1,0,1):
-        x=index*.11
-        details.append(line('OpticalTrace_'+form+str(index),[(index*.035,surface-.004,emitter_z+.10),(x,surface-.004,emitter_z+.10+trace_height*.55),(x,surface-.004,emitter_z+.10+trace_height)],.006,PROJECTION if form!='support' else EMITTER,group))
-    join_details('SurfaceDetails_'+form,details,group)
     fx,fz=face_locations[form]
-    face=empty('Face_'+form,group);face.location=(fx,-.445,fz)
+    facial_scale=1.15 if form=='support' else 1
+    if form=='property':
+        pieces=[sphere('KeyHeadVolume',(0,-.015,.51),(.80,.47,.65),TEAL,segments=48,rings=28),
+            pill('KeyShaftVolume',(0,.025,-.03),(0,.025,-1.27),.235,NAVY),
+            cube('KeyToothUpper',(.36,.025,-.64),(.66,.43,.32),ORANGE,bevel=.15),
+            cube('KeyToothLower',(.36,.025,-1.06),(.66,.43,.32),ORANGE,bevel=.15)]
+        bpy.ops.mesh.primitive_torus_add(major_radius=.225,minor_radius=.13,major_segments=48,minor_segments=20,location=(0,0,1.30),rotation=(math.pi/2,0,0))
+        pieces.append(finish(bpy.context.object,'RoundedKeyBow',TEAL))
+    elif form=='investment':
+        pieces=[sweep('OrganicPoundSpine',[(.65,0,1.08),(.20,0,1.27),(-.42,0,1.00),(-.53,0,.45),(-.38,0,-.18),(-.48,0,-.65),(-.82,0,-1.15)],[1.08,1.14,1.18,1.05,.93,.95,1.0],NAVY,radius=.255),
+            sweep('PoundCrossbar',[(-.87,0,-.13),(-.1,-.025,-.12),(.61,0,-.10)],[.92,1,.92],NAVY,radius=.19),
+            sweep('PoundBase',[(-.82,0,-1.15),(-.28,0,-1.12),(.28,.015,-1.13),(.77,0,-1.03)],[1,1.10,1.05,.9],NAVY,radius=.23),
+            sphere('PoundBrowVolume',(-.18,-.015,.95),(.67,.46,.51),TEAL,segments=48,rings=28)]
+        for index,(position,radius) in enumerate([((.65,0,1.08),.275),((-.82,0,-1.15),.255),((.77,0,-1.03),.207),((-.87,0,-.13),.175),((.61,0,-.10),.175)]):
+            pieces.append(sphere('PoundRoundedEnd_'+str(index),position,(radius,)*3,NAVY,segments=24,rings=16))
+    else:
+        pieces=[sphere('HeartLobeLeft',(-.53,0,.75),(.66,.50,.70),TEAL,segments=48,rings=28),
+            sphere('HeartLobeRight',(.53,0,.75),(.66,.50,.70),TEAL,segments=48,rings=28),
+            ring_volume('HeartTaper',[(1.08,.10,.08),(.95,.50,.23),(.75,1.00,.37),(.40,1.13,.47),(.05,1.00,.54),(-.35,.81,.50),(-.80,.50,.36),(-1.25,.15,.16),(-1.48,.025,.035)])]
+    # Orbital pads, cheek planes and chin blend into the whole sculpture.
+    # There is no front panel, bezel, planar cap or decorative silhouette rim.
+    for side in (-1,1):
+        pieces.append(sphere('OrbitalPad_'+str(side),(fx+side*.27*facial_scale,-.25,fz+.105*facial_scale),(.255*facial_scale,.32,.285*facial_scale),TEAL,segments=32,rings=20))
+        pieces.append(sphere('CheekVolume_'+str(side),(fx+side*.40*facial_scale,-.17,fz-.07*facial_scale),(.24*facial_scale,.30,.20*facial_scale),TEAL,segments=32,rings=20))
+    body=sculpt('Body_'+form,pieces,group)
+    # An actual recessed mouth opening gives the face depth in profile.
+    cutter=sphere('MouthSculptTool',(fx,-.50,fz-.22*facial_scale),(.275*facial_scale,.19,.145*facial_scale),EYE,segments=32,rings=20)
+    bpy.context.view_layer.objects.active=body;body.select_set(True)
+    cut=body.modifiers.new('Sculpted mouth recess','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=cutter
+    bpy.ops.object.modifier_apply(modifier=cut.name)
+    bpy.data.objects.remove(cutter,do_unlink=True);body.select_set(False)
+    body.data.validate(clean_customdata=False)
+    body.data.materials.clear();body.data.materials.append(CHARACTER)
+    for poly in body.data.polygons:poly.material_index=0;poly.use_smooth=True
+    colours=body.data.color_attributes.new(name='Color',type='FLOAT_COLOR',domain='POINT')
+    body.data.color_attributes.active_color_index=0;body.data.color_attributes.render_color_index=0
+    def fade(lo,hi,value):
+        t=max(0,min(1,(value-lo)/(hi-lo)));return t*t*(3-2*t)
+    def tint(a,b,t):return tuple(a[index]*(1-t)+b[index]*t for index in range(3))
+    teal,navy,orange=map(brand_color,('258D8A','14366A','E15E31'))
+    for vertex in body.data.vertices:
+        x,y,z=vertex.co
+        if form=='property':
+            color=tint(navy,teal,fade(-.12,.08,z))
+            color=tint(color,orange,fade(.20,.34,x)*(1-fade(-.35,-.20,z)))
+        elif form=='investment':
+            color=tint(navy,teal,fade(.28,.50,z))
+            color=tint(color,orange,fade(.54,.72,x)*(1-fade(-.85,-.70,z)))
+        else:
+            color=tint(teal,navy,fade(.16,.43,y)*.65)
+            color=tint(color,orange,fade(1.12,1.42,-z)*.78)
+        colours.data[vertex.index].color=(*color,1)
+    face=empty('Face_'+form,group);face.location=(fx,-.48,fz);face.scale=(facial_scale,1,facial_scale)
     for side in (-1,1):
         # The animated pupil carries its layered iris and sclera. The complete
         # eye therefore blinks and enlarges together, including the close-up.
-        eye=sphere('Eye_'+form+('_L' if side>0 else '_R'),(side*.235,-.145,.075),(.075,.018,.110),EYE,face)
-        sclera=sphere('Sclera_'+form+str(side),(0,.065,0),(.145,.045,.190),WHITE,eye,24)
+        eye=sphere('Eye_'+form+('_L' if side>0 else '_R'),(side*.27,-.180,.105),(.090,.020,.130),EYE,face,32,rings=20)
+        sclera=sphere('Sclera_'+form+str(side),(0,.090,0),(.180,.085,.230),WHITE,eye,32,rings=20)
         # A shallow convex front and a longer hidden back attach the white to
         # the face. Its visible perimeter stays clear of the panel even at the
         # 1.95x magnified-eye pose; intersecting rims caused stippled outlines.
         for vertex in sclera.data.vertices:
-            if vertex.co.y>0:vertex.co.y*=3
+            if vertex.co.y>0:vertex.co.y*=2
         sclera.data.update()
-        sphere('Iris_'+form+str(side),(0,.024,0),(.105,.014,.140),IRIS,eye,24)
-        sphere('Catchlight_'+form+str(side),(side*.235-.025,-.178,.120),(.026,.008,.032),LIGHT,face,12)
-        line('UpperLid_'+form+str(side),[(-.125,.030,.135),(0,.035,.192),(.125,.030,.135)],.012,NAVY,eye)
-        brow=line('Brow_'+form+str(side),[(side*.235-.115,-.025,.30),(side*.235,-.035,.34),(side*.235+.115,-.025,.30)],.027,NAVY,face)
-        for point,radius in zip(brow.data.splines[0].bezier_points,(.45,1.2,.45)):point.radius=radius
+        sphere('Iris_'+form+str(side),(0,.014,0),(.122,.009,.160),IRIS,eye,32,rings=20)
+        sphere('Catchlight_'+form+str(side),(side*.27-.029,-.214,.158),(.030,.008,.037),LIGHT,face,16)
+        line('UpperLid_'+form+str(side),[(-.15,.040,.16),(-.02,.060,.235),(.14,.044,.17)],.010,TEAL,eye)
+        line('LowerLid_'+form+str(side),[(side*.16,.060,-.10),(side*.11,.060,-.195),(0,.065,-.225)],.009,TEAL,eye)
+        raised=.025 if side<0 else 0
+        brow=line('Brow_'+form+str(side),[(side*.27-.15,.052,.36+raised),(side*.27-.07,.037,.39+raised),(side*.27+.02,.030,.40+raised),(side*.27+.10,.043,.38+raised),(side*.27+.15,.055,.35+raised)],.024,NAVY,face)
+        for point,radius in zip(brow.data.splines[0].bezier_points,(.35,.90,1,.80,.30)):point.radius=radius
     # The mouth is one animated assembly: its cavity, teeth and lower lip
     # stay together through speech and expression changes.
-    mouth=empty('Mouth_'+form,face);mouth.location.z=-.205
-    contour('MouthCavity_'+form,'M -24 -5 C -14 1 14 1 24 -5 C 22 7 15 13 0 13 C -15 13 -22 7 -24 -5 Z',EYE,.018,.012,mouth,-.050)
-    cube('UpperTeeth_'+form,(0,-.084,-.020),(.305,.026,.045),WHITE,mouth,.014)
-    line('Smile_'+form,[(-.235,-.061,.045),(-.17,-.073,-.065),(0,-.080,-.125),(.17,-.073,-.065),(.235,-.061,.045)],.018,TEAL,mouth)
-    sphere('LowerLip_'+form,(0,-.082,-.094),(.105,.014,.025),ORANGE,mouth,16)
+    sphere('Nose_'+form,(0,-.105,-.047),(.085,.075,.072),TEAL,face,24,rings=16)
+    mouth=empty('Mouth_'+form,face);mouth.location.z=-.220
+    mouth_bowl('MouthCavity_'+form,mouth)
+    sweep('UpperTeeth_'+form,[(-.155,-.052,.027),(0,-.068,.005),(.155,-.052,.027)],[.65,1,.65],WHITE,mouth,radius=.028)
+    line('Smile_'+form,[(-.265,-.025,.025),(-.18,-.044,-.078),(0,-.052,-.132),(.18,-.044,-.078),(.265,-.025,.025)],.024,TEAL,mouth)
+    sphere('LowerLip_'+form,(0,-.018,-.087),(.112,.025,.028),ORANGE,mouth,20)
 
 # A single real armature. Left/right are the character's own sides, not screen sides.
 armature=bpy.data.armatures.new('BuddySkeleton')
@@ -271,12 +384,15 @@ def weight(o,bone_name):
 for side,suffix in ((1,'L'),(-1,'R')):
     shoulder,elbow,wrist=side_positions[suffix]
     pieces=[]
-    for name,a,b in [('UpperArm.'+suffix,shoulder,elbow),('Forearm.'+suffix,elbow,wrist)]:
-        pieces.append(weight(capsule('Sleeve_'+name,a,b,.10,NAVY),name))
-    pieces.append(weight(sphere('Elbow_'+suffix,elbow,(.105,.105,.105),NAVY),'Forearm.'+suffix))
+    inner_shoulder=(side*.25,.015,-.10)
+    hose=sweep('SoftArm_'+suffix,[inner_shoulder,(side*.48,.01,-.06),shoulder,(side*1.08,-.025,-.025),(side*1.34,-.035,-.15),elbow,(side*1.46,-.025,-.43),wrist],
+        [1.10,1.18,1.24,1.13,1.05,1.02,.94,.86],TEAL,radius=.115)
+    bpy.context.view_layer.objects.active=hose;hose.select_set(True);bpy.ops.object.convert(target='MESH')
+    pieces.append(weight(bpy.context.object,'UpperArm.'+suffix))
+    # A hemispherical root sits within every symbol, including the pound's
+    # crossbar; the skin remains rounded if a gesture reveals its shoulder.
+    pieces.append(weight(sphere('ShoulderRoot_'+suffix,inner_shoulder,(.1265,.1265,.1265),TEAL),'Root'))
     pieces.append(weight(sphere('Palm_'+suffix,(wrist[0],wrist[1],wrist[2]-.16),(.195,.115,.22),GLOVE),'Hand.'+suffix))
-    bpy.ops.mesh.primitive_torus_add(major_radius=.105,minor_radius=.025,major_segments=24,minor_segments=10,location=wrist)
-    pieces.append(weight(finish(bpy.context.object,'Cuff_'+suffix,TEAL),'Hand.'+suffix))
     for name,a,b,r in hand_parts[suffix]:pieces.append(weight(capsule('Finger_'+name,a,b,r,GLOVE),name))
     bpy.ops.object.select_all(action='DESELECT')
     for o in pieces:o.select_set(True)
@@ -290,19 +406,26 @@ for side,suffix in ((1,'L'),(-1,'R')):
     bpy.ops.object.modifier_apply(modifier=smooth.name)
     simplify=hand.modifiers.new('Efficient glove topology','DECIMATE');simplify.ratio=.55
     bpy.ops.object.modifier_apply(modifier=simplify.name)
-    # Voxel merging keeps a continuous skin; restore the intended sleeve/glove regions.
+    hand.data.validate(clean_customdata=False)
+    # The continuous arm flows directly into the soft glove, with no elbow
+    # ball, rigid wrist ring or mechanical colour bands.
+    for slot in (TEAL,GLOVE,NAVY,ORANGE):
+        if slot not in hand.data.materials[:]:hand.data.materials.append(slot)
     teal_index=next(i for i,m in enumerate(hand.data.materials) if m==TEAL)
     glove_index=next(i for i,m in enumerate(hand.data.materials) if m==GLOVE)
     navy_index=next(i for i,m in enumerate(hand.data.materials) if m==NAVY)
-    hand.data.materials.append(ORANGE);orange_index=len(hand.data.materials)-1
+    orange_index=next(i for i,m in enumerate(hand.data.materials) if m==ORANGE)
     for poly in hand.data.polygons:
         z=sum(hand.data.vertices[index].co.z for index in poly.vertices)/len(poly.vertices)
-        poly.material_index=glove_index if z<wrist[2]-.035 else orange_index if z<wrist[2]+.012 else teal_index if z<wrist[2]+.065 else navy_index
+        poly.material_index=glove_index if z<wrist[2]-.025 else teal_index
     hand.vertex_groups.clear()
     relevant={name:ends for name,ends in bone_specs.items() if name.endswith('.'+suffix)}
     groups={name:hand.vertex_groups.new(name=name) for name in relevant}
+    root_group=hand.vertex_groups.new(name='Root')
     for vertex in hand.data.vertices:
         point=vertex.co
+        root_mix=1-fade(.46,.84,abs(point.x)) if point.z>-.26 else 0
+        if root_mix>0:root_group.add([vertex.index],root_mix,'REPLACE')
         distances=[]
         for name,(a,b) in relevant.items():
             direction=b-a;fraction=max(0,min(1,(point-a).dot(direction)/direction.length_squared))
@@ -310,7 +433,7 @@ for side,suffix in ((1,'L'),(-1,'R')):
             distances.append((distance,name))
         closest=sorted(distances)[:2]
         weights=[1/(distance+.025)**5 for distance,name in closest];total=sum(weights)
-        for (_,name),value in zip(closest,weights):groups[name].add([vertex.index],value/total,'REPLACE')
+        for (_,name),value in zip(closest,weights):groups[name].add([vertex.index],(1-root_mix)*value/total,'REPLACE')
     hand['handedness']='left' if suffix=='L' else 'right';hand['digits']=5
     modifier=hand.modifiers.new('Handed skeleton','ARMATURE');modifier.object=rig
     hand.select_set(False)
@@ -405,7 +528,12 @@ for name,duration in CLIPS.items():
             rig.pose.bones[b].rotation_quaternion=Euler((x,y,z),'XYZ').to_quaternion()
         rotate('Root',0,0,math.sin(t*1.6)*.015)
         rig.pose.bones['Root'].location.z=math.sin(t*1.6)*.022
-        if name=='Wave':rotate('UpperArm.R',0,.1,-1.9*envelope);rotate('Forearm.R',.05,0,-.75*envelope);rotate('Hand.R',.2,0,wave*.30*envelope)
+        if name=='Idle':
+            rotate('UpperArm.L',.045*math.sin(t*1.55),.018*wave,.018*math.sin(t*1.55))
+            rotate('UpperArm.R',-.038*math.sin(t*1.55+.4),-.018*wave,-.018*math.sin(t*1.55))
+            rotate('Forearm.L',.065*math.sin(t*1.55-.35),0,.025*wave)
+            rotate('Forearm.R',-.055*math.sin(t*1.55+.1),0,-.025*wave)
+        elif name=='Wave':rotate('UpperArm.R',0,.1,-1.9*envelope);rotate('Forearm.R',.05,0,-.75*envelope);rotate('Hand.R',.2,0,wave*.30*envelope)
         elif name=='Listen':rotate('Root',.03,0,.07*envelope);rotate('Forearm.L',.12,0,.25*envelope)
         elif name=='Think':rotate('UpperArm.R',.35,0,-.58*envelope);rotate('Forearm.R',.5,0,-1.15*envelope)
         elif name=='Talk':rotate('Forearm.L',.15,0,.20+.18*wave);rotate('Forearm.R',.20,0,-.25+.14*math.sin(t*4))
@@ -433,7 +561,7 @@ for name,duration in CLIPS.items():
             else:
                 # The lens is 1.02 units above the grip, directly in front of
                 # the eye, with its normal towards the viewer.
-                reach_hand('R',(-.12,-.73,-.45),Quaternion((0,1,0),0),envelope)
+                reach_hand('R',(-.25,-.86,-.45),Quaternion((0,1,0),0),envelope)
         elif name.startswith('Inspect'):
             suffix='L' if name=='InspectRight' else 'R'
             target={'InspectLeft':(-1.55,-.18,-.15),'InspectRight':(1.55,-.18,-.15),'InspectUp':(-.60,-.35,.55),'InspectDown':(-1.10,-.18,-.45)}[name]
@@ -528,10 +656,11 @@ for pos,power,size in [((-3,-4,5),850,4),((4,-2,2),400,3),((0,3,4),950,3)]:
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'master.blend'))
 for form in forms:
     for other,group in forms.items():hide_tree(group,other!=form)
-    for view,angle in [('front',0),('profile',math.pi/2),('back',math.pi)]:
+    for view,angle in [('front',0),('three-quarter',.24),('profile',math.pi/2),('back',math.pi)]:
         ROOT.rotation_euler.z=angle
         scene.render.filepath=str(OUT/f'{form}-{view}.png');bpy.ops.render.render(write_still=True)
-    ROOT.rotation_euler.z=0
+    ROOT.rotation_euler.z=.24
+    scene.render.filepath=str(OUT/f'{form}-fallback.png');bpy.ops.render.render(write_still=True)
     scene.render.film_transparent=False
     scene.render.filepath=str(OUT/f'{form}-bone.png');bpy.ops.render.render(write_still=True)
     scene.render.film_transparent=True

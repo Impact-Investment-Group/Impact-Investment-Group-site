@@ -7,6 +7,7 @@ import threading
 from urllib.parse import urlparse
 
 from playwright.sync_api import expect, sync_playwright
+from buddy_corner_checks import assert_corner_placement
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs/screenshots/wave909/buddy-placement"
@@ -103,21 +104,19 @@ def canvas_layout(page):
 
 def settled_in_slot(page, kind):
     try:
+        if kind == "corner":
+            if assert_corner_placement(page):
+                canvas_layout(page)
+            return
         page.wait_for_function("""kind => {
           const actor = document.querySelector('[data-buddy-actor]');
           const slot = document.querySelector(`[data-buddy-slot='${kind}'][data-buddy-occupied]`);
           if (!actor || !slot || actor.dataset.buddyTravelling !== 'false') return false;
           const a = actor.getBoundingClientRect(), s = slot.getBoundingClientRect();
-          if (kind === 'corner') return Math.abs(a.x - Number(actor.dataset.buddyTargetX)) < 1 &&
-            Math.abs(a.y - Number(actor.dataset.buddyTargetY)) < 1 &&
-            Math.abs(a.width - Number(actor.dataset.buddyTargetSize)) < 1 &&
-            Math.abs(a.right + a.width / 8 - s.right) < 1 && a.top >= 80;
           return Math.abs(a.x + a.width / 2 - s.x - s.width / 2) < 1 &&
             Math.abs(a.y + a.height / 2 - s.y - s.height / 2) < 1;
         }""", arg=kind)
-        layout = canvas_layout(page)
-        if kind == 'corner':
-            assert layout['canvasLeft'] >= -1 and layout['canvasRight'] <= layout['viewportWidth'] + 1, f"Corner arm envelope leaves the viewport: {layout}"
+        canvas_layout(page)
     except Exception:
         evidence = page.evaluate("""() => ({scrollY, width:innerWidth, height:innerHeight,
           elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot]')].map(el => ({
@@ -139,7 +138,7 @@ with sync_playwright() as playwright:
                 context.route("**/*", requests)
                 page = observe(context.new_page())
                 page.goto(BASE + "/platform", wait_until="networkidle")
-                page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
+                page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]', state='attached')
                 page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
                 one_actor(page, "corner")
                 showcase = page.locator('[data-buddy-showcase] [data-buddy-slot="page"]')
@@ -163,7 +162,7 @@ with sync_playwright() as playwright:
                 expect(page.locator("[data-buddy-chat]")).to_be_visible()
                 settled_in_slot(page, "chat")
                 one_actor(page, "chat")
-                assert abs(page.locator("[data-buddy-actor]").bounding_box()["width"] - 48) < 1, "Chat avatar did not fit its header"
+                assert abs(page.locator("[data-buddy-actor]").bounding_box()["width"] - 72) < 1, "Chat avatar did not fit its enlarged header portrait"
                 page.get_by_label("Your question for Buddy", exact=True).fill("Retain this draft while Buddy travels.")
                 page.locator("[data-buddy-chat]").get_by_role("button", name="Close Buddy", exact=True).click()
                 settled_in_slot(page, "page")
@@ -187,7 +186,7 @@ with sync_playwright() as playwright:
                 assert page.evaluate("window.__buddyActorCanvas === document.querySelector('[data-buddy-actor] canvas')"), "Client navigation replaced Buddy"
                 expect(page.locator("[data-buddy-form]")).to_have_count(1)
                 page.goto(BASE + "/solutions", wait_until="networkidle")
-                page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
+                page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]', state='attached')
                 page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
                 expect(page.locator('img[src*="solution/trio"]')).to_have_count(0)
                 solution_slots = page.locator('[data-buddy-slot="page"]')
@@ -237,7 +236,7 @@ with sync_playwright() as playwright:
                         expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "none")
                         one_actor(page, "page")
                 page.goto(BASE + "/partners", wait_until="networkidle")
-                page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
+                page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]', state='attached')
                 page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
                 trigger = page.locator('[data-role="investor"]')
                 trigger.focus()
@@ -249,7 +248,7 @@ with sync_playwright() as playwright:
                 assert page.evaluate("window.__buddyActorCanvas === document.querySelector('[data-buddy-actor] canvas')"), "An unrelated modal replaced the actor"
                 page.keyboard.press("Escape")
                 expect(page.get_by_role("dialog")).to_have_count(0)
-                expect(page.locator("[data-buddy-actor]")).to_be_visible()
+                settled_in_slot(page, "corner")
                 expect(page.locator("[data-buddy-actor]")).to_have_attribute("data-buddy-suspended", "none")
                 assert page.evaluate("window.__buddyActorCanvas === document.querySelector('[data-buddy-actor] canvas')"), "Closing an unrelated modal remounted the actor"
                 expect(trigger).to_be_focused()
@@ -262,19 +261,20 @@ with sync_playwright() as playwright:
         page = observe(context.new_page())
         for route, selector in (("/", "#hero-role-resident-label"), ("/legal", "button[aria-label='Copy registered office']")):
             page.goto(BASE + route, wait_until="networkidle")
-            page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
+            page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]', state='attached')
             settled_in_slot(page, "corner")
-            assert page.locator(selector).evaluate("""el => {
-              const a = document.querySelector('[data-buddy-actor] canvas').getBoundingClientRect();
-              const b = el.getBoundingClientRect();
-              return a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom;
-            }"""), f"Corner Buddy obscures {selector}"
+            if page.locator("[data-buddy-actor]").is_visible():
+                assert page.locator(selector).evaluate("""el => {
+                  const a = document.querySelector('[data-buddy-actor] canvas').getBoundingClientRect();
+                  const b = el.getBoundingClientRect();
+                  return a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom;
+                }"""), f"Corner Buddy obscures {selector}"
             page.screenshot(path=str(OUT / f"clear-corner-{'home' if route == '/' else 'legal'}-1280.png"))
             REPORT.append({"route": route, "corner_content_clear": True})
         # Exercise the actual expanded scenery layout and its return to the
         # ordinary chat canvas. Find real page whitespace without DOM fixtures.
         page.goto(BASE + "/", wait_until="networkidle")
-        page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
+        page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]', state='attached')
         page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
         expanded_corner = False
         for step in range(80):
@@ -286,7 +286,7 @@ with sync_playwright() as playwright:
             }""", step)
             page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
             settled_in_slot(page, "corner")
-            if canvas_layout(page)["expanded"]:
+            if page.locator("[data-buddy-actor]").is_visible() and canvas_layout(page)["expanded"]:
                 expanded_corner = True
                 break
             if at_end:

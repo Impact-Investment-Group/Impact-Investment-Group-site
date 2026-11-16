@@ -40,7 +40,7 @@ export function BuddyWidget({ topic, onOpen, loading = false, failed = false, se
     </button> : <div className="relative">
       <button ref={node => { trigger.current = node; setTrigger?.(node); }} type="button" data-buddy-launcher aria-label={buddyLauncherLabel} aria-haspopup="dialog" aria-busy={loading} disabled={loading} onClick={onOpen}
         className="pointer-events-auto flex min-h-11 flex-col items-center rounded-2xl bg-transparent p-0 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
-        <span className="pointer-events-none absolute bottom-full right-0 w-44 sm:w-56 [@media(max-height:500px)]:w-24">
+        <span className="pointer-events-none absolute bottom-full right-0 w-52 sm:w-72 [@media(max-height:500px)]:w-24">
           <BuddySlot kind="corner" form={topic} action={loading ? "listen" : "wave"} />
         </span>
         <span className="-mt-1 whitespace-nowrap rounded-full border border-rule bg-page/95 px-3 py-1 text-xs font-semibold leading-5 shadow-sm">{loading ? "Opening..." : buddyLauncherLabel}</span>

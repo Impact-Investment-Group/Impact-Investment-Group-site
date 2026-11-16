@@ -268,8 +268,8 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
         className="fixed bottom-0 right-0 z-50 flex h-[calc(100dvh-5rem)] max-h-[calc(100dvh-5rem)] w-full origin-bottom-right flex-col overflow-y-auto rounded-t-3xl border border-rule bg-page text-ink shadow-2xl duration-200 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-4 motion-reduce:animate-none sm:bottom-5 sm:right-5 sm:h-[min(46rem,calc(100dvh-2.5rem))] sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-md sm:rounded-3xl">
         <header className="shrink-0 border-b border-rule bg-page px-3 py-2">
           <div className="flex items-center gap-2">
-            <div className="flex size-12 shrink-0 items-center justify-center">
-              <BuddySlot kind="chat" form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} className="w-12" />
+            <div className="flex size-18 shrink-0 items-center justify-center">
+              <BuddySlot kind="chat" form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} className="w-18" />
             </div>
             <div className="min-w-0 flex-1">
               <Dialog.Title className="font-heading text-lg font-bold">{buddyCopy.name}</Dialog.Title>

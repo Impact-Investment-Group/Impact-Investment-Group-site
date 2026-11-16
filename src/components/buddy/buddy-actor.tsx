@@ -82,8 +82,27 @@ export function BuddyActor() {
       node.dataset.buddyTargetX = String(target.x);
       node.dataset.buddyTargetY = String(target.y);
       node.dataset.buddyTargetSize = String(target.size);
-      node.style.visibility = "visible";
       node.dataset.buddyPlacement = next.kind;
+      node.dataset.buddyCornerClear = String(corner?.clear ?? true);
+      node.dataset.buddyCornerState = corner ? corner.clear ? "clear" : "no-clear-space" : "not-corner";
+      if (corner && !corner.clear) {
+        // The independent Ask Buddy control remains available. Keep the actor
+        // out of dense reading areas until a genuinely clear placement returns.
+        target = undefined;
+        // A hidden actor has no visible departure point. Resume inside the new
+        // safe footprint, rather than flying through the newly exposed text.
+        position = undefined;
+        node.style.visibility = "hidden";
+        node.dataset.buddyTravelling = "false";
+        wasMoving = false;
+        setTravelling(false);
+        assign({ form: destination.dataset.buddySlotForm as BuddyForm,
+          action: destination.dataset.buddySlotAction as BuddyAction,
+          expression: destination.dataset.buddySlotExpression as BuddyExpression,
+          kind: "corner", visible: false, ambient: false });
+        return;
+      }
+      node.style.visibility = "visible";
       assign({ form: destination.dataset.buddySlotForm as BuddyForm,
         action: destination.dataset.buddySlotAction as BuddyAction,
         expression: destination.dataset.buddySlotExpression as BuddyExpression,

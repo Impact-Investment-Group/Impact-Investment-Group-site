@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buddyDestinationRect, followBuddyDestination, selectBuddyDestination } from "../src/components/buddy/buddy-placement.js";
+import { buddyDestinationRect, findBuddyCorner, followBuddyDestination, selectBuddyDestination } from "../src/components/buddy/buddy-placement.js";
 
 import { buddyCanvasLayout } from "../src/components/buddy/buddy-canvas-frame.js";
 
@@ -22,7 +22,7 @@ test("a small scroll does not switch the actor between neighbouring page slots",
 });
 
 test("a chat header takes priority over an in-page placement", () => {
-  const chat = slot("chat", "chat", 40, 900, 48);
+  const chat = slot("chat", "chat", 40, 900, 72);
   assert.equal(selectBuddyDestination([corner, slot("page", "page", 280), chat], "page", viewport).id, "chat");
 });
 
@@ -78,7 +78,7 @@ test("flight settles at the same destination at different refresh rates", () => 
 
 
 test("ordinary arm padding preserves body scale and its destination centre", () => {
-  for (const size of [48, 112, 144, 224, 256]) {
+  for (const size of [72, 96, 144, 160, 192, 208, 256, 288]) {
     const frame = buddyCanvasLayout({ size });
     assert.equal(frame.size, size);
     assert.equal(frame.width, size * 1.25);
@@ -112,4 +112,68 @@ test("a narrow phone keeps the complete page-actor arm envelope inside the viewp
   const desktop = buddyDestinationRect(slot("page", "page", 180, 300, 288), 1280);
   assert.equal(desktop.size, 288);
   assert.equal(desktop.x, 300);
+});
+
+const cornerAt = (width, height, size) => ({ x: width - 12 - size, y: height - 56 - size, size });
+const fullFrame = (target) => ({ left: target.x - target.size * (target.roomForAmbient ? .625 : .125),
+  right: target.x + target.size * 1.125, top: target.y - (target.roomForAmbient ? target.size / 16 : 0),
+  bottom: target.y + target.size * (target.roomForAmbient ? 1.0625 : 1) });
+const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+test("clear pages retain enlarged 208px phone and 288px desktop stages", () => {
+  for (const [width, size] of [[390, 208], [1280, 288]]) {
+    const target = findBuddyCorner(cornerAt(width, 900, size), { width, height: 900 }, []);
+    assert.equal(target.size, size);
+    assert.equal(target.clear, true);
+    assert.equal(target.roomForAmbient, true);
+    assert.ok(fullFrame(target).left >= 8);
+    assert.ok(fullFrame(target).right <= width - 8);
+  }
+});
+
+test("a 320px phone preserves the full ambient scene at a readable 160px body", () => {
+  const target = findBuddyCorner(cornerAt(320, 900, 208), { width: 320, height: 900 }, []);
+  assert.equal(target.size, 160);
+  assert.equal(target.roomForAmbient, true);
+  assert.ok(fullFrame(target).left >= 8);
+  assert.ok(fullFrame(target).right <= 312);
+});
+
+test("nearby whitespace keeps Buddy large without covering right-side controls", () => {
+  const blocked = { left: 1210, right: 1280, top: 80, bottom: 900 };
+  const target = findBuddyCorner(cornerAt(1280, 900, 288), { width: 1280, height: 900 }, [blocked]);
+  assert.equal(target.size, 288);
+  assert.equal(target.clear, true);
+  assert.ok(!overlaps(fullFrame(target), blocked));
+  assert.ok(1268 - fullFrame(target).right <= 96);
+});
+
+test("bottom reading lines move the complete body and scenery up by a bounded amount", () => {
+  const blocked = { left: 0, right: 1280, top: 760, bottom: 900 };
+  const target = findBuddyCorner(cornerAt(1280, 900, 288), { width: 1280, height: 900 }, [blocked]);
+  assert.equal(target.size, 288);
+  assert.equal(target.clear, true);
+  assert.ok(!overlaps(fullFrame(target), blocked));
+  assert.ok(844 - target.y - target.size <= 240);
+});
+
+test("ordinary large placement remains when only expanded scenery has no room", () => {
+  const blocked = [{ left: 0, right: 1020, top: 80, bottom: 900 }];
+  const target = findBuddyCorner(cornerAt(1280, 900, 288), { width: 1280, height: 900 }, blocked);
+  assert.equal(target.clear, true);
+  assert.equal(target.size, 192);
+  assert.equal(target.roomForAmbient, false);
+  assert.ok(!overlaps(fullFrame(target), blocked[0]));
+});
+
+test("dense pages hide the character instead of shrinking below its readable minimum", () => {
+  for (const [width, size, minimum] of [[320, 208, 160], [1280, 288, 192]]) {
+    const target = findBuddyCorner(cornerAt(width, 900, size), { width, height: 900 }, [{ left: 0, top: 0, right: width, bottom: 900 }]);
+    assert.equal(target.clear, false);
+    assert.equal(target.roomForAmbient, false);
+    assert.equal(target.size, minimum);
+  }
+  const compact = findBuddyCorner(cornerAt(390, 400, 96), { width: 390, height: 400 }, []);
+  assert.equal(compact.size, 96);
+  assert.equal(compact.clear, true);
 });

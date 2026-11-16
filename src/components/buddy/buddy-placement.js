@@ -1,4 +1,32 @@
 /** Pure destination selection, shared by the DOM coordinator and CI tests. */
+import { BUDDY_SIDE_PADDING } from "./buddy-canvas-frame.js";
+
+/** Keep a readable character in nearby whitespace; do not solve a crowded
+ * page by shrinking him to an icon or placing him over its text. */
+export function findBuddyCorner(preferred, viewport, obstacles) {
+  const padding = BUDDY_SIDE_PADDING;
+  const edge = Math.min(viewport.width - 8, preferred.x + preferred.size);
+  const bottom = Math.min(viewport.height - 8, preferred.y + preferred.size);
+  const top = viewport.top ?? 80;
+  const minimum = Math.min(preferred.size, preferred.size <= 112 ? 96 : viewport.width < 640 ? 160 : 192);
+  const sizes = [];
+  for (let size = preferred.size; size > minimum; size -= 16) sizes.push(size);
+  sizes.push(minimum);
+  const clear = (rect) => rect.left >= 8 && rect.top >= top && rect.right <= viewport.width - 8 &&
+    rect.bottom <= viewport.height - 8 && !obstacles.some(box => rect.left < box.right && rect.right > box.left && rect.top < box.bottom && rect.bottom > box.top);
+  let ordinary;
+  for (const size of sizes) for (let rise = 0; rise <= 240; rise += 24) for (let shift = 0; shift <= 96; shift += 24) {
+    const rect = { x: edge - size * (1 + padding) - shift, y: bottom - size - rise, size };
+    if (!clear({ left: rect.x - size * padding, right: rect.x + size * (1 + padding), top: rect.y, bottom: rect.y + size })) continue;
+    const candidate = { ...rect, clear: true, roomForAmbient: clear({ left: rect.x - size * (0.5 + padding),
+      right: rect.x + size * (1 + padding), top: rect.y - size / 16, bottom: rect.y + size * 17 / 16 }) };
+    if (candidate.roomForAmbient) return candidate;
+    ordinary ??= candidate;
+  }
+  if (ordinary) return ordinary;
+  return { x: edge - minimum * (1 + padding), y: Math.max(top, bottom - minimum), size: minimum, clear: false, roomForAmbient: false };
+}
+
 export function selectBuddyDestination(slots, current, viewport) {
   const chat = slots.find(slot => slot.kind === "chat" && slot.width > 0 && slot.height > 0 && slot.bottom > 0 && slot.top < viewport.height);
   if (chat) return chat;

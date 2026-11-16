@@ -10,6 +10,7 @@ import threading
 from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright, expect
+from buddy_corner_checks import assert_corner_placement
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--case', action='append', default=[], help='Run only this named journey (repeatable). Default: all.')
@@ -177,7 +178,10 @@ def settled_actor(page, placement):
     actor = page.locator("[data-buddy-actor]")
     expect(actor).to_have_count(1)
     expect(page.locator("[data-buddy-form]")).to_have_count(1)
-    expect(actor).to_be_visible()
+    if placement == "corner":
+        assert_corner_placement(page)
+    else:
+        expect(actor).to_be_visible()
     expect(actor).to_have_attribute("data-buddy-placement", placement)
     expect(actor).to_have_attribute("data-buddy-travelling", "false")
     return actor
@@ -198,7 +202,7 @@ def chat_open(page):
     slot = chat.locator('[data-buddy-slot="chat"]').bounding_box()
     actor = page.locator("[data-buddy-actor]").bounding_box()
     assert abs(actor["x"] - slot["x"]) < 1 and abs(actor["y"] - slot["y"]) < 1, "The single actor did not arrive in the chat header"
-    assert abs(actor["width"] - 48) < 1, "Chat header Buddy is not compact"
+    assert abs(actor["width"] - 72) < 1, "Chat header Buddy lost its readable portrait size"
     return chat
 
 
@@ -215,17 +219,6 @@ def assert_fixed_widget(page):
     actor = settled_actor(page, "corner")
     assert actor.evaluate("n => getComputedStyle(n).position") == "fixed", "Character actor is not a fixed overlay"
     character = actor.bounding_box()
-    expected_width = 96 if height <= 500 else 176 if width < 640 else 224
-    slot = widget.locator('[data-buddy-slot="corner"]').bounding_box()
-    assert slot and abs(slot["width"] - expected_width) <= 1, "Buddy lost its requested responsive corner size"
-    assert 71 <= character["width"] <= expected_width + 1, "Adaptive Buddy is outside its readable size range"
-    assert abs(character["height"] - character["width"]) <= 1, "Adaptive Buddy distorted the square character stage"
-    target = actor.evaluate("n => ({x:Number(n.dataset.buddyTargetX), y:Number(n.dataset.buddyTargetY), size:Number(n.dataset.buddyTargetSize)})")
-    for actual, requested in ((character["x"], target["x"]), (character["y"], target["y"]), (character["width"], target["size"])):
-        assert requested is not None and abs(actual - requested) <= 1, "Buddy did not settle at its adaptive corner target"
-    assert character["x"] >= 0 and character["y"] >= 0, "Floating character leaves the viewport"
-    assert character["y"] + character["height"] <= height + 1, "Floating character is clipped below the viewport"
-    assert 0 <= width - character["x"] - character["width"] <= 40, "Floating character is not at the right edge"
     for control in widget.get_by_role("button").all():
         control_box = control.bounding_box()
         assert control_box["width"] >= 44 and control_box["height"] >= 44, "Buddy control misses the 44px touch target"
@@ -234,7 +227,7 @@ def assert_fixed_widget(page):
     return character
 
 
-def find_ambient_corner(page):
+def find_ambient_corner(page, require_ambient=True):
     """Find real homepage whitespace without changing its content or layout."""
     assert urlparse(page.url).path == "/", "Ambient eligibility must be exercised on the real homepage"
     character = buddy_character(page)
@@ -245,7 +238,15 @@ def find_ambient_corner(page):
         offset = min(index * step, limit)
         page.evaluate("top => scrollTo({top, behavior:'instant'})", offset)
         page.wait_for_timeout(180)
-        settled_actor(page, "corner")
+        actor = settled_actor(page, "corner")
+        if not actor.is_visible():
+            observed.append({"scroll": offset, "placement": "no-clear-space"})
+            if offset >= limit:
+                break
+            continue
+        if not require_ambient:
+            assert_fixed_widget(page)
+            return
         state = character.get_attribute("data-buddy-ambient")
         if state != "off":
             # A genuine topic change may still be turning Buddy. It must finish
@@ -297,7 +298,7 @@ def simple_chat_disclosure(page, fixtures):
     chat = chat_open(page)
     header = chat.locator("header")
     expect(header.get_by_role("heading", name="Buddy", exact=True)).to_have_count(1)
-    assert header.bounding_box()["height"] <= 80, "The compact Buddy header grew beyond one row"
+    assert header.bounding_box()["height"] <= 96, "Buddy's enlarged portrait grew beyond a single header row"
     for retired in ["Homes & property", "Costs & investment", "Care & support"]:
         expect(header.get_by_text(retired, exact=True)).to_have_count(0)
     expect(chat.locator("[data-buddy-greeting]")).to_have_text(CHAT_COPY_ALLOWED["greeting"])
@@ -345,6 +346,9 @@ def floating_placement_and_minimise(page, fixtures):
     expect(page.locator("#demand-heading")).to_have_count(1)
     expect(page.locator("[data-property-map]")).to_have_count(1)
     expect(page.locator("[data-buddy-form]")).to_have_count(1)
+    assert_fixed_widget(page)
+    page.screenshot(path=str(OUT / f"home-original-layout-{page.viewport_size['width']}.png"))
+    find_ambient_corner(page, require_ambient=False)
     assert_canvas_artwork(buddy_character(page))
     assert not fixtures.atlas_requests, "Vector Buddy requested the retired body atlas"
     assert not fixtures.hand_requests, "Vector Buddy requested bitmap hands"
@@ -352,7 +356,6 @@ def floating_placement_and_minimise(page, fixtures):
     assert not fixtures.status_requests and not fixtures.requests, "Initial page load called the AI service"
     assert_fixed_widget(page)
     initial = page.locator('[data-buddy-launcher] > span:last-child').bounding_box()
-    page.screenshot(path=str(OUT / f"home-original-layout-{page.viewport_size['width']}.png"))
     page.evaluate("scrollTo({top:document.documentElement.scrollHeight, behavior:'instant'})")
     page.wait_for_timeout(150)
     assert_fixed_widget(page)
@@ -977,11 +980,21 @@ def scroll_context_and_retained_chat(page, fixtures):
         ('.council-panel', 'property'),
         (financial, 'investment'),
     ]:
+        requests_before = (len(fixtures.chat_chunks), len(fixtures.status_requests), len(fixtures.requests))
         centre_section(page, selector)
         expect(widget).to_have_attribute('data-buddy-context', topic)
         expect(character).to_have_attribute('data-buddy-form', topic)
-        assert_canvas_artwork(character)
-    assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Reading the page opened or contacted AI'
+        assert (len(fixtures.chat_chunks), len(fixtures.status_requests), len(fixtures.requests)) == requests_before, 'Reading a section loaded or contacted the AI chat'
+        if assert_corner_placement(page):
+            assert_canvas_artwork(character)
+        else:
+            # The same topic must reach the visible chat portrait, even after a
+            # section that cannot safely contain the full-size corner actor.
+            chat = chat_open(page)
+            expect(character).to_have_attribute('data-buddy-form', topic)
+            assert_canvas_artwork(character)
+            chat.get_by_role('button', name='Close Buddy', exact=True).click()
+    assert not fixtures.requests, 'Reading the page or checking a hidden corner submitted an AI question'
 
     # A brief pass through another section must not switch Buddy's form.
     centre_section(page, '#charity-impact')
@@ -1084,12 +1097,12 @@ def ambient_companion(page, fixtures):
     no_animation_controls(page)
     widget = page.locator('[data-buddy-widget]')
     character = buddy_character(page)
-    canvas = assert_canvas_artwork(character)
     expect(page.locator('[data-buddy-actor] canvas')).to_have_count(1)
     assert_fixed_widget(page)
     page.wait_for_timeout(1500)
     assert not prop_requests, 'Scenery loaded during the quiet initial page request'
     find_ambient_corner(page)
+    canvas = assert_canvas_artwork(character)
     expect(character).to_have_attribute('data-buddy-ambient', 'rest')
     expect(character).to_have_attribute('data-buddy-status', 'ready')
     assert len(model_requests) == 1, 'The authored character and scenery must share one loaded GLB'
@@ -1144,10 +1157,10 @@ def ambient_reduced_motion(page, fixtures):
     visit(page)
     no_animation_controls(page)
     character = buddy_character(page)
-    assert_canvas_artwork(character)
     expect(character).to_have_attribute('data-buddy-motion', 'off')
     expect(character).to_have_attribute('data-buddy-ambient', re.compile('^(off|rest)$'))
     find_ambient_corner(page)
+    assert_canvas_artwork(character)
     expect(character).to_have_attribute('data-buddy-motion', 'off')
     expect(character).to_have_attribute('data-buddy-ambient', 'rest')
     page.wait_for_timeout(250)
@@ -1236,12 +1249,13 @@ def short_viewport(page, fixtures):
 
 def missing_artwork(page, fixtures):
     visit(page)
+    find_ambient_corner(page, require_ambient=False)
     character = buddy_character(page)
     expect(character.locator("canvas")).to_be_hidden()
     expect(character).to_have_attribute("data-buddy-status", "failed")
     fallback = character.locator('img[alt=""]')
     expect(fallback).to_be_visible()
-    expect(fallback).to_have_attribute("src", "/images/buddy/3d/property.png")
+    expect(fallback).to_have_attribute("src", f"/images/buddy/3d/{character.get_attribute('data-buddy-form')}.png")
     page.wait_for_function("document.querySelector('[data-buddy-actor] img')?.naturalWidth > 0")
     bounds = character.bounding_box()
     assert bounds["width"] >= 44 and bounds["height"] >= 44, "Missing artwork collapsed the floating character"

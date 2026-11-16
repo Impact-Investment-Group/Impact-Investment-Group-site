@@ -3,6 +3,7 @@ import {
   Camera,
   Transform,
   Vec3,
+  Mat4,
   GLTFLoader,
   GLTFAnimation,
 } from "ogl";
@@ -79,7 +80,7 @@ export function applyBuddyForeground(nodes, form, name, amount) {
   if (glass) glass.scale.multiply(factor);
   // Blender's prop -Y axis becomes local +Z in this exported glTF. The handle
   // telescopes from its fixed grip; moving the lens never moves the hand root.
-  const faceY = { property: 0.48, investment: 0.86, support: 0.05 }[form];
+  const faceY = { property: 0.48, investment: 0.86, support: 0.45 }[form];
   const extension = ((faceY - 0.576) * close) / factor;
   for (const part of ["GlassRing.R", "GlassLens.R", "LensCentre.R"]) {
     const node = nodes.get(part);
@@ -152,7 +153,7 @@ export function loadBuddyModel(url = BUDDY_MODEL_URL) {
   if (!models.has(url)) {
     const abort = new AbortController(),
       timer = setTimeout(() => abort.abort(), 15000);
-    const loading = fetch(url, { credentials: "omit", signal: abort.signal })
+    const loading = fetch(url, { credentials: "omit", cache: "no-cache", signal: abort.signal })
       .then((response) => {
         if (!response.ok) throw new Error("Buddy model unavailable");
         return response.arrayBuffer();
@@ -251,15 +252,17 @@ export async function createBuddyRenderer(canvas, library) {
     scene.traverse((node) => {
       if (!node.geometry) return;
       const previous = node.program;
+      const vertexColors = Boolean(node.geometry.attributes.color);
       const key =
         (previous.gltfMaterial?.name || "default") +
         ":" +
-        Boolean(node.skeleton);
+        Boolean(node.skeleton) + ":" + vertexColors;
       if (!programCache.has(key)) {
         const program = hologramMaterial(
           gl,
           previous.gltfMaterial,
           Boolean(node.skeleton),
+          vertexColors,
         );
         programCache.set(key, program);
         materials.push(program);
@@ -301,13 +304,18 @@ export async function createBuddyRenderer(canvas, library) {
     for (const form of forms) {
       const min = [Infinity, Infinity, Infinity],
         max = [-Infinity, -Infinity, -Infinity];
-      nodes.get("Form_" + form)?.traverse((node) => {
+      const formNode = nodes.get("Form_" + form);
+      const inverseForm = new Mat4().inverse(formNode.worldMatrix);
+      // Cache in the form's local frame, then project through its posed graph.
+      // World-space rest bounds would omit the turn and the root bone's lean.
+      formNode.traverse((node) => {
         const positions = node.geometry?.attributes.position?.data;
         if (!positions) return;
         for (let i = 0; i < positions.length; i += 3) {
           point
             .set(positions[i], positions[i + 1], positions[i + 2])
-            .applyMatrix4(node.worldMatrix);
+            .applyMatrix4(node.worldMatrix)
+            .applyMatrix4(inverseForm);
           for (let axis = 0; axis < 3; axis++) {
             min[axis] = Math.min(min[axis], point[axis]);
             max[axis] = Math.max(max[axis], point[axis]);
@@ -436,6 +444,8 @@ export async function createBuddyRenderer(canvas, library) {
           inspect ? 1 : 0,
         );
         configure(probe.nodes, form, inspect);
+        const posedRoot = probe.nodes.get("BuddyRoot");
+        if (posedRoot) posedRoot.rotation.y = inspect ? 0 : 0.24;
         place(probe.root, size, width / 2, height / 2);
         probe.root.updateMatrixWorld();
         camera.updateMatrixWorld();
@@ -456,7 +466,7 @@ export async function createBuddyRenderer(canvas, library) {
             bounds[index & 4 ? "max" : "min"][2],
           );
           point
-            .applyMatrix4(probe.root.worldMatrix)
+            .applyMatrix4(probe.nodes.get("Form_" + form).worldMatrix)
             .applyMatrix4(camera.viewMatrix)
             .applyMatrix4(camera.projectionMatrix);
           const px = (point.x * 0.5 + 0.5) * width,
@@ -488,7 +498,7 @@ export async function createBuddyRenderer(canvas, library) {
         transition,
         attention,
         ambient,
-        viewYaw = 0,
+        viewYaw = inspect ? 0 : 0.24,
       } = {}) {
         if (disposed) return;
         meshEffects.clear();
@@ -676,6 +686,9 @@ export async function createBuddyRenderer(canvas, library) {
                 (faceState[0] + sign * faceState[5]) * (1 - blink * 0.9),
               );
               if (name === "Closeup_Inspect_R" && suffix === "R") {
+                // The rounded eyeball advances as it grows, keeping its back
+                // inside the sculpted socket and its front behind the glass.
+                eye.position.z += close * 0.045;
                 const k = 1 + close * 0.95;
                 eye.scale.set(
                   eye.scale.x * k,

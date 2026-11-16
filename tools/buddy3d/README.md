@@ -19,8 +19,9 @@ blender.exe --background --python tools/buddy3d/author_buddy.py -- OUTPUT_DIRECT
 ```
 
 The authoring output includes GLB, master, a hash/count manifest, transparent
-fallbacks, front/profile/back views and isolated pose previews. Runtime assets
-are in `iip-frontend/iip-web/public/images/buddy/3d`. The same GLB and fallback
+three-quarter fallbacks, front/three-quarter/profile/back views and isolated
+pose previews. Runtime assets are in `iip-frontend/iip-web/public/images/buddy/3d`.
+The same GLB and fallback
 images are copied to the public website; its master is a source copy.
 
 The official Windows ZIP was checked against Blender's published SHA256 file:
@@ -31,14 +32,21 @@ Blender's GPL applies to Blender software, not to these authored output models:
 GPL-2.0-or-later licence. The OGL 1.0.11 runtime is Unlicense:
 <https://github.com/oframe/ogl>.
 
-The current finish follows Israel's detailed projected-character reference of
-16 November. Navy, teal and orange retain their distinct brand roles. Sculpted
-panels, facial layers, fine seams and articulated pearl gloves supply actual
-geometry; the material adds directional studio reflections, luminous contours,
-a restrained reconstruction texture and slight body translucency. Face whites
-and hands remain clear. This replaces both the earlier flat striped treatment
-and the subsequent fully opaque finish. The reference informs surface and
-lighting quality; Buddy retains the key, pound and heart identities.
+The current geometry follows Israel's request for a complete sculptural
+character on 16 November. The key has a rounded head, real bow opening and
+volumetric shaft; the pound has a curved round-section stroke; the heart has
+full lobes and a continuous tapered body. Fused cheek and orbital volumes,
+partial eyelids, curved brows and a recessed smiling mouth give each form an
+expressive face. Soft, continuous arms connect to articulated pearl gloves.
+There are no screen panels, border bezels or mechanical elbow joints.
+
+Navy, teal and orange retain their distinct brand roles. The bodies use linear
+vertex colour in glTF COLOR_0 to blend cleanly across a single continuous
+sculpture. The runtime material must multiply this attribute by the material's
+base colour. Eyes and gloves use their own materials. Studio authoring renders
+show the sculpt and physically based materials; the application adds projected
+lighting, luminous contours, restrained reconstruction texture and slight body
+translucency. Those runtime effects are not baked into the fallback images.
 
 The runtime applies the shared hologram GPU material and expression transforms
 to the actual geometry. PNGs are only the source-faithful fallback if WebGL or
