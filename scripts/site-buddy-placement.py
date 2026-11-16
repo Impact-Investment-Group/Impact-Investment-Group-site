@@ -68,6 +68,37 @@ def one_actor(page, placement):
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Actor introduced page overflow"
 
 
+def canvas_layout(page):
+    """CSS owns layout while OGL owns backing pixels, including ambient scenery."""
+    layout = page.locator("[data-buddy-actor] [data-buddy-form]").evaluate("""container => {
+      const canvas = container.querySelector('canvas');
+      const expanded = canvas.classList.contains('right-0');
+      const c = canvas.getBoundingClientRect(), a = container.getBoundingClientRect();
+      const drawX = expanded ? canvas.clientWidth - container.clientWidth / 2 : canvas.clientWidth / 2;
+      return {expanded, inlineWidth:canvas.style.width, inlineHeight:canvas.style.height,
+        containerWidth:container.clientWidth, containerHeight:container.clientHeight,
+        canvasWidth:canvas.clientWidth, canvasHeight:canvas.clientHeight,
+        centreX:a.x + a.width / 2, centreY:a.y + a.height / 2,
+        drawX:c.x + drawX * c.width / canvas.clientWidth, drawY:c.y + c.height / 2,
+        rightError:c.right - a.right};
+    }""")
+    assert not layout["inlineWidth"] and not layout["inlineHeight"], f"OGL overrode canvas CSS layout: {layout}"
+    expected_width = 384 if layout["expanded"] else layout["containerWidth"]
+    expected_height = 288 if layout["expanded"] else layout["containerHeight"]
+    assert abs(layout["canvasWidth"] - expected_width) < 1, f"Canvas width does not follow its active layout: {layout}"
+    assert abs(layout["canvasHeight"] - expected_height) < 1, f"Canvas height does not follow its active layout: {layout}"
+    assert abs(layout["rightError"]) < 1, f"Canvas lost its actor right anchor: {layout}"
+    assert abs(layout["drawX"] - layout["centreX"]) < 1 and abs(layout["drawY"] - layout["centreY"]) < 1, f"Rendered origin shifted away from the actor centre: {layout}"
+    # A slot or ambient change can precede the ResizeObserver by one frame.
+    page.wait_for_function("""() => {
+      const canvas = document.querySelector('[data-buddy-actor] canvas');
+      const ratio = Math.min(2, devicePixelRatio || 1);
+      return canvas && canvas.width === Math.round(canvas.clientWidth * ratio) &&
+        canvas.height === Math.round(canvas.clientHeight * ratio);
+    }""", timeout=5000)
+    return layout
+
+
 def settled_in_slot(page, kind):
     try:
         page.wait_for_function("""kind => {
@@ -82,6 +113,7 @@ def settled_in_slot(page, kind):
           return Math.abs(a.x + a.width / 2 - s.x - s.width / 2) < 1 &&
             Math.abs(a.y + a.height / 2 - s.y - s.height / 2) < 1;
         }""", arg=kind)
+        canvas_layout(page)
     except Exception:
         evidence = page.evaluate("""() => ({scrollY, width:innerWidth, height:innerHeight,
           elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot]')].map(el => ({
@@ -235,6 +267,38 @@ with sync_playwright() as playwright:
             }"""), f"Corner Buddy obscures {selector}"
             page.screenshot(path=str(OUT / f"clear-corner-{'home' if route == '/' else 'legal'}-1280.png"))
             REPORT.append({"route": route, "corner_content_clear": True})
+        # Exercise the actual expanded scenery layout and its return to the
+        # ordinary chat canvas. Find real page whitespace without DOM fixtures.
+        page.goto(BASE + "/", wait_until="networkidle")
+        page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]')
+        page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
+        expanded_corner = False
+        for step in range(80):
+            at_end = page.evaluate("""step => {
+              const end = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+              const top = Math.min(end, step * Math.floor(innerHeight / 3));
+              scrollTo({top, behavior:'instant'});
+              return top === end;
+            }""", step)
+            page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+            settled_in_slot(page, "corner")
+            if canvas_layout(page)["expanded"]:
+                expanded_corner = True
+                break
+            if at_end:
+                break
+        assert expanded_corner, "No real homepage corner allowed the expanded ambient canvas"
+        one_actor(page, "corner")
+        click_visible_control(page, page.locator("[data-buddy-launcher]"))
+        expect(page.locator("[data-buddy-chat]")).to_be_visible()
+        settled_in_slot(page, "chat")
+        assert not canvas_layout(page)["expanded"], "Chat retained the ambient canvas layout"
+        one_actor(page, "chat")
+        page.locator("[data-buddy-chat]").get_by_role("button", name="Close Buddy", exact=True).click()
+        settled_in_slot(page, "corner")
+        assert canvas_layout(page)["expanded"], "Closing chat did not restore the expanded corner canvas"
+        one_actor(page, "corner")
+        REPORT.append({"canvas_css_layout": True, "ambient_chat_layout_roundtrip": True, "persistent_actor": True})
         context.close()
     except Exception as error:
         if "page" in locals() and not page.is_closed():
