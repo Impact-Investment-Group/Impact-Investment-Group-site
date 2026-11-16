@@ -280,7 +280,10 @@ export function BuddyCharacter({
     function tick(now: number) {
       frame = undefined;
       if (!canMove()) return stop();
-      const delta = Math.min(0.08, Math.max(0, (now - lastNow) / 1000));
+      // Clip and scene durations follow visible elapsed time, even on a slow
+      // GPU. resume() rebases lastNow after a hidden/offscreen pause, so those
+      // pauses still cannot advance a transformation or skip a quiet rest.
+      const delta = Math.max(0, (now - lastNow) / 1000);
       lastNow = now;
       totalTime += delta;
       if (change) {

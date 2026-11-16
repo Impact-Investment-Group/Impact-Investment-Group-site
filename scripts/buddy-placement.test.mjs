@@ -66,13 +66,27 @@ test("flight preserves momentum when scrolling changes its destination", () => {
 
 test("flight settles at the same destination at different refresh rates", () => {
   const target = { x: 40, y: 60, size: 48 };
-  for (const hz of [30, 60, 120]) {
+  for (const hz of [5, 10, 30, 60, 120]) {
     let shown = { x: 1000, y: 600, size: 256 };
     for (let i = 0; i < hz * 2; i++) shown = followBuddyDestination(shown, target, 1 / hz);
     assert.equal(shown.x, target.x);
     assert.equal(shown.y, target.y);
     assert.equal(shown.size, target.size);
     assert.equal(shown.velocity.x, 0);
+  }
+});
+
+test("slow and irregular frames follow the same one-second flight trajectory", () => {
+  const start = { x: 1000, y: 600, size: 256 };
+  const target = { x: 40, y: 60, size: 48 };
+  const atOneSecond = followBuddyDestination(start, target, 1);
+  for (const intervals of [Array(5).fill(.2), Array(60).fill(1 / 60), [.016, .184, .1, .3, .4]]) {
+    let shown = start;
+    for (const elapsed of intervals) shown = followBuddyDestination(shown, target, elapsed);
+    for (const key of ["x", "y", "size"]) {
+      assert.ok(Math.abs(shown[key] - atOneSecond[key]) < 1e-8, `${key} discarded visible time`);
+      assert.ok(Math.abs(shown.velocity[key] - atOneSecond.velocity[key]) < 1e-8, `${key} lost velocity across a slow frame`);
+    }
   }
 });
 

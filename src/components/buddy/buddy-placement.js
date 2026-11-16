@@ -73,7 +73,10 @@ export function buddyDestinationRect(slot, viewportWidth) {
 /** Critically damped flight carries velocity through interruptions and retargets. */
 export function followBuddyDestination(current, target, seconds, reducedMotion = false) {
   if (!current || reducedMotion) return { ...target };
-  const dt = Math.max(0, Math.min(.08, Number.isFinite(seconds) ? seconds : 0));
+  // This is the exact damped-spring solution, not an Euler step. Preserve all
+  // visible elapsed time so dropped frames cannot stretch a flight indefinitely.
+  // The DOM coordinator resets its clock when visibility resumes.
+  const dt = Math.max(0, Number.isFinite(seconds) ? seconds : 0);
   const result = { velocity: {} };
   for (const key of ["x", "y", "size"]) {
     // Softer acceleration and a slightly slower scale change make a move read
