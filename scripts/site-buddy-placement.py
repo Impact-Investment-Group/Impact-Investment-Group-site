@@ -69,6 +69,40 @@ def one_actor(page, placement):
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "Actor introduced page overflow"
 
 
+def observe_trip(page, destination):
+    """Latch movement so slow browser work cannot miss a completed flight."""
+    page.evaluate("""destination => {
+      window.__buddyTripObserver?.disconnect();
+      const actor = document.querySelector('[data-buddy-actor]');
+      window.__buddyTrip = {first: null, travelled: false};
+      window.__buddyTripObserver = new MutationObserver(() => {
+        if (actor.dataset.buddyPlacement !== destination || getComputedStyle(actor).visibility !== 'visible') return;
+        const trip = window.__buddyTrip, rect = actor.getBoundingClientRect();
+        trip.travelled ||= actor.dataset.buddyTravelling === 'true';
+        trip.first ??= {travelling: actor.dataset.buddyTravelling,
+          x: rect.x, y: rect.y, size: rect.width,
+          targetX: Number(actor.dataset.buddyTargetX), targetY: Number(actor.dataset.buddyTargetY),
+          targetSize: Number(actor.dataset.buddyTargetSize)};
+      });
+      window.__buddyTripObserver.observe(actor, {attributes:true,
+        attributeFilter:['style', 'data-buddy-placement', 'data-buddy-travelling']});
+    }""", destination)
+
+
+def assert_trip(page, animated):
+    try:
+        page.wait_for_function('window.__buddyTrip?.first !== null')
+        if animated:
+            page.wait_for_function('window.__buddyTrip.travelled === true')
+        else:
+            first = page.evaluate('window.__buddyTrip.first')
+            assert first['travelling'] == 'false', f'Hidden or reduced-motion actor flew across the page: {first}'
+            assert all(abs(first[key] - first[target]) < 1 for key, target in
+                       (('x', 'targetX'), ('y', 'targetY'), ('size', 'targetSize'))), f'Actor reappeared outside its safe destination: {first}'
+    finally:
+        page.evaluate('window.__buddyTripObserver?.disconnect()')
+
+
 def canvas_layout(page):
     """CSS owns layout while OGL owns backing pixels, including ambient scenery."""
     layout = page.locator("[data-buddy-actor] [data-buddy-form]").evaluate("""container => {
@@ -141,10 +175,12 @@ with sync_playwright() as playwright:
                 page.wait_for_selector('[data-buddy-actor] [data-buddy-status="ready"]', state='attached')
                 page.evaluate("window.__buddyActorCanvas = document.querySelector('[data-buddy-actor] canvas')")
                 one_actor(page, "corner")
+                settled_in_slot(page, "corner")
+                corner_visible = page.locator('[data-buddy-actor]').is_visible()
+                observe_trip(page, "page")
                 showcase = page.locator('[data-buddy-showcase] [data-buddy-slot="page"]')
                 showcase.evaluate("el => el.scrollIntoView({block:'center', behavior:'instant'})")
-                if not reduced:
-                    page.wait_for_function("document.querySelector('[data-buddy-actor]').dataset.buddyTravelling === 'true'")
+                assert_trip(page, animated=corner_visible and not reduced)
                 settled_in_slot(page, "page")
                 one_actor(page, "page")
                 page.locator("[data-buddy-showcase]").get_by_role("button", name="Care & support", exact=True).click()
@@ -158,8 +194,11 @@ with sync_playwright() as playwright:
                 settled_in_slot(page, "page")
                 one_actor(page, "page")
                 page.screenshot(path=str(OUT / f"page-{width}-{'reduced' if reduced else 'motion'}.png"))
-                page.locator("[data-buddy-launcher]").click()
+                expect(page.locator('[data-buddy-actor]')).to_be_visible()
+                observe_trip(page, "chat")
+                click_visible_control(page, page.locator("[data-buddy-launcher]"))
                 expect(page.locator("[data-buddy-chat]")).to_be_visible()
+                assert_trip(page, animated=not reduced)
                 settled_in_slot(page, "chat")
                 one_actor(page, "chat")
                 assert abs(page.locator("[data-buddy-actor]").bounding_box()["width"] - 72) < 1, "Chat avatar did not fit its enlarged header portrait"
@@ -308,6 +347,7 @@ with sync_playwright() as playwright:
         if "page" in locals() and not page.is_closed():
             evidence = page.evaluate("""() => ({url:location.href, scrollY, width:innerWidth, height:innerHeight,
               rootOverflow:document.documentElement.style.overflow, bodyOverflow:document.body.style.overflow,
+              observedTrip:window.__buddyTrip,
               focused:document.activeElement?.outerHTML.slice(0,1000),
               elements:[...document.querySelectorAll('[data-buddy-actor], [data-buddy-slot], [data-buddy-form], #site-drawer')].map(el => ({
                 data:{...el.dataset}, rect:el.getBoundingClientRect().toJSON(),

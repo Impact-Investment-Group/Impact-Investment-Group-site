@@ -63,3 +63,15 @@ The corner and simple-chat portraits are enlarged using Tailwind. Placement sear
 Asset authoring previews exposed and corrected missing open-ended arm tubes, detached shoulders, faceted colour boundaries and an artificial eye-rim treatment. These are Blender authoring observations, not application certification. The CI proof now includes the new corner sizes, actual resting-character coverage and a three-quarter view in addition to the retained hand, gesture, transition, construction and clipping checks. Focused placement regressions are written. No new interface copy or runtime dependency is introduced, and no resource ceiling is raised.
 
 No local application test, build, audit or browser harness was run under the CI-only rule. New CI, hosted publication and native results must be recorded separately after they occur. The private-platform source remains under its existing release hold; public-website evidence does not certify it.
+
+The first full sculptural release at `5abea2a32` passed its actual GPU artwork,
+but Pages `43866046990` failed the initial placement journey: the check waited
+for `travelling=true` after a hidden corner actor reappeared at its safe page
+destination. The live CI traceback identifies that exact assertion at line 147.
+The correction observes the departure state, checks hidden/reduced-motion
+arrival directly at its destination, and explicitly requires visible page-to-chat
+travel. A mutation observer retains the observed flight even if a slower browser
+checks after it settles. All clearance, layout, one-actor and persistent-canvas
+assertions remain. This changes verification only; the reviewed model and
+production runtime are unchanged. The replacement still requires the complete
+release gate and hosted verification.
