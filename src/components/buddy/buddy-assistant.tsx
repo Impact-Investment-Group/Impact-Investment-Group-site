@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, ChevronDown, History, Mic, RotateCcw, Search, Send, Square, X } from "lucide-react";
@@ -17,6 +17,17 @@ type Turn = { role: "user" | "assistant"; content: string; sources?: Source[] };
 type Question = { message: string; history: Turn[]; topic: BuddyTopic };
 type Readiness = "loading" | "ready" | "unavailable";
 const control = "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:cursor-not-allowed disabled:opacity-50";
+
+function fitSpeechViewport(root: HTMLDivElement) {
+  const viewport = window.visualViewport;
+  const height = viewport?.height ?? window.innerHeight;
+  const top = viewport?.offsetTop ?? 0;
+  const margin = window.innerWidth < 640 ? 12 : 20;
+  root.style.bottom = `${Math.max(margin, window.innerHeight - top - height + margin)}px`;
+  root.style.maxHeight = `${Math.max(80, height - Math.max(80 - top, 8) - margin)}px`;
+  const character = root.querySelector<HTMLElement>("[data-buddy-speech-character]");
+  if (character) character.style.width = `${height <= 400 ? 64 : height <= 650 ? 112 : window.innerWidth < 640 ? 176 : 192}px`;
+}
 
 function tabbableElements(root: Document | HTMLElement): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>(
@@ -87,6 +98,12 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   const readinessAbort = useRef<AbortController | null>(null);
   const readinessId = useRef(0);
   const dialog = useRef<HTMLDivElement>(null);
+  const attachDialog = useCallback((node: HTMLDivElement | null) => {
+    dialog.current = node;
+    // Radix can attach its portal after the open effect ran. Fit on every
+    // attachment, including reopening after a resize while chat was closed.
+    if (node) fitSpeechViewport(node);
+  }, []);
   const launcher = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef<HTMLElement | null>(initialTrigger);
   const scroll = useRef<HTMLDivElement>(null);
@@ -217,14 +234,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
     const viewport = window.visualViewport;
     const fit = () => {
       const root = dialog.current;
-      if (!root) return;
-      const height = viewport?.height ?? window.innerHeight;
-      const top = viewport?.offsetTop ?? 0;
-      const margin = window.innerWidth < 640 ? 12 : 20;
-      root.style.bottom = `${Math.max(margin, window.innerHeight - top - height + margin)}px`;
-      root.style.maxHeight = `${Math.max(80, height - Math.max(80 - top, 8) - margin)}px`;
-      const character = root.querySelector<HTMLElement>("[data-buddy-speech-character]");
-      if (character) character.style.width = `${height <= 400 ? 64 : height <= 650 ? 112 : window.innerWidth < 640 ? 176 : 192}px`;
+      if (root) fitSpeechViewport(root);
     };
     fit();
     viewport?.addEventListener("resize", fit);
@@ -312,7 +322,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   return <Dialog.Root open={open} onOpenChange={changeOpen} modal={false}>
     {!open && <BuddyWidget topic={contextTopic} onOpen={() => changeOpen(true)} setTrigger={node => { launcher.current = node; }} />}
     <Dialog.Portal>
-      <Dialog.Content ref={dialog} data-buddy-chat data-buddy-interface="speech" data-buddy-page-topic={contextTopic} data-buddy-readiness={readiness} data-buddy-activity={activity}
+      <Dialog.Content ref={attachDialog} data-buddy-chat data-buddy-interface="speech" data-buddy-page-topic={contextTopic} data-buddy-readiness={readiness} data-buddy-activity={activity}
         onKeyDownCapture={leaveChatAtTabBoundary} onInteractOutside={event => event.preventDefault()}
         onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }}
         onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}

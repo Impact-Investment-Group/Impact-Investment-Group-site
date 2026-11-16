@@ -232,7 +232,11 @@ def chat_open(page):
     assert abs(actor["x"] - slot["x"]) < 1 and abs(actor["y"] - slot["y"]) < 1, "The single actor did not arrive below its speech bubble"
     width, height = page.viewport_size['width'], page.viewport_size['height']
     expected_size = 64 if height <= 400 else 112 if height <= 650 else 176 if width < 640 else 192
-    assert abs(actor["width"] - expected_size) < 1, "Speech Buddy lost its responsive character size"
+    assert abs(actor["width"] - expected_size) < 1, (
+        f"Speech Buddy lost its responsive character size: expected={expected_size}, actor={actor}, slot={slot}, "
+        f"viewport={page.evaluate('({width:innerWidth,height:innerHeight,visualHeight:visualViewport?.height,visualTop:visualViewport?.offsetTop})')}, "
+        f"target={page.locator('[data-buddy-actor]').get_attribute('data-buddy-target-size')}"
+    )
     assert_speech_layout(page)
     return chat
 
@@ -1530,6 +1534,11 @@ def inspect_page_details(page, fixtures):
     expect(page.locator('[data-buddy-form]')).to_have_count(1)
     assert len(fixtures.requests) == before, 'Reading published page details made an AI request'
     no_overflow(page)
+    # Exercise an explicit close before resizing. On normal-motion journeys,
+    # reopening must fit the newly attached portal without a later resize event.
+    chat = chat_open(page)
+    chat.get_by_role('button', name='Close Buddy', exact=True).click()
+    expect(chat).to_have_count(0)
     page.set_viewport_size({'width': page.viewport_size['width'], 'height': 320})
     chat = chat_open(page)
     chat.get_by_role('button', name='Explore this page with Buddy').click()

@@ -17,6 +17,12 @@ on:
       - "scripts/buddy-depth.test.mjs"
       - "public/images/buddy/3d/**"
   workflow_dispatch:
+    inputs:
+      speech_only:
+        description: "Review speech interactions only; does not certify artwork or publish"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -52,6 +58,7 @@ jobs:
       # Bundle the actual renderer and its framing helpers separately. This
       # preview workflow has no Pages permissions or deployment step.
       - name: Prepare production Buddy renderer proof
+        if: inputs.speech_only != true
         run: bun scripts/build-buddy-3d-proof.mjs
 
       - name: Prepare speech interface preview without publishing
@@ -75,10 +82,11 @@ jobs:
 
       - name: Capture and check actual Buddy geometry and gestures
         id: artwork
+        if: inputs.speech_only != true
         run: docker exec buddy-art-review python scripts/site-buddy-3d.py
 
       - name: Upload artwork and exact source provenance
-        if: always()
+        if: ${{ always() && inputs.speech_only != true }}
         uses: actions/upload-artifact@v4
         with:
           name: buddy-3d-review-${{ github.sha }}
@@ -87,13 +95,19 @@ jobs:
           if-no-files-found: warn
 
       - name: Check speech bubbles and microphone draft lifecycle
-        if: ${{ !cancelled() && (steps.artwork.outcome == 'success' || steps.artwork.outcome == 'failure') }}
-        run: >-
-          docker exec buddy-art-review python scripts/site-buddy.py
-          --width 390 --width 1280
-          --case simple-chat-disclosure --case fetch-history-sources
-          --case nonmodal-continuous-conversation --case short-viewport
-          --case inspect-page-details --case speech-input
+        if: ${{ !cancelled() && (inputs.speech_only == true || steps.artwork.outcome == 'success' || steps.artwork.outcome == 'failure') }}
+        env:
+          SPEECH_ONLY: ${{ inputs.speech_only }}
+        run: |
+          if [ "$SPEECH_ONLY" = "true" ]; then
+            docker exec buddy-art-review python scripts/site-buddy.py --width 390 --width 1280
+          else
+            docker exec buddy-art-review python scripts/site-buddy.py \
+              --width 390 --width 1280 \
+              --case simple-chat-disclosure --case fetch-history-sources \
+              --case nonmodal-continuous-conversation --case short-viewport \
+              --case inspect-page-details --case speech-input
+          fi
 
       - name: Upload speech interface preview
         if: always()
