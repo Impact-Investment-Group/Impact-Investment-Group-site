@@ -22,6 +22,8 @@ The first candidate, `471f5de`, failed Pages `43784399036` before publication be
 
 Visual inspection of the second candidate also found pale hand contrast, weak foreground gestures and off-centre page/corner framing. The framing fault was OGL writing inline canvas CSS dimensions over the Tailwind layout. The follow-up keeps layout sizing with CSS, strengthens the hologram treatment and foreground poses, and choreographs individual construction bricks, hammer work, roof settlement, drifting smoke and the glowing hinged door. These refinements require their own exact-source CI and image review before publication can be claimed.
 
+Candidate `056fdc7` rendered all six artwork sets with clearer depth, a connected foreground thumb and the enlarged eye, but Pages `43787689176` failed the vertical magnifier clipping assertion. CodeQL `43787688682` passed; later browser and performance checks did not run. The next correction keeps the lens centre fixed during aperture calibration instead of scaling the entire handle away from the grip, and keeps the enlarged eye's catchlight visible. Subsequent independent browser checks collect their own outcomes even after an artwork failure; any failed check still blocks deployment.
+
 ## New interface wording
 
 - Explore this page with Buddy / Explore this page
