@@ -54,7 +54,7 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
       }`,
     fragment: `precision highp float;
       uniform vec3 baseColor, emission, projectionColor;
-      uniform float time, opacity, roughness, metallic, coat, lens, glow, projection, iris, emitter, trace, surfaceAlpha, reconstruction, rasterFrequency;
+      uniform float time, opacity, roughness, metallic, coat, lens, glow, projection, iris, emitter, trace, surfaceAlpha, reconstruction, rasterFrequency, depthPass;
       varying vec3 vNormal,vView,vWorld;
       ${vertexColors ? "varying vec4 vColor;" : ""}
       const float PI=3.14159265;
@@ -90,6 +90,10 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
         return mix(low,high,step(vec3(.0031308),linearColor));
       }
       void main(){
+        if(opacity<=.001) discard;
+        // The same skinned vertex shader establishes the nearest surface first.
+        // This branch writes depth only; the colour pass retains its hologram alpha.
+        if(depthPass>.5){gl_FragColor=vec4(0.0);return;}
         vec3 n=normalize(vNormal),v=normalize(vView);
         vec3 albedo=baseColor${vertexColors ? "*vColor.rgb" : ""};
         float nv=max(dot(n,v),0.0),edge=pow(1.0-nv,3.0);
@@ -140,6 +144,7 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
       baseColor: { value: color },
       time: { value: 0 },
       opacity: { value: 1 },
+      depthPass: { value: 0 },
       glow: { value: 0 },
       roughness: { value: roughness },
       metallic: { value: metallic },
@@ -156,7 +161,8 @@ export function hologramMaterial(gl, material, skinned = false, vertexColors = f
       projectionColor: { value: projectionColor },
     },
     transparent: true,
-    depthWrite: !lens,
+    depthWrite: false,
+    depthFunc: gl.LEQUAL,
     cullFace: gl.BACK,
   });
 }

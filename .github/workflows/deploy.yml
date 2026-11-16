@@ -74,7 +74,7 @@ jobs:
       # Historical content intentionally keeps its own earlier character rig.
       - name: Check Buddy wrist and animation continuity
         if: inputs.source_ref == ''
-        run: node --test scripts/buddy-engine.test.mjs scripts/buddy-placement.test.mjs scripts/buddy-ambient.test.mjs
+        run: node --test scripts/buddy-engine.test.mjs scripts/buddy-placement.test.mjs scripts/buddy-ambient.test.mjs scripts/buddy-depth.test.mjs
 
       - name: Prepare real Buddy renderer visual proof
         if: inputs.source_ref == ''

@@ -76,6 +76,25 @@ test("flight settles at the same destination at different refresh rates", () => 
   }
 });
 
+test("a long move starts gently and preserves the scale without a first-frame jump", () => {
+  const start = { x: 1000, y: 500, size: 288 };
+  const next = followBuddyDestination(start, { x: 400, y: 500, size: 176 }, 1 / 60);
+  assert.ok(start.x - next.x > 0 && start.x - next.x < 6);
+  assert.ok(start.size - next.size < 1);
+});
+
+test("an already clear corner stays put when the page offers other resting places", () => {
+  const preferred = { x: 980, y: 550, size: 208 };
+  const first = findBuddyCorner(preferred, viewport, []);
+  const resting = { ...first, x: first.x - 24, y: first.y - 48 };
+  const retained = findBuddyCorner(preferred, viewport, [], resting);
+  assert.equal(retained.x, resting.x);
+  assert.equal(retained.y, resting.y);
+  const blocked = { left: resting.x, right: resting.x + 20, top: resting.y, bottom: resting.y + 20 };
+  const relocated = findBuddyCorner(preferred, viewport, [blocked], resting);
+  assert.ok(relocated.x !== resting.x || relocated.y !== resting.y || !relocated.clear);
+});
+
 
 test("ordinary arm padding preserves body scale and its destination centre", () => {
   for (const size of [72, 96, 144, 160, 192, 208, 256, 288]) {

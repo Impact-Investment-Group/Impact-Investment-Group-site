@@ -3,7 +3,7 @@ import { BUDDY_SIDE_PADDING } from "./buddy-canvas-frame.js";
 
 /** Keep a readable character in nearby whitespace; do not solve a crowded
  * page by shrinking him to an icon or placing him over its text. */
-export function findBuddyCorner(preferred, viewport, obstacles) {
+export function findBuddyCorner(preferred, viewport, obstacles, previous) {
   const padding = BUDDY_SIDE_PADDING;
   const edge = Math.min(viewport.width - 8, preferred.x + preferred.size);
   const bottom = Math.min(viewport.height - 8, preferred.y + preferred.size);
@@ -14,6 +14,16 @@ export function findBuddyCorner(preferred, viewport, obstacles) {
   sizes.push(minimum);
   const clear = (rect) => rect.left >= 8 && rect.top >= top && rect.right <= viewport.width - 8 &&
     rect.bottom <= viewport.height - 8 && !obstacles.some(box => rect.left < box.right && rect.right > box.left && rect.top < box.bottom && rect.bottom > box.top);
+  // Keep an already safe resting place through small scroll/layout changes.
+  // Changing the order of equally clear candidates must not make him dart.
+  if (previous && previous.size >= preferred.size - 16 && previous.size <= preferred.size &&
+    previous.y >= bottom - previous.size - 240 && previous.y <= bottom - previous.size &&
+    previous.x >= edge - previous.size * (1 + padding) - 96 && previous.x <= edge - previous.size * (1 + padding) &&
+    clear({ left: previous.x - previous.size * padding, right: previous.x + previous.size * (1 + padding), top: previous.y, bottom: previous.y + previous.size })) {
+    const { x, y, size } = previous;
+    return { x, y, size, clear: true, roomForAmbient: clear({ left: x - size * (0.5 + padding),
+      right: x + size * (1 + padding), top: y - size / 16, bottom: y + size * 17 / 16 }) };
+  }
   let ordinary;
   for (const size of sizes) for (let rise = 0; rise <= 240; rise += 24) for (let shift = 0; shift <= 96; shift += 24) {
     const rect = { x: edge - size * (1 + padding) - shift, y: bottom - size - rise, size };
@@ -64,10 +74,12 @@ export function buddyDestinationRect(slot, viewportWidth) {
 export function followBuddyDestination(current, target, seconds, reducedMotion = false) {
   if (!current || reducedMotion) return { ...target };
   const dt = Math.max(0, Math.min(.08, Number.isFinite(seconds) ? seconds : 0));
-  const frequency = 12;
-  const decay = Math.exp(-frequency * dt);
   const result = { velocity: {} };
   for (const key of ["x", "y", "size"]) {
+    // Softer acceleration and a slightly slower scale change make a move read
+    // as continuous flight, including retargets while the reader scrolls.
+    const frequency = key === "size" ? 7 : 8;
+    const decay = Math.exp(-frequency * dt);
     const distance = current[key] - target[key];
     const velocity = current.velocity?.[key] ?? 0;
     const impulse = velocity + frequency * distance;

@@ -42,10 +42,21 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
+      - name: Check Buddy depth ordering and continuous movement
+        run: node --test scripts/buddy-depth.test.mjs scripts/buddy-placement.test.mjs
+
       # Bundle only the actual renderer and its framing helpers. This workflow
       # has no application build, Pages permissions or deployment step.
       - name: Prepare production Buddy renderer proof
         run: bun scripts/build-buddy-3d-proof.mjs
+
+      - name: Prepare speech interface preview without publishing
+        env:
+          STATIC_BUILD: "true"
+          BASE_PATH: /
+        run: |
+          bun run build
+          node scripts/pages-postbuild.mjs dist/client
 
       # Keep the image digest and Python package aligned with deploy.yml.
       - name: Start browser verification container
@@ -59,7 +70,26 @@ jobs:
           docker exec buddy-art-review python -m pip install playwright==1.65.0 pillow
 
       - name: Capture and check actual Buddy geometry and gestures
+        id: artwork
         run: docker exec buddy-art-review python scripts/site-buddy-3d.py
+
+      - name: Check speech bubbles and microphone draft lifecycle
+        if: ${{ !cancelled() && (steps.artwork.outcome == 'success' || steps.artwork.outcome == 'failure') }}
+        run: >-
+          docker exec buddy-art-review python scripts/site-buddy.py
+          --width 390 --width 1280
+          --case simple-chat-disclosure --case fetch-history-sources
+          --case nonmodal-continuous-conversation --case short-viewport
+          --case inspect-page-details --case speech-input
+
+      - name: Upload speech interface preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddy-speech-review-${{ github.sha }}
+          path: docs/screenshots/wave909/buddy
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Upload artwork and exact source provenance
         if: always()

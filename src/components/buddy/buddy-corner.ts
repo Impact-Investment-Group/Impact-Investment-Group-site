@@ -10,7 +10,7 @@ const intersects = (a: Rect, b: Rect) => a.left < b.right && a.right > b.left &&
 /** Measure only when page layout or scrolling changes, never on animation ticks.
  * Search a bounded area above/left of the corner without covering reading lines.
  */
-export function safeBuddyCorner(preferred: BuddyDestinationRect): BuddyCornerRect {
+export function safeBuddyCorner(preferred: BuddyDestinationRect, previous?: BuddyDestinationRect): BuddyCornerRect {
   const right = Math.min(window.innerWidth - 8, preferred.x + preferred.size);
   const bottom = Math.min(window.innerHeight - 8, preferred.y + preferred.size);
   const header = document.querySelector(".site-header")?.getBoundingClientRect();
@@ -53,5 +53,5 @@ export function safeBuddyCorner(preferred: BuddyDestinationRect): BuddyCornerRec
     Array.from(control.getClientRects()).forEach(add);
   });
 
-  return findBuddyCorner(preferred, { width: window.innerWidth, height: window.innerHeight, top }, obstacles);
+  return findBuddyCorner(preferred, { width: window.innerWidth, height: window.innerHeight, top }, obstacles, previous);
 }

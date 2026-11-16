@@ -114,3 +114,45 @@ after that first failure are unproven. The replacement enlarges only the heart
 body and face by 12%, retaining the arm and prop rig. Enlarged hand plates
 also drove the independent finger topology and thumb-root fixes. The revised
 material retains darker navy and more rounded orange highlights on bone white.
+
+
+## Connected hands, self-occlusion and speech bubbles
+
+The owner accepted the restored identity and translucent branded treatment,
+then requested genuinely joined fingers, natural idle arms, no rear limbs
+showing through the body, softer page movement and the same compact speech
+interface on both products. The previous surface-overlap repair was not enough:
+hand roots now need continuous geometry as well as correct digit weights. The
+new exported-hand regression welds coincident attribute seams and requires one
+connected hand surface while retaining the existing digit-family checks.
+
+The renderer writes the nearest character surfaces to depth before drawing
+their unchanged semitransparent colour. The page still shows through Buddy;
+rear arms and hands no longer blend through the front of his body. Glass and
+airborne effects remain overlays tested against that depth. The same skinned
+vertex shader is used in both passes. No dependency or render target was added.
+
+Website travel accelerates more gently, with a slower scale response and retained
+velocity during retargeting. An already clear corner remains stable while
+nearby page geometry changes; it moves when its actual occupied space ceases
+to be clear. The platform uses a continuous acceleration envelope for take-off,
+landing and the magnifier's travel between figures. Reduced motion is retained.
+
+Clicking Buddy now opens a transparent, nonmodal grouping: the latest reply
+in a speech bubble above the single enlarged actor, then a separate input and
+microphone. Earlier turns remain available through conversation history.
+Sources, retry/cancel, readiness, draft continuity, page inspection and focus
+return stay intact. The visible viewport adjusts the composer and character
+when a phone keyboard opens. Functional strings are in WAVE1324_COPY.md.
+
+Microphone transcription only enters a reviewable draft. Starting capture is
+an explicit click, Send is separate, and typing, close, reset or a new request
+invalidates stale recognition callbacks. Unsupported or denied recognition
+leaves typed questions available. Browser-provider processing is disclosed.
+CI uses a fake recognizer and explicit AI fixtures, never real microphone
+audio; those checks do not claim a live voice-service or backend AI result.
+
+All application verification remains CI-only. The candidate artwork/speech
+workflow has no publication permission or deploy step; complete Pages gates
+and exact hosted checks are required before a new live claim. The private
+platform source remains under its existing independent release hold.

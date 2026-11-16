@@ -77,7 +77,7 @@ export function BuddyActor() {
       }
       if (!next || !destination) { target = undefined; node.style.visibility = "hidden"; assign({ ...current, visible: false }); return; }
       const preferred = buddyDestinationRect(next, window.innerWidth);
-      const corner = next.kind === "corner" ? safeBuddyCorner(preferred) : null;
+      const corner = next.kind === "corner" ? safeBuddyCorner(preferred, current.kind === "corner" ? target : undefined) : null;
       target = corner ?? preferred;
       node.dataset.buddyTargetX = String(target.x);
       node.dataset.buddyTargetY = String(target.y);

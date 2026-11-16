@@ -40,14 +40,17 @@ Small domed navy almond eyes, catchlights and a curved smile replace the later
 white eyeballs, cheek volumes and pearl gloves. All bodies have real depth and
 rounded bevels; they are not image planes.
 
-Arms have ordered joint loops with smooth elbow and wrist weighting. Each hand
-has a smooth cuff and palm with five separately shaped fingers rooted inside it.
-Keeping each digit's surface topology avoids voxel bridges that stretched into
-flaps when the fist closed. A finger vertex follows its own joint chain and
-palm, never a neighbouring digit or the opposite hand.
+Arms have ordered joint loops with smooth elbow and wrist weighting and relaxed,
+asymmetric idle bends. Each hand is one connected palm and five-digit surface.
+Exact root unions retain the distal bend loops, avoiding the voxel bridges
+that stretched into flaps when a fist closed. Digit surface provenance survives
+the unions, so nearby thumb and index vertices cannot be assigned to each
+other. A finger vertex follows its own joint chain and palm, never a
+neighbouring digit or the opposite hand.
 Pose authoring aligns the forearm with the wrist and grip without reflected
-scales. CI inspects shipped skin influences and cross-digit triangles as well
-as posed hand matrices.
+scales. CI inspects shipped skin influences, cross-digit triangles and one
+triangle-connected surface per hand after welding coincident export seams,
+as well as posed hand matrices.
 
 The runtime uses distinct face and hand materials to keep those features
 readable within the translucent projection. Navy, teal and orange retain their
@@ -55,6 +58,8 @@ brand roles. Luminous contours, spatial reconstruction lines and a slow light
 sweep accompany the shaded geometry; the raster is bounded to avoid subpixel
 aliasing in small portraits. Studio authoring renders show the geometry and
 physical materials; runtime projection effects are not baked into fallbacks.
+The runtime writes nearest-surface depth before the translucent colour pass,
+so the page shows through Buddy without rear arms showing through his body.
 
 The runtime applies the shared hologram GPU material and expression transforms
 to the actual geometry. PNGs are only the source-faithful fallback if WebGL or

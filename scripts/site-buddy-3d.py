@@ -27,6 +27,39 @@ RIG_NAMES = {'Hand.L', 'Hand.R', 'Grip.L', 'Grip.R'}
 ARTICULATED = set(POSES) - {'peek', 'glide'}
 
 
+def connected_surface_components(positions, indices):
+    """Weld exporter seams, then count actual triangle-surface components."""
+    parents = list(range(len(positions)))
+
+    def find(index):
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    def join(a, b):
+        parents[find(a)] = find(b)
+
+    for index in range(0, len(indices), 3):
+        join(indices[index], indices[index + 1])
+        join(indices[index], indices[index + 2])
+    # Float32 normal/material seams can duplicate vertices. This tolerance
+    # is far smaller than a real finger gap; overlapping shells stay separate.
+    tolerance, buckets, referenced = 1e-6, {}, set(indices)
+    for index in referenced:
+        point = positions[index]
+        cell = tuple(math.floor(value / tolerance) for value in point)
+        for x in (-1, 0, 1):
+            for y in (-1, 0, 1):
+                for z in (-1, 0, 1):
+                    key = (cell[0] + x, cell[1] + y, cell[2] + z)
+                    for other in buckets.get(key, []):
+                        if sum((value - positions[other][axis]) ** 2 for axis, value in enumerate(point)) <= tolerance ** 2:
+                            join(index, other)
+        buckets.setdefault(cell, []).append(index)
+    return len({find(index) for index in referenced})
+
+
 def clip_catalogue():
     """Inspect the shipped binary, not the authoring manifest's promises."""
     binary = (ROOT / 'public/images/buddy/3d/buddy.glb').read_bytes()
@@ -46,7 +79,7 @@ def clip_catalogue():
 
     def vectors(accessor_index, width=4):
         accessor = gltf['accessors'][accessor_index]
-        assert accessor['type'] == ('SCALAR' if width == 1 else 'VEC4') and not accessor.get('sparse'), 'Unsupported hand skin accessor'
+        assert accessor['type'] == ('SCALAR' if width == 1 else f'VEC{width}') and not accessor.get('sparse'), 'Unsupported hand skin accessor'
         view = gltf['bufferViews'][accessor['bufferView']]
         assert view.get('buffer', 0) == 0, 'Hand skin is outside the production GLB'
         formats = {5121: ('B', 1), 5123: ('H', 2), 5125: ('I', 4), 5126: ('f', 4)}
@@ -68,6 +101,7 @@ def clip_catalogue():
         hand = nodes[node_names.index(name)]
         skin = gltf['skins'][hand['skin']]['joints']
         weighted_digits, vertices, triangles = set(), 0, 0
+        surface_positions, surface_indices = [], []
         for primitive_index, primitive in enumerate(gltf['meshes'][hand['mesh']]['primitives']):
             joint_rows = vectors(primitive['attributes']['JOINTS_0'])
             weight_rows = vectors(primitive['attributes']['WEIGHTS_0'])
@@ -98,6 +132,11 @@ def clip_catalogue():
                        if 'indices' in primitive else list(range(len(joint_rows))))
             assert len(indices) % 3 == 0, f'{name}: incomplete hand triangles'
             assert all(isinstance(index, int) and 0 <= index < len(joint_rows) for index in indices), f'{name}: invalid hand indices'
+            positions = vectors(primitive['attributes']['POSITION'], 3)
+            assert len(positions) == len(joint_rows) and all(math.isfinite(value) for point in positions for value in point), f'{name}: invalid hand positions'
+            offset = len(surface_positions)
+            surface_positions.extend(positions)
+            surface_indices.extend(index + offset for index in indices)
             for index in range(0, len(indices), 3):
                 triangles += 1
                 chains = {dominant_digits[vertex] for vertex in indices[index:index + 3]} - {None}
@@ -106,8 +145,10 @@ def clip_catalogue():
                 assert len(chains) <= 1, f'{name} primitive {primitive_index} triangle {index // 3}: bridged digit chains {sorted(chains)}'
         expected_digits = {f'{digit}.{side}' for digit in ('Index', 'Middle', 'Ring', 'Pinky', 'Thumb')}
         assert vertices > 0 and triangles > 0 and weighted_digits == expected_digits, f'{name}: missing actual weighted fingers'
+        surface_components = connected_surface_components(surface_positions, surface_indices)
+        assert surface_components == 1, f'{name}: {surface_components} disconnected palm/finger surfaces'
         hand_weights[side] = {'vertices': vertices, 'triangles': triangles, 'weighted_digits': sorted(weighted_digits),
-                             'mixed_digit_vertices': 0, 'bridged_digit_triangles': 0}
+                             'mixed_digit_vertices': 0, 'bridged_digit_triangles': 0, 'surface_components': surface_components}
     REPORT['hand_weight_contract'] = hand_weights
     clips = {clip.get('name'): clip for clip in gltf.get('animations', [])}
     required = {value[0] for value in POSES.values()} | {

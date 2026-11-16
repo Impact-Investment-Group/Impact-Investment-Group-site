@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowUpRight, ChevronDown, RotateCcw, Search, Send, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, History, Mic, RotateCcw, Search, Send, Square, X } from "lucide-react";
 import { PAGE_INSPECTION_EVENT } from "./buddy-page-inspector";
 import { BUDDY_FORM_CHANGE_MS } from "./buddy-character";
 import { BuddySlot } from "./buddy-slot";
@@ -10,6 +10,7 @@ import { isBuddyTopic, type BuddyTopic } from "@/content/buddy";
 import { buddyCopy, buddyTopics } from "@/content/buddy-conversation";
 import { apiUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition.js";
 
 type Source = { title: string; url: string };
 type Turn = { role: "user" | "assistant"; content: string; sources?: Source[] };
@@ -68,6 +69,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const [noticeOpen, setNoticeOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const conversation = useRef({ open, topic, started: false });
   conversation.current = { open, topic, started: turns.length > 0 || Boolean(draft) };
   const [busy, setBusy] = useState(false);
@@ -90,7 +92,18 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   const scroll = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const current = buddyTopics.find(item => item.id === topic)!;
-  const activity = busy ? "think" : typing ? "listen" : approving ? "approve" : speaking ? "talk" : "idle";
+  const voiceDraft = useRef("");
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const speech = useSpeechRecognition({ onFinal: (text: string) => {
+    if (!conversation.current.open || abort.current || draftRef.current !== voiceDraft.current) return;
+    changeDraft([voiceDraft.current.trim(), text].filter(Boolean).join(" ").slice(0, 1000));
+    input.current?.focus();
+  } });
+  const activity = busy ? "think" : typing || speech.listening ? "listen" : approving ? "approve" : speaking ? "talk" : "idle";
+  const latestReply = turns.map(turn => turn.role).lastIndexOf("assistant");
+  const displayedDraft = speech.listening && speech.interim
+    ? [voiceDraft.current, speech.interim].filter(Boolean).join(" ").slice(0, 1000) : draft;
 
   const settleActivity = () => {
     window.clearTimeout(typingTimer.current);
@@ -119,6 +132,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   };
   const changeOpen = (next: boolean) => {
     if (!next) {
+      speech.cancel();
       if (abort.current) cancel();
       settleActivity();
       readinessId.current += 1;
@@ -199,14 +213,41 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   }, [open, readiness]);
 
   useEffect(() => {
-    if (open && scroll.current) scroll.current.scrollTop = readiness === "ready" && (turns.length > 0 || busy || error) ? scroll.current.scrollHeight : 0;
-  }, [turns, busy, error, open, readiness]);
+    if (!open) return;
+    const viewport = window.visualViewport;
+    const fit = () => {
+      const root = dialog.current;
+      if (!root) return;
+      const height = viewport?.height ?? window.innerHeight;
+      const top = viewport?.offsetTop ?? 0;
+      const margin = window.innerWidth < 640 ? 12 : 20;
+      root.style.bottom = `${Math.max(margin, window.innerHeight - top - height + margin)}px`;
+      root.style.maxHeight = `${Math.max(80, height - Math.max(80 - top, 8) - margin)}px`;
+      const character = root.querySelector<HTMLElement>("[data-buddy-speech-character]");
+      if (character) character.style.width = `${height <= 400 ? 64 : height <= 650 ? 112 : window.innerWidth < 640 ? 176 : 192}px`;
+    };
+    fit();
+    viewport?.addEventListener("resize", fit);
+    viewport?.addEventListener("scroll", fit);
+    window.addEventListener("resize", fit);
+    return () => {
+      viewport?.removeEventListener("resize", fit);
+      viewport?.removeEventListener("scroll", fit);
+      window.removeEventListener("resize", fit);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (open && scroll.current) scroll.current.scrollTop = historyOpen ? scroll.current.scrollHeight : 0;
+  }, [turns, historyOpen, open]);
 
   async function ask(question: Question, isRetry = false) {
     if (!open || readiness !== "ready" || abort.current || !question.message.trim()) return;
     const controller = new AbortController();
     abort.current = controller;
     const id = ++requestId.current;
+    speech.cancel();
+    setHistoryOpen(false);
     settleActivity();
     setError(""); setBusy(true); setRetry(question);
     if (!isRetry) {
@@ -255,76 +296,94 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
     requestAnimationFrame(() => window.dispatchEvent(new Event(PAGE_INSPECTION_EVENT)));
   };
   const clearConversation = () => {
+    speech.reset();
+    setHistoryOpen(false);
     cancel(false);
     setTurns([]); setRetry(null); setError(""); setDraft("");
     setTopic(contextTopic);
     (readiness === "ready" ? input.current : dialog.current)?.focus();
   };
 
+  const toggleMicrophone = () => {
+    if (speech.listening) speech.stop();
+    else { voiceDraft.current = draft; speech.start(); }
+  };
+
   return <Dialog.Root open={open} onOpenChange={changeOpen} modal={false}>
     {!open && <BuddyWidget topic={contextTopic} onOpen={() => changeOpen(true)} setTrigger={node => { launcher.current = node; }} />}
     <Dialog.Portal>
-      <Dialog.Content ref={dialog} data-buddy-chat data-buddy-page-topic={contextTopic} data-buddy-readiness={readiness} data-buddy-activity={activity} onKeyDownCapture={leaveChatAtTabBoundary} onInteractOutside={event => event.preventDefault()} onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }} onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
-        className="fixed bottom-0 right-0 z-50 flex h-[calc(100dvh-5rem)] max-h-[calc(100dvh-5rem)] w-full origin-bottom-right flex-col overflow-y-auto rounded-t-3xl border border-rule bg-page text-ink shadow-2xl duration-200 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-4 motion-reduce:animate-none sm:bottom-5 sm:right-5 sm:h-[min(46rem,calc(100dvh-2.5rem))] sm:max-h-[calc(100dvh-2.5rem)] sm:max-w-md sm:rounded-3xl">
-        <header className="shrink-0 border-b border-rule bg-page px-3 py-2">
-          <div className="flex items-center gap-2">
-            <div className="flex size-18 shrink-0 items-center justify-center">
-              <BuddySlot kind="chat" form={topic} action={activity} expression={busy ? "thoughtful" : typing ? "curious" : "warm"} className="w-18" />
+      <Dialog.Content ref={dialog} data-buddy-chat data-buddy-interface="speech" data-buddy-page-topic={contextTopic} data-buddy-readiness={readiness} data-buddy-activity={activity}
+        onKeyDownCapture={leaveChatAtTabBoundary} onInteractOutside={event => event.preventDefault()}
+        onOpenAutoFocus={event => { event.preventDefault(); (readiness === "ready" ? input.current : dialog.current)?.focus(); }}
+        onCloseAutoFocus={event => { event.preventDefault(); (returnFocus.current?.isConnected ? returnFocus.current : launcher.current)?.focus(); }}
+        className="pointer-events-none fixed bottom-3 right-3 z-50 flex max-h-[calc(100dvh-5rem)] w-[calc(100%-1.5rem)] max-w-sm flex-col items-end overflow-y-auto text-ink outline-none sm:bottom-5 sm:right-5">
+        <Dialog.Title className="sr-only">{buddyCopy.name}</Dialog.Title>
+        <Dialog.Description className="sr-only">{buddyCopy.description}</Dialog.Description>
+        <div data-buddy-speech-bubble className="pointer-events-auto relative flex min-h-16 w-full shrink flex-col overflow-visible rounded-3xl border border-rule bg-page shadow-lg">
+          <Dialog.Close aria-label={buddyCopy.close} className={cn(control, "absolute right-1 top-1 z-10 size-11 px-0 text-ink-muted hover:bg-page-alt")}><X className="size-4" aria-hidden="true" /></Dialog.Close>
+          <div ref={scroll} data-buddy-speech-scroll className="max-h-[min(36dvh,20rem)] min-h-16 overflow-y-auto overscroll-contain rounded-3xl px-4 py-4 pr-12 [@media(max-height:500px)]:max-h-[25dvh]">
+            {readiness !== "ready" && <div data-buddy-connection>
+              <p role="status" className="text-sm leading-relaxed text-ink-muted">{readiness === "loading" ? buddyCopy.connectionLoading : buddyCopy.connectionUnavailable}</p>
+              {readiness === "unavailable" && <>
+                <div className="mt-2 flex flex-wrap gap-2"><Link to={current.link} className={cn(control, "text-teal-600 underline underline-offset-4")}>{current.linkLabel}</Link><Link to="/contact" className={cn(control, "text-teal-600 underline underline-offset-4")}>Contact our team</Link></div>
+                <button type="button" onClick={() => { dialog.current?.focus(); setReadiness("loading"); setConnectionAttempt(previous => previous + 1); }} className={cn(control, "text-teal-600 hover:bg-secondary")}><RotateCcw className="size-4" aria-hidden="true" />{buddyCopy.connectionRetry}</button>
+              </>}
+            </div>}
+            {readiness === "ready" && turns.length === 0 && <>
+              <p data-buddy-greeting className="text-sm leading-relaxed">{buddyCopy.welcome}</p>
+              <div data-buddy-suggestions className="mt-2 flex flex-col items-start">{buddyCopy.suggestions.map(question =>
+                <button key={question} type="button" onClick={() => submit(question)} className="min-h-11 rounded-lg px-1 text-left text-xs leading-relaxed text-teal-600 underline decoration-teal-600/30 underline-offset-4 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-teal-600">{question}</button>
+              )}</div>
+            </>}
+            <div role="log" aria-label="Conversation with Buddy" aria-live="polite" aria-relevant="additions text" className="space-y-3">
+              {turns.map((turn, index) => <div key={index} data-buddy-turn={turn.role} hidden={!historyOpen && (index !== latestReply || busy || Boolean(error))}>
+                {historyOpen && <p className="mb-1 text-xs font-semibold text-teal-600">{turn.role === "user" ? "You" : buddyCopy.name}</p>}
+                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{turn.content}</p>
+                {!!turn.sources?.length && <div className="mt-2 border-t border-rule pt-2"><p className="text-xs font-semibold text-ink-muted">{buddyCopy.sources}</p>{turn.sources.map(source => <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center gap-2 text-xs font-semibold text-teal-600 underline underline-offset-4">{source.title}<ArrowUpRight className="size-3 shrink-0" aria-hidden="true" /></a>)}</div>}
+              </div>)}
             </div>
-            <div className="min-w-0 flex-1">
-              <Dialog.Title className="font-heading text-lg font-bold">{buddyCopy.name}</Dialog.Title>
-            </div>
-            <div className="flex">
-              <button type="button" aria-label="Explore this page with Buddy" title="Explore this page" disabled={busy} onClick={inspectPage} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page-alt")}><Search className="size-4" aria-hidden="true" /></button>
-              <button type="button" aria-label={buddyCopy.clear} title={buddyCopy.clear} disabled={!turns.length && !draft} onClick={clearConversation} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page-alt")}><RotateCcw className="size-4" aria-hidden="true" /></button>
-              <Dialog.Close aria-label={buddyCopy.close} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page-alt")}><X className="size-5" aria-hidden="true" /></Dialog.Close>
-            </div>
+            {busy && <div role="status" className="flex items-center gap-2"><span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-teal-600 motion-safe:animate-pulse" /><p className="text-sm text-teal-600">{buddyCopy.pending}</p></div>}
+            {readiness === "ready" && error && <div role="alert"><p className="text-sm leading-relaxed">{error}</p>{retry && <button type="button" onClick={() => void ask(retry, true)} className={cn(control, "mt-1 text-teal-600 hover:bg-secondary")}><RotateCcw className="size-4" aria-hidden="true" />{buddyCopy.retry}</button>}<div className="flex flex-wrap gap-2"><Link to={current.link} className={cn(control, "text-teal-600 underline underline-offset-4")}>{current.linkLabel}</Link><Link to="/contact" className={cn(control, "text-teal-600 underline underline-offset-4")}>Contact our team</Link></div></div>}
           </div>
-          <Dialog.Description className="sr-only">{buddyCopy.description}</Dialog.Description>
-        </header>
-        <div ref={scroll} className="min-h-24 flex-1 overflow-y-auto overscroll-contain bg-page-alt px-3 py-4 sm:px-4">
-          {readiness !== "ready" && <div data-buddy-connection className="rounded-2xl border border-rule bg-page-alt p-4">
-            <p role="status" className="text-sm leading-relaxed text-ink-muted">{readiness === "loading" ? buddyCopy.connectionLoading : buddyCopy.connectionUnavailable}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Link to={current.link} className={cn(control, "text-teal-600 underline underline-offset-4")}>{current.linkLabel}</Link>
-              <Link to="/contact" className={cn(control, "text-teal-600 underline underline-offset-4")}>Contact our team</Link>
-            </div>
-            <button type="button" disabled={readiness === "loading"} onClick={() => { dialog.current?.focus(); setReadiness("loading"); setConnectionAttempt(previous => previous + 1); }} className={cn(control, "mt-2 text-teal-600 hover:bg-secondary")}><RotateCcw className="size-4" aria-hidden="true" />{buddyCopy.connectionRetry}</button>
-          </div>}
-          {readiness === "ready" && turns.length === 0 && <div className="pb-1">
-            <p data-buddy-greeting className="rounded-2xl rounded-tl-md border border-rule bg-page px-4 py-3 text-sm leading-relaxed">{buddyCopy.welcome}</p>
-            <div data-buddy-suggestions className="mt-3 flex flex-wrap gap-2">{buddyCopy.suggestions.map(question =>
-              <button key={question} type="button" onClick={() => submit(question)} className="inline-flex min-h-11 max-w-full items-center rounded-full border border-rule bg-page px-3 py-2 text-left text-sm leading-relaxed transition-colors hover:border-teal-600 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">{question}</button>
-            )}</div>
-          </div>}
-          <div role="log" aria-label="Conversation with Buddy" aria-live="polite" aria-relevant="additions" className="space-y-4">
-            {turns.map((turn, index) => <div key={index} data-buddy-turn={turn.role} className={cn("rounded-2xl p-4 shadow-sm", turn.role === "user" ? "ml-8 rounded-br-md bg-ink text-white" : "mr-5 rounded-tl-md border border-rule bg-page text-ink")}>
-              <p className={cn("mb-2 text-xs font-semibold", turn.role === "user" ? "text-white/80" : "text-teal-600")}>{turn.role === "user" ? "You" : buddyCopy.name}</p>
-              <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{turn.content}</p>
-              {!!turn.sources?.length && <div className="mt-3 border-t border-rule pt-2"><p className="text-xs font-semibold text-ink-muted">{buddyCopy.sources}</p>{turn.sources.map(source => <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer" className="mt-1 flex min-h-11 items-center gap-2 text-sm font-semibold text-teal-600 underline underline-offset-4">{source.title}<ArrowUpRight className="size-4" aria-hidden="true" /></a>)}</div>}
-            </div>)}
-          </div>
-          {busy && <div role="status" className="mr-5 mt-4 flex items-center gap-3 rounded-2xl rounded-tl-md border border-rule bg-page p-4 shadow-sm"><span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-teal-600 motion-safe:animate-pulse" /><p className="text-sm font-medium text-teal-600">{buddyCopy.pending}</p></div>}
-          {readiness === "ready" && error && <div role="alert" className="mt-4 rounded-2xl border border-rule bg-page-alt p-4"><p className="text-sm leading-relaxed">{error}</p>{retry && <button type="button" onClick={() => void ask(retry, true)} className={cn(control, "mt-2 text-teal-600 hover:bg-secondary")}><RotateCcw className="size-4" aria-hidden="true" />{buddyCopy.retry}</button>}<div className="mt-2 flex flex-wrap gap-3"><Link to={current.link} className={cn(control, "text-teal-600 underline underline-offset-4")}>{current.linkLabel}</Link><Link to="/contact" className={cn(control, "text-teal-600 underline underline-offset-4")}>Contact our team</Link></div></div>}
+          <span aria-hidden="true" className="absolute -bottom-2 right-20 size-4 rotate-45 border-b border-r border-rule bg-page" />
         </div>
-        <footer className="shrink-0 border-t border-rule bg-page px-3 pt-2 sm:px-4" style={{ paddingBottom: "max(.25rem, env(safe-area-inset-bottom, 0px))" }}>
-        <form hidden={readiness !== "ready"} onSubmit={event => { event.preventDefault(); submit(draft); }}>
-          <label htmlFor="buddy-question" className="sr-only">{buddyCopy.input}</label>
-          <div className="flex items-end gap-1 rounded-2xl border border-rule bg-page-alt p-1 transition-shadow focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-600/20">
-            <textarea id="buddy-question" ref={input} disabled={readiness !== "ready"} value={draft} maxLength={1000} rows={1} placeholder={buddyCopy.placeholder} aria-describedby={noticeOpen ? "buddy-privacy buddy-boundary" : undefined} onChange={event => changeDraft(event.target.value)} onFocus={event => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" })} onBlur={() => { window.clearTimeout(typingTimer.current); setTyping(false); }} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); submit(draft); } }} className="min-h-11 min-w-0 flex-1 scroll-my-3 resize-none rounded-lg border-0 bg-transparent p-2 text-base leading-relaxed text-ink outline-none" />
-            <button type="submit" aria-label={buddyCopy.send} disabled={readiness !== "ready" || !draft.trim() || busy} className={cn(control, "size-11 shrink-0 bg-orange-600 px-0 text-white shadow-sm hover:bg-orange-700")}><Send className="size-4" aria-hidden="true" /></button>
-          </div>
-        </form>
-          <div className="flex items-center justify-between gap-2">
+        <div data-buddy-speech-character className="mr-4 w-44 shrink-0 sm:w-48 [@media(max-height:650px)]:w-28 [@media(max-height:400px)]:w-16">
+          <BuddySlot kind="chat" form={topic} action={activity} expression={busy ? "thoughtful" : typing || speech.listening ? "curious" : "warm"} />
+        </div>
+        <footer className="pointer-events-auto w-full shrink-0" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+          <form onSubmit={event => { event.preventDefault(); submit(displayedDraft); }}>
+            <label htmlFor="buddy-question" className="sr-only">{buddyCopy.input}</label>
+            <div className="flex items-end gap-1 rounded-2xl border border-rule bg-page p-1 shadow-lg focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-600/20">
+              <textarea id="buddy-question" ref={input} disabled={readiness !== "ready"} value={displayedDraft} maxLength={1000} rows={1}
+                placeholder={speech.listening ? "Listening..." : buddyCopy.placeholder} aria-describedby={noticeOpen ? "buddy-privacy buddy-boundary buddy-voice-note" : undefined}
+                onChange={event => { speech.cancel(); changeDraft(event.target.value); }}
+                onBlur={() => { window.clearTimeout(typingTimer.current); setTyping(false); }}
+                onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); submit(displayedDraft); } }}
+                className="min-h-11 min-w-0 flex-1 resize-none rounded-lg border-0 bg-transparent p-2 text-base leading-relaxed text-ink outline-none" />
+              <button type="button" aria-label={speech.listening ? "Stop listening" : "Speak to Buddy"} title={speech.supported ? "Speak, review, then send" : "Voice input is unavailable in this browser. You can type instead."}
+                aria-pressed={speech.listening} disabled={!speech.supported || readiness !== "ready" || busy} onClick={toggleMicrophone}
+                className={cn(control, "size-11 shrink-0 px-0", speech.listening ? "bg-ink text-white" : "text-teal-600 hover:bg-secondary")}>
+                {speech.listening ? <Square className="size-4" aria-hidden="true" /> : <Mic className="size-4" aria-hidden="true" />}
+              </button>
+              <button type="submit" aria-label={buddyCopy.send} disabled={readiness !== "ready" || !displayedDraft.trim() || busy} className={cn(control, "size-11 shrink-0 bg-orange-600 px-0 text-white hover:bg-orange-700")}><Send className="size-4" aria-hidden="true" /></button>
+            </div>
+          </form>
+          {(speech.listening || speech.error) && <p role="status" className="mt-1 rounded-xl bg-page px-3 py-2 text-xs text-ink-muted">{speech.listening ? "Listening. Review your words before sending." : speech.error === "not-allowed" || speech.error === "service-not-allowed" ? "Microphone access was declined. You can type your question instead." : "Voice input stopped. Try again or type your question."}</p>}
+          <div className="flex items-center justify-between gap-1">
             <button type="button" aria-expanded={noticeOpen} aria-controls="buddy-notices" onClick={() => setNoticeOpen(previous => !previous)} className={cn(control, "gap-1 px-1 text-xs font-normal text-ink-muted hover:text-ink")}>
               {buddyCopy.about}<ChevronDown className={cn("size-3", noticeOpen && "rotate-180")} aria-hidden="true" />
             </button>
-            {busy && <button type="button" onClick={() => cancel()} className={cn(control, "text-teal-600")}>{buddyCopy.cancel}</button>}
-            {readiness === "ready" && <span aria-hidden="true" className="ml-auto py-2 font-mono text-xs tabular-nums text-ink-muted">{draft.length}/1000</span>}
+            <div className="flex">
+              {busy && <button type="button" onClick={() => cancel()} className={cn(control, "px-2 text-xs text-teal-600")}>{buddyCopy.cancel}</button>}
+              <button type="button" aria-label="Explore this page with Buddy" title="Explore this page" disabled={busy} onClick={inspectPage} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page")}><Search className="size-4" aria-hidden="true" /></button>
+              <button type="button" aria-label="Conversation history" title="Conversation history" aria-pressed={historyOpen} disabled={!turns.length} onClick={() => setHistoryOpen(previous => !previous)} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page")}><History className="size-4" aria-hidden="true" /></button>
+              <button type="button" aria-label={buddyCopy.clear} title={buddyCopy.clear} disabled={!turns.length && !draft} onClick={clearConversation} className={cn(control, "size-11 px-0 text-ink-muted hover:bg-page")}><RotateCcw className="size-4" aria-hidden="true" /></button>
+            </div>
           </div>
-          <div id="buddy-notices" hidden={!noticeOpen} className="pb-2">
+          <div id="buddy-notices" hidden={!noticeOpen} className="max-h-28 overflow-y-auto rounded-2xl border border-rule bg-page px-3 py-2">
             <p id="buddy-privacy" className="text-xs leading-relaxed text-ink-muted">{buddyCopy.privacy}</p>
             <p id="buddy-boundary" className="mt-1 text-xs leading-relaxed text-ink-muted">{buddyCopy.boundary}</p>
+            <p id="buddy-voice-note" className="mt-1 text-xs leading-relaxed text-ink-muted">Voice is transcribed by your browser's speech service. Review the text before sending.</p>
           </div>
         </footer>
       </Dialog.Content>

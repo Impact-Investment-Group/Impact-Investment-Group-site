@@ -90,6 +90,34 @@ INIT = """(() => {
   };
 })()"""
 
+# All voice journeys use callbacks from this local fake. No microphone is
+# opened and no browser speech service is contacted, including failure cases.
+SPEECH_INIT = """(() => {
+  const state = window.__buddySpeech = {instances: [], starts: 0, stops: 0, aborts: 0, mediaRequests: 0};
+  class Recognition {
+    constructor() { state.instances.push(this); }
+    start() {
+      state.starts++;
+      this.callbacks = {result: this.onresult, error: this.onerror, end: this.onend};
+    }
+    stop() { state.stops++; }
+    abort() { state.aborts++; }
+  }
+  state.result = (index, text, final = true, late = false) => {
+    const rec = state.instances[index], result = [{transcript: text}];
+    result.isFinal = final;
+    (late ? rec.callbacks.result : rec.onresult)?.({resultIndex: 0, results: [result]});
+  };
+  state.error = (index, error) => state.instances[index].onerror?.({error});
+  state.end = index => state.instances[index].onend?.();
+  Object.defineProperty(window, 'SpeechRecognition', {configurable: true, value: __SUPPORTED__ ? Recognition : undefined});
+  Object.defineProperty(window, 'webkitSpeechRecognition', {configurable: true, value: undefined});
+  if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia = () => {
+    state.mediaRequests++;
+    return Promise.reject(new Error('Real media is forbidden in this fixture'));
+  };
+})()"""
+
 
 class Fixtures:
     def __init__(self, fail_engine=False):
@@ -157,11 +185,11 @@ class Fixtures:
             route.abort()
 
 
-def context_for(browser, width=1280, reduced=False, fail_engine=False):
+def context_for(browser, width=1280, reduced=False, fail_engine=False, speech=True):
     context = browser.new_context(viewport={"width": width, "height": 900}, reduced_motion="reduce" if reduced else "no-preference")
     fixtures = Fixtures(fail_engine=fail_engine)
     context.route("**/*", fixtures.handle)
-    context.add_init_script(INIT)
+    context.add_init_script(INIT + SPEECH_INIT.replace('__SUPPORTED__', 'true' if speech else 'false'))
     return context, fixtures
 
 
@@ -201,9 +229,28 @@ def chat_open(page):
     expect(chat.locator("[data-buddy-form], canvas")).to_have_count(0)
     slot = chat.locator('[data-buddy-slot="chat"]').bounding_box()
     actor = page.locator("[data-buddy-actor]").bounding_box()
-    assert abs(actor["x"] - slot["x"]) < 1 and abs(actor["y"] - slot["y"]) < 1, "The single actor did not arrive in the chat header"
-    assert abs(actor["width"] - 72) < 1, "Chat header Buddy lost its readable portrait size"
+    assert abs(actor["x"] - slot["x"]) < 1 and abs(actor["y"] - slot["y"]) < 1, "The single actor did not arrive below its speech bubble"
+    width, height = page.viewport_size['width'], page.viewport_size['height']
+    expected_size = 64 if height <= 400 else 112 if height <= 650 else 176 if width < 640 else 192
+    assert abs(actor["width"] - expected_size) < 1, "Speech Buddy lost its responsive character size"
+    assert_speech_layout(page)
     return chat
+
+
+def assert_speech_layout(page):
+    chat = page.locator('[data-buddy-chat]')
+    expect(chat).to_have_attribute('data-buddy-interface', 'speech')
+    expect(chat.locator('header')).to_have_count(0)
+    assert chat.evaluate("n => { const s=getComputedStyle(n); return s.backgroundColor === 'rgba(0, 0, 0, 0)' && s.boxShadow === 'none'; }"), 'A surrounding chat card returned'
+    bubble = chat.locator('[data-buddy-speech-bubble]').bounding_box()
+    slot = chat.locator('[data-buddy-slot="chat"]').bounding_box()
+    composer = chat.locator('form').bounding_box()
+    assert bubble['y'] + bubble['height'] <= slot['y'] + 1, 'The reply bubble is not above Buddy'
+    assert slot['y'] + slot['height'] <= composer['y'] + 1, 'The composer overlaps Buddy'
+    for name in ('Close Buddy', 'Speak to Buddy', 'Send'):
+        control = chat.get_by_role('button', name=name, exact=True)
+        box = control.bounding_box()
+        assert box['width'] >= 44 and box['height'] >= 44, f'{name} lost its 44px target'
 
 
 def assert_fixed_widget(page):
@@ -296,11 +343,9 @@ def no_overflow(page):
 def simple_chat_disclosure(page, fixtures):
     visit(page)
     chat = chat_open(page)
-    header = chat.locator("header")
-    expect(header.get_by_role("heading", name="Buddy", exact=True)).to_have_count(1)
-    assert header.bounding_box()["height"] <= 96, "Buddy's enlarged portrait grew beyond a single header row"
+    expect(chat.get_by_role("heading", name="Buddy", exact=True)).to_have_class('sr-only')
     for retired in ["Homes & property", "Costs & investment", "Care & support"]:
-        expect(header.get_by_text(retired, exact=True)).to_have_count(0)
+        expect(chat.get_by_text(retired, exact=True)).to_have_count(0)
     expect(chat.locator("[data-buddy-greeting]")).to_have_text(CHAT_COPY_ALLOWED["greeting"])
     expect(chat.locator("[data-buddy-suggestions] button")).to_have_text(CHAT_COPY_ALLOWED["questions"])
     about = chat.get_by_role("button", name=CHAT_COPY_ALLOWED["about"], exact=True)
@@ -329,11 +374,143 @@ def simple_chat_disclosure(page, fixtures):
         assert fixtures.requests[-1]["message"] == example, "A short chip submitted different words"
         assert len(fixtures.requests) == index + 1, "A chip submitted more than one request"
         expect(chat.locator("[data-buddy-turn]")).to_have_count(2)
+        expect(chat.locator('[data-buddy-turn="user"]')).to_be_hidden()
+        expect(chat.locator('[data-buddy-turn="assistant"]')).to_be_visible()
         expect(chat.locator("[data-buddy-suggestions]")).to_have_count(0)
         if index < len(CHAT_COPY_ALLOWED["questions"]) - 1:
             chat.get_by_role("button", name="New conversation", exact=True).click()
     no_overflow(page)
     chat.screenshot(path=str(OUT / f"simple-chat-{page.viewport_size['width']}.png"), animations="disabled")
+
+
+def speech_input(page, fixtures):
+    visit(page)
+    chat = chat_open(page)
+    question = chat.get_by_label('Your question for Buddy', exact=True)
+    microphone = chat.get_by_role('button', name='Speak to Buddy', exact=True)
+    expect(microphone).to_be_enabled()
+    question.fill('Please explain')
+    microphone.click()
+    expect(chat.get_by_role('button', name='Stop listening', exact=True)).to_have_attribute('aria-pressed', 'true')
+    expect(chat).to_have_attribute('data-buddy-activity', 'listen')
+    assert page.evaluate("window.__buddySpeech.instances[0].lang") == 'en-GB'
+    page.evaluate("window.__buddySpeech.result(0, 'property sourcing', false)")
+    expect(question).to_have_value('Please explain property sourcing')
+    assert not fixtures.requests, 'Interim speech submitted an AI question'
+    chat.get_by_role('button', name='Stop listening', exact=True).click()
+    assert page.evaluate('window.__buddySpeech.stops') == 1
+    # A final result may arrive after Stop, but it remains an editable draft.
+    page.evaluate("window.__buddySpeech.result(0, 'property sourcing', true); window.__buddySpeech.end(0)")
+    expect(question).to_have_value('Please explain property sourcing')
+    page.evaluate("window.__buddySpeech.result(0, 'duplicate result', true, true)")
+    expect(question).to_have_value('Please explain property sourcing')
+    assert not fixtures.requests, 'Final speech was sent before review'
+    question.fill('Please explain property sourcing for me.')
+    fixtures.answer('Fixture answer to the reviewed voice draft.', sources=[
+        {'title': 'Our services', 'url': 'https://www.impactinvestmentgroup.co.uk/platform'},
+    ])
+    chat.get_by_role('button', name='Send', exact=True).click()
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text('Fixture answer to the reviewed voice draft.')
+    assert len(fixtures.requests) == 1 and fixtures.requests[0]['message'] == 'Please explain property sourcing for me.'
+
+    # Manual edits cancel recognition; queued callbacks from that attempt must
+    # not overwrite what the visitor typed or create a second conversation.
+    question.fill('Original draft.')
+    microphone.click()
+    question.fill('My typed replacement.')
+    page.evaluate("window.__buddySpeech.result(1, 'late words after typing', true, true)")
+    expect(question).to_have_value('My typed replacement.')
+    expect(microphone).to_have_attribute('aria-pressed', 'false')
+    microphone.click()
+    chat.get_by_role('button', name='Close Buddy', exact=True).click()
+    page.evaluate("window.__buddySpeech.result(2, 'late words after close', true, true)")
+    chat = chat_open(page)
+    question = chat.get_by_label('Your question for Buddy', exact=True)
+    microphone = chat.get_by_role('button', name='Speak to Buddy', exact=True)
+    expect(question).to_have_value('My typed replacement.')
+    assert len(fixtures.requests) == 1, 'Closing or reopening submitted voice text'
+
+    microphone.click()
+    chat.get_by_role('button', name='New conversation', exact=True).click()
+    page.evaluate("window.__buddySpeech.result(3, 'late words after clear', true, true)")
+    expect(question).to_have_value('')
+    expect(chat.locator('[data-buddy-turn]')).to_have_count(0)
+    question.fill('Keep this after permission denial.')
+    microphone.click()
+    page.evaluate("window.__buddySpeech.error(4, 'not-allowed')")
+    expect(chat.get_by_role('status')).to_contain_text('Microphone access was declined. You can type your question instead.')
+    expect(question).to_have_value('Keep this after permission denial.')
+    expect(question).to_be_enabled()
+    expect(microphone).to_have_attribute('aria-pressed', 'false')
+    assert page.evaluate('window.__buddySpeech.aborts') >= 4
+    assert page.evaluate('window.__buddySpeech.mediaRequests') == 0
+    assert len(fixtures.requests) == 1, 'A cancelled or denied recording submitted text'
+
+    # Stop can precede a recognizer's final callback. Editing at this point
+    # must abort the still-pending session, even though listening is now false.
+    question.fill('Draft before stopping.')
+    microphone.click()
+    chat.get_by_role('button', name='Stop listening', exact=True).click()
+    expect(microphone).to_have_attribute('aria-pressed', 'false')
+    aborts_before_edit = page.evaluate('window.__buddySpeech.aborts')
+    question.fill('Keep this after permission denial.')
+    assert page.evaluate('window.__buddySpeech.aborts') == aborts_before_edit + 1, 'Typing after Stop left recognition active'
+    page.evaluate("window.__buddySpeech.result(5, 'late final after stopped edit', true, true)")
+    expect(question).to_have_value('Keep this after permission denial.')
+    assert len(fixtures.requests) == 1
+
+    # Remove the browser capability, then reopen to exercise the real fallback.
+    chat.get_by_role('button', name='Close Buddy', exact=True).click()
+    page.evaluate("Object.defineProperty(window, 'SpeechRecognition', {configurable:true, value:undefined})")
+    chat = chat_open(page)
+    expect(chat.get_by_role('button', name='Speak to Buddy', exact=True)).to_be_disabled()
+    expect(chat.get_by_role('button', name='Speak to Buddy', exact=True)).to_have_attribute('title', 'Voice input is unavailable in this browser. You can type instead.')
+    expect(chat.get_by_label('Your question for Buddy', exact=True)).to_have_value('Keep this after permission denial.')
+    fixtures.answer('Fixture typed fallback still works.')
+    send(chat, 'I can still type my question.')
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_contain_text('Fixture typed fallback still works.')
+    assert len(fixtures.requests) == 2
+    assert page.evaluate('window.__buddySpeech.starts') == 6
+    assert page.evaluate('window.__buddySpeech.mediaRequests') == 0
+    no_overflow(page)
+    chat.screenshot(path=str(OUT / f'speech-input-{page.viewport_size["width"]}.png'), animations='disabled')
+    # Simulate a mobile keyboard changing only the visual viewport. The layout
+    # viewport deliberately stays tall; a window resize would miss this bug.
+    page.evaluate("""() => {
+      const viewport = visualViewport;
+      window.__buddyViewportFixture = {height: viewport.height, offsetTop: viewport.offsetTop};
+      for (const key of ['height', 'offsetTop']) Object.defineProperty(viewport, key,
+        {configurable:true, get:() => window.__buddyViewportFixture[key]});
+    }""")
+    original_height = page.evaluate('innerHeight')
+    try:
+        for height, offset, character_size in ((320, 0, 64), (500, 60, 112)):
+            page.evaluate("""value => {
+              Object.assign(window.__buddyViewportFixture, value);
+              visualViewport.dispatchEvent(new Event('resize'));
+              visualViewport.dispatchEvent(new Event('scroll'));
+            }""", {'height': height, 'offsetTop': offset})
+            assert page.evaluate('innerHeight') == original_height, 'Keyboard fixture changed the layout viewport'
+            page.wait_for_function("""size => {
+              const actor=document.querySelector('[data-buddy-actor]');
+              return actor.dataset.buddyTravelling === 'false' && Math.abs(actor.getBoundingClientRect().width-size)<1;
+            }""", arg=character_size)
+            for control in (chat.get_by_label('Your question for Buddy', exact=True),
+                            chat.get_by_role('button', name='Close Buddy', exact=True)):
+                control.focus()
+                expect(control).to_be_focused()
+                box = control.bounding_box()
+                assert box['y'] >= offset - 1 and box['y'] + box['height'] <= offset + height + 1, 'Keyboard obscures a speech control'
+            bounds = chat.bounding_box()
+            assert bounds['y'] >= offset - 1 and bounds['y'] + bounds['height'] <= offset + height + 1, 'Speech interface leaves the visual viewport'
+            page.screenshot(path=str(OUT / f'speech-keyboard-{page.viewport_size["width"]}-{height}.png'))
+        assert len(fixtures.requests) == 2, 'Keyboard viewport changes submitted a question'
+    finally:
+        page.evaluate("""() => {
+          delete visualViewport.height; delete visualViewport.offsetTop;
+          visualViewport.dispatchEvent(new Event('resize'));
+          visualViewport.dispatchEvent(new Event('scroll'));
+        }""")
 
 
 def floating_placement_and_minimise(page, fixtures):
@@ -403,11 +580,8 @@ def floating_placement_and_minimise(page, fixtures):
     expect(chat.get_by_role("button", name=CHAT_COPY_ALLOWED["questions"][0], exact=True)).to_be_focused()
     close.focus()
     page.keyboard.press("Shift+Tab")
-    explore = chat.get_by_role("button", name="Explore this page with Buddy", exact=True)
-    expect(explore).to_be_focused()
-    # Explore is now the first control; leaving that boundary must still
-    # return to the page rather than trap focus inside a non-modal panel.
-    page.keyboard.press("Shift+Tab")
+    # Close is the first speech-bubble control. Its boundary returns to the
+    # underlying page, while ordinary Tab still reaches the suggestions.
     assert page.evaluate("""(() => {
       const active = document.activeElement;
       return Boolean(active && active !== document.body &&
@@ -568,6 +742,21 @@ def real_fetch_contract(page, fixtures):
     send(chat, "How does care and support connect to this?")
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(2)
     expect(chat.locator('[data-buddy-turn="assistant"]').last).to_contain_text(second_reply)
+    expect(chat.locator('[data-buddy-turn="assistant"]').first).to_be_hidden()
+    expect(chat.locator('[data-buddy-turn="user"]:visible')).to_have_count(0)
+    history = chat.get_by_role('button', name='Conversation history', exact=True)
+    expect(history).to_have_attribute('aria-pressed', 'false')
+    question_input = chat.get_by_label('Your question for Buddy', exact=True)
+    question_input.fill('Keep this draft while reading history.')
+    history.click()
+    expect(history).to_have_attribute('aria-pressed', 'true')
+    expect(chat.locator('[data-buddy-turn]:visible')).to_have_count(4)
+    expect(chat.get_by_role('link', name='Our pricing', exact=True)).to_be_visible()
+    expect(question_input).to_have_value('Keep this draft while reading history.')
+    assert len(fixtures.requests) == 2, 'Reading history sent a question'
+    history.click()
+    expect(chat.locator('[data-buddy-turn]:visible')).to_have_count(1)
+    expect(chat.locator('[data-buddy-turn="assistant"]').last).to_be_visible()
     expect(chat.locator('[data-buddy-turn="assistant"] img')).to_have_count(0)
     expect(character).to_have_attribute('data-buddy-form', 'support')
     assert fixtures.requests[-1] == {"message": "How does care and support connect to this?", "topic": "investment", "history": [
@@ -878,12 +1067,14 @@ def readiness_gate(page, fixtures):
     expect(chat.get_by_role("status")).to_contain_text("Checking whether Buddy's AI chat is available")
     expect(chat.locator("#buddy-question")).to_be_disabled()
     expect(chat.locator('button[type="submit"]')).to_be_disabled()
-    expect(chat.locator("form")).to_be_hidden()
-    expect(chat.get_by_role("button", name="Check connection", exact=True)).to_be_disabled()
+    expect(chat.locator("form")).to_be_visible()
+    expect(chat.get_by_role('button', name='Speak to Buddy', exact=True)).to_be_disabled()
+    expect(chat.get_by_role("button", name="Check connection", exact=True)).to_have_count(0)
     expect(chat.locator("[data-buddy-turn]")).to_have_count(0)
     assert not fixtures.requests, "Checking readiness submitted a question"
     fixtures.fulfill(take_pending_status(page, fixtures), {"body": {"configured": False}})
     expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
+    expect(chat.get_by_role('button', name='Check connection', exact=True)).to_be_enabled()
     expect(chat.get_by_role("status")).to_contain_text("AI chat is unavailable right now")
     expect(chat.get_by_role("link", name="Explore our services", exact=True)).to_have_attribute("href", "/platform")
     expect(chat.get_by_role("link", name="Contact our team", exact=True)).to_have_attribute("href", "/contact")
@@ -896,7 +1087,10 @@ def readiness_gate(page, fixtures):
         chat.get_by_role("button", name="Check connection", exact=True).click()
         expect(chat).to_have_attribute("data-buddy-readiness", "unavailable")
         expect(chat.locator("#buddy-question")).to_be_disabled()
-        expect(chat.locator("form")).to_be_hidden()
+        expect(chat.locator("form")).to_be_visible()
+        expect(chat.locator('button[type="submit"]')).to_be_disabled()
+        expect(chat.get_by_role('button', name='Speak to Buddy', exact=True)).to_be_disabled()
+        expect(chat.get_by_role('button', name='Check connection', exact=True)).to_be_enabled()
         expect(chat.locator("[data-buddy-turn]")).to_have_count(0)
         assert not fixtures.requests, "Unavailable AI received a question"
     assert page.evaluate("window.__buddyStatusOptions.every(o => o.method === 'GET' && o.credentials === 'omit' && o.cache === 'no-store' && o.hasSignal)"), "Readiness check cached a result, sent credentials or lacked cancellation"
@@ -1227,6 +1421,10 @@ def short_viewport(page, fixtures):
     question.fill("An unfinished compact-screen question.")
     expect(question).to_be_in_viewport(ratio=1)
     page.keyboard.press("Tab")
+    microphone = chat.get_by_role('button', name='Speak to Buddy', exact=True)
+    expect(microphone).to_be_focused()
+    expect(microphone).to_be_in_viewport(ratio=1)
+    page.keyboard.press("Tab")
     expect(send_button).to_be_focused()
     expect(send_button).to_be_in_viewport(ratio=1)
     page.keyboard.press("Tab")
@@ -1345,6 +1543,7 @@ try:
         cases = [
             ("floating-placement-minimise", floating_placement_and_minimise, {}),
             ("simple-chat-disclosure", simple_chat_disclosure, {}),
+            ("speech-input", speech_input, {"reduced": True}),
             ("services-only-showcase-keyboard", services_showcase_and_topics, {}),
             ("fetch-history-sources", real_fetch_contract, {}),
             ("invalid-response-topics", invalid_response_topics, {"reduced": True}),

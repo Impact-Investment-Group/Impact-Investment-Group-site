@@ -133,6 +133,57 @@ export function preserveBuddyCanvasLayout(canvas, operation) {
   }
 }
 
+/** Show the page through Buddy, but never show his back through his front. */
+export function renderBuddyProjection(renderer, scene, camera) {
+  const gl = renderer.gl;
+  scene.updateMatrixWorld();
+  camera.updateMatrixWorld();
+  renderer.bindFramebuffer();
+  renderer.setViewport(renderer.width * renderer.dpr, renderer.height * renderer.dpr);
+  const meshes = renderer.getRenderList({ scene, camera, sort: true, frustumCull: true });
+  const surfaces = [], overlays = [];
+  for (const mesh of meshes) {
+    const uniforms = mesh.program.uniforms;
+    // Glass and airborne light/smoke must not cut holes in the character.
+    const overlay = uniforms.lens.value || uniforms.trace.value ||
+      /^(VortexRibbon_|Dust_)/.test(mesh.name || "");
+    (overlay ? overlays : surfaces).push(mesh);
+  }
+  const programs = new Set(surfaces.map((mesh) => mesh.program));
+  // OGL 1.0.11 does not cache colorMask. Clear with colour enabled before the
+  // prepass so the previous preserved canvas frame cannot ghost behind Buddy.
+  gl.colorMask(true, true, true, true);
+  renderer.enable(gl.DEPTH_TEST);
+  renderer.setDepthMask(true);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  try {
+    gl.colorMask(false, false, false, false);
+    for (const program of programs) {
+      program.uniforms.depthPass.value = 1;
+      program.depthWrite = true;
+    }
+    for (const mesh of surfaces) mesh.draw({ camera });
+    for (const program of programs) {
+      program.uniforms.depthPass.value = 0;
+      program.depthWrite = false;
+    }
+    gl.colorMask(true, true, true, true);
+    // Equal-depth samples pass LEQUAL using the identical deformation. No
+    // surface alpha or brand colour is changed, and rear fragments fail depth.
+    for (const mesh of surfaces) mesh.draw({ camera });
+    // Draw glass/effects after the surface colour, still testing against its
+    // depth. The face remains visible through the glass; rear ribbons stay rear.
+    for (const mesh of overlays) mesh.draw({ camera });
+  } finally {
+    gl.colorMask(true, true, true, true);
+    for (const program of programs) {
+      program.uniforms.depthPass.value = 0;
+      program.depthWrite = false;
+    }
+    renderer.setDepthMask(false);
+  }
+}
+
 function broadenRibbon(geometry) {
   const attribute = geometry.attributes.position,
     positions = attribute.data;
@@ -734,7 +785,7 @@ export async function createBuddyRenderer(canvas, library) {
         camera.updateMatrixWorld();
         fitLens(nodes, inspect);
         scene.updateMatrixWorld();
-        renderer.render({ scene, camera, sort: true });
+        renderBuddyProjection(renderer, scene, camera);
       },
       inspectRig() {
         return ["Hand.L", "Hand.R", "Grip.L", "Grip.R"].map((name) => {

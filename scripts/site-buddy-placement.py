@@ -201,7 +201,14 @@ with sync_playwright() as playwright:
                 assert_trip(page, animated=not reduced)
                 settled_in_slot(page, "chat")
                 one_actor(page, "chat")
-                assert abs(page.locator("[data-buddy-actor]").bounding_box()["width"] - 72) < 1, "Chat avatar did not fit its enlarged header portrait"
+                expected_size = 176 if width < 640 else 192
+                assert abs(page.locator("[data-buddy-actor]").bounding_box()["width"] - expected_size) < 1, "Buddy did not retain the full character stage below his speech bubble"
+                expect(page.locator('[data-buddy-chat]')).to_have_attribute('data-buddy-interface', 'speech')
+                bubble = page.locator('[data-buddy-speech-bubble]').bounding_box()
+                slot = page.locator('[data-buddy-slot="chat"]').bounding_box()
+                composer = page.locator('[data-buddy-chat] form').bounding_box()
+                assert bubble['y'] + bubble['height'] <= slot['y'] + 1, 'Reply bubble overlaps Buddy'
+                assert slot['y'] + slot['height'] <= composer['y'] + 1, 'Composer overlaps Buddy'
                 page.get_by_label("Your question for Buddy", exact=True).fill("Retain this draft while Buddy travels.")
                 page.locator("[data-buddy-chat]").get_by_role("button", name="Close Buddy", exact=True).click()
                 settled_in_slot(page, "page")

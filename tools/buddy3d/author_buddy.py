@@ -406,15 +406,15 @@ def digit_surface(suffix,digit,parts):
     """Retain real bend loops; never decimate a straight phalange into a plane."""
     points=[Vector(parts[0][1])]+[Vector(part[2]) for part in parts]
     lengths=[(points[i+1]-points[i]).length for i in range(len(parts))]
-    radius=parts[0][3];rows=[];distance=0;radial=20
+    radius=parts[0][3];rows=[];distance=0;radial=16
     direction=(points[1]-points[0]).normalized()
     for index in range(1,6):
         angle=index*math.pi/10;offset=-radius*math.cos(angle)
         rows.append((points[0]+direction*offset,direction,radius*math.sin(angle),offset))
     for span in range(len(parts)):
         p0,p1,p2,p3=points[max(0,span-1)],points[span],points[span+1],points[min(len(points)-1,span+2)]
-        for sample in range(1,13):
-            t=sample/12
+        for sample in range(1,9):
+            t=sample/8
             centre=.5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t*t+(-p0+3*p1-3*p2+p3)*t*t*t)
             tangent=.5*((-p0+p2)+2*(2*p0-5*p1+4*p2-p3)*t+3*(-p0+3*p1-3*p2+p3)*t*t)
             rows.append((centre,tangent.normalized(),radius*(1-.10*(distance+lengths[span]*t)/sum(lengths)),distance+lengths[span]*t))
@@ -423,54 +423,124 @@ def digit_surface(suffix,digit,parts):
     for index in range(1,5):
         angle=index*math.pi/10;offset=radius*.9*math.sin(angle)
         rows.append((points[-1]+direction*offset,direction,radius*.9*math.cos(angle),distance+offset))
-    vertices=[];faces=[];weights=[];boundaries=[];total=0
-    for length in lengths[:-1]:total+=length;boundaries.append(total)
+    vertices=[];faces=[]
     for centre,tangent,width,progress in rows:
         u=Vector((0,-1,0));u=(u-tangent*u.dot(tangent)).normalized();v=tangent.cross(u)
-        selected={parts[-1][0]:1}
-        for index,boundary in enumerate(boundaries):
-            blend_width=min(.030,lengths[index]*.30)
-            if progress<boundary-blend_width:selected={parts[index][0]:1};break
-            if progress<=boundary+blend_width:
-                blend=fade(boundary-blend_width,boundary+blend_width,progress)
-                selected={parts[index][0]:1-blend,parts[index+1][0]:blend};break
-        root_blend=fade(-radius*.4,.025,progress)
-        selected={name:value*root_blend for name,value in selected.items()}
-        selected['Hand.'+suffix]=1-root_blend
         for index in range(radial):
             angle=2*math.pi*index/radial
-            vertices.append(tuple(centre+width*(u*.94*math.cos(angle)+v*math.sin(angle))));weights.append(selected)
+            vertices.append(tuple(centre+width*(u*.94*math.cos(angle)+v*math.sin(angle))))
     for row in range(len(rows)-1):
         for index in range(radial):
             a=row*radial+index;b=row*radial+(index+1)%radial
             faces.append((a,b,b+radial,a+radial))
-    # Small closed pole fans keep rounded tips on the final bone exclusively.
+    # Closed pole fans retain a rounded fingertip after subdivision.
     for start in (True,False):
         point=points[0]-(points[1]-points[0]).normalized()*radius if start else points[-1]+direction*radius*.9
-        pole=len(vertices);vertices.append(tuple(point));weights.append({'Hand.'+suffix:1} if start else {parts[-1][0]:1})
+        pole=len(vertices);vertices.append(tuple(point))
         offset=0 if start else (len(rows)-1)*radial
         for index in range(radial):
             a=offset+index;b=offset+(index+1)%radial;faces.append((pole,b,a) if start else (pole,a,b))
     mesh=bpy.data.meshes.new(digit+'Surface.'+suffix);mesh.from_pydata(vertices,[],faces);mesh.update()
     obj=bpy.data.objects.new(digit+'Mesh.'+suffix,mesh);scene.collection.objects.link(obj)
-    finish(obj,obj.name,GLOVE);bind_skin(obj,weights)
+    finish(obj,obj.name,GLOVE)
     return obj
+
+def continuous_hand_weights(hand,suffix,wrist,domains):
+    """Skin the united palm without borrowing another finger's joint chain."""
+    chains={digit:[part for part in hand_parts[suffix] if part[0].startswith(digit+'.')]
+            for digit in ('Index','Middle','Ring','Pinky','Thumb')}
+    vertex_domains=[set() for vertex in hand.data.vertices]
+    for polygon in hand.data.polygons:
+        if polygon.material_index:
+            for index in polygon.vertices:vertex_domains[index].add(domains[polygon.material_index])
+    result=[]
+    for vertex in hand.data.vertices:
+        point=vertex.co;drop=wrist[2]-point.z
+        if drop<.07:
+            blend=fade(-.065,.085,drop)
+            result.append({'Forearm.'+suffix:1-blend,'Hand.'+suffix:blend});continue
+        candidates=[]
+        families=vertex_domains[vertex.index]
+        # Boolean surface provenance is authoritative. A thumb surface can
+        # lie closer to an index bone and still must never follow that finger.
+        selected_family=next(iter(families)) if len(families)==1 else None
+        for digit,parts in chains.items():
+            if selected_family and digit!=selected_family:continue
+            travelled=0;closest=None
+            for index,(name,start,end,radius) in enumerate(parts):
+                a,b=Vector(start),Vector(end);delta=b-a
+                fraction=max(0,min(1,(point-a).dot(delta)/delta.length_squared))
+                distance=(point-(a+fraction*delta)).length
+                progress=travelled+fraction*delta.length
+                if closest is None or distance<closest[0]:closest=(distance,progress,index)
+                travelled+=delta.length
+            candidates.append((*closest,digit,parts))
+        distance,progress,index,digit,parts=min(candidates,key=lambda value:value[0])
+        radius=parts[0][3]
+        # At the web all neighbouring fingers share the palm's transform.
+        # A digit becomes dominant only after its own surface has separated.
+        root_end=.15 if digit=='Thumb' else .14
+        influence=fade(.005,root_end,progress)*(1-fade(radius*1.15,radius*1.85,distance))
+        if influence<.001:result.append({'Hand.'+suffix:1});continue
+        selected={parts[-1][0]:1};boundary=0
+        for part_index,part in enumerate(parts[:-1]):
+            length=(Vector(part[2])-Vector(part[1])).length;boundary+=length
+            width=min(.030,length*.30)
+            if progress<boundary-width:selected={part[0]:1};break
+            if progress<=boundary+width:
+                mix=fade(boundary-width,boundary+width,progress)
+                selected={part[0]:1-mix,parts[part_index+1][0]:mix};break
+        result.append({'Hand.'+suffix:1-influence,**{key:value*influence for key,value in selected.items()}})
+    # A union creates shared topology, but its new junction vertices also
+    # need a continuous skin field. Smooth within each digit's own family;
+    # a palm web between two families always remains a palm transition.
+    neighbours=[set() for vertex in hand.data.vertices]
+    for edge in hand.data.edges:
+        a,b=edge.vertices;neighbours[a].add(b);neighbours[b].add(a)
+    families=[]
+    for index,weights in enumerate(result):
+        families_here=vertex_domains[index] or {name.split('.')[0] for name,value in weights.items()
+                                               if value>0 and name.split('.')[0] in chains}
+        families.append(next(iter(families_here)) if len(families_here)==1 else None)
+    for iteration in range(8):
+        previous=result;updated=[];next_families=list(families)
+        for index,weights in enumerate(previous):
+            if 'Forearm.'+suffix in weights:updated.append(weights);continue
+            family=families[index]
+            if family is None:
+                adjoining={families[other] for other in neighbours[index]}-{None}
+                if len(adjoining)==1:family=next(iter(adjoining));next_families[index]=family
+            if family is None:updated.append(weights);continue
+            names=['Hand.'+suffix]+[part[0] for part in chains[family]]
+            averaged={name:0 for name in names}
+            for other in neighbours[index]:
+                source=previous[other] if families[other] in (None,family) else {'Hand.'+suffix:1}
+                for name in names:averaged[name]+=source.get(name,0)/len(neighbours[index])
+            updated.append({name:.55*weights.get(name,0)+.45*averaged[name] for name in names})
+        result=updated;families=next_families
+    return result
 
 for side,suffix in ((1,'L'),(-1,'R')):
     shoulder,elbow,wrist=side_positions[suffix]
     limb_mesh(side,suffix)
     pieces=[]
     pieces.append(cube('SoftCuff_'+suffix,(wrist[0],wrist[1],wrist[2]-.02),(.21,.18,.12),GLOVE,bevel=.035))
-    pieces.append(sphere('Palm_'+suffix,(wrist[0],wrist[1],wrist[2]-.17),(.185,.102,.20),GLOVE))
-    # A soft thenar volume buries the proximal thumb bend in the palm. The
-    # independent thumb tube emerges beyond this pad with no exposed root cap.
-    pieces.append(sphere('ThenarPad_'+suffix,(wrist[0]-side*.13,wrist[1]-.020,wrist[2]-.13),(.095,.105,.12),GLOVE))
+    palm=sphere('Palm_'+suffix,(wrist[0]+side*.01,wrist[1],wrist[2]-.18),(.215,.105,.16),GLOVE,segments=32,rings=20)
+    for vertex in palm.data.vertices:
+        nx,nz=vertex.co.x/.215,vertex.co.z/.16
+        vertex.co.x=math.copysign(abs(nx)**.72*.215,nx)
+        vertex.co.z=math.copysign(abs(nz)**.66*.16,nz)
+        drop=.18-vertex.co.z
+        vertex.co.x*=.57+.43*fade(.04,.22,drop)
+    pieces.append(palm)
+    # The thenar eminence and knuckle bed join the digits to a real palm.
+    # Their roots are united below, rather than hidden as overlapping shells.
+    pieces.append(sphere('ThenarPad_'+suffix,(wrist[0]-side*.12,wrist[1]-.012,wrist[2]-.14),(.085,.092,.105),GLOVE))
     bpy.ops.object.select_all(action='DESELECT')
     for o in pieces:o.select_set(True)
     bpy.context.view_layer.objects.active=pieces[0];bpy.ops.object.join()
     hand=bpy.context.object;hand.name='HandMesh.'+suffix;hand.parent=rig
-    # Fuse only the largely rigid palm and cuff. Digit surfaces remain closed
-    # and independent below their buried roots, with no cross-finger web faces.
+    # Remesh only the palm. Distal phalange loops must survive every union.
     bpy.ops.object.transform_apply(location=True,rotation=True,scale=True)
     remesh=hand.modifiers.new('Continuous hand surface','REMESH');remesh.mode='VOXEL';remesh.voxel_size=.012;remesh.use_smooth_shade=True
     bpy.ops.object.modifier_apply(modifier=remesh.name)
@@ -482,22 +552,36 @@ for side,suffix in ((1,'L'),(-1,'R')):
     hand.data.materials.clear();hand.data.materials.append(GLOVE)
     for poly in hand.data.polygons:poly.material_index=0;poly.use_smooth=True
     hand.vertex_groups.clear()
-    skin=[]
-    for vertex in hand.data.vertices:
-        point=vertex.co
-        drop=wrist[2]-point.z
-        if drop<.085:
-            blend=fade(-.065,.085,drop)
-            skin.append({'Forearm.'+suffix:1-blend,'Hand.'+suffix:blend});continue
-        skin.append({'Hand.'+suffix:1})
-    bind_skin(hand,skin)
-    finished=[hand]
-    for digit in ('Index','Middle','Ring','Pinky','Thumb'):
+    domains=[None,'Index','Middle','Ring','Pinky','Thumb']
+    domain_materials=[bpy.data.materials.new('SkinDomain_'+digit+'_'+suffix) for digit in domains[1:]]
+    for material_slot in domain_materials:hand.data.materials.append(material_slot)
+    for domain_index,digit in enumerate(domains[1:],1):
         parts=[part for part in hand_parts[suffix] if part[0].startswith(digit+'.')]
-        finished.append(digit_surface(suffix,digit,parts))
-    bpy.ops.object.select_all(action='DESELECT')
-    for obj in finished:obj.select_set(True)
-    bpy.context.view_layer.objects.active=hand;bpy.ops.object.join()
+        finger=digit_surface(suffix,digit,parts)
+        finger.data.materials.clear()
+        for material_slot in hand.data.materials:finger.data.materials.append(material_slot)
+        for polygon in finger.data.polygons:polygon.material_index=domain_index
+        bpy.context.view_layer.objects.active=hand
+        union=hand.modifiers.new('Connected '+digit+' root','BOOLEAN');union.operation='UNION';union.solver='EXACT';union.object=finger
+        bpy.ops.object.modifier_apply(modifier=union.name)
+        bpy.data.objects.remove(finger,do_unlink=True)
+    # Smooth only the palm junction, retaining the ordered finger bend loops.
+    junction=hand.vertex_groups.new(name='PalmJunction')
+    for vertex in hand.data.vertices:
+        drop=wrist[2]-vertex.co.z
+        strength=fade(.07,.16,drop)*(1-fade(.31,.39,drop))
+        if strength>0:junction.add([vertex.index],strength,'REPLACE')
+    smooth=hand.modifiers.new('Continuous knuckle transitions','SMOOTH');smooth.factor=.35;smooth.iterations=3;smooth.vertex_group=junction.name
+    bpy.ops.object.modifier_apply(modifier=smooth.name)
+    subdivision=hand.modifiers.new('Soft connected knuckle loops','SUBSURF');subdivision.levels=1;subdivision.render_levels=1
+    bpy.ops.object.modifier_apply(modifier=subdivision.name)
+    hand.vertex_groups.clear()
+    skin=continuous_hand_weights(hand,suffix,wrist,domains)
+    for polygon in hand.data.polygons:polygon.use_smooth=True;polygon.material_index=0
+    hand.data.materials.clear();hand.data.materials.append(GLOVE)
+    for material_slot in domain_materials:bpy.data.materials.remove(material_slot)
+    bind_skin(hand,skin)
+    hand['surface']='one continuous palm, thumb and four fingers with preserved bend loops'
     hand['handedness']='left' if suffix=='L' else 'right';hand['digits']=5
     hand['palm_normal']=[0,-1,0]
     hand.select_set(False)
@@ -604,10 +688,18 @@ for name,duration in CLIPS.items():
         rotate('Root',0,0,math.sin(t*1.6)*.015)
         rig.pose.bones['Root'].location.z=math.sin(t*1.6)*.022
         if name=='Idle':
-            rotate('UpperArm.L',.045*math.sin(t*1.55),.018*wave,.018*math.sin(t*1.55))
-            rotate('UpperArm.R',-.038*math.sin(t*1.55+.4),-.018*wave,-.018*math.sin(t*1.55))
-            rotate('Forearm.L',.065*math.sin(t*1.55-.35),0,.025*wave)
-            rotate('Forearm.R',-.055*math.sin(t*1.55+.1),0,-.025*wave)
+            breath=math.sin(2*math.pi*u);follow=math.sin(2*math.pi*u-.45)
+            # Bent elbows and a slightly higher right hand give a relaxed
+            # stance. The palms follow the forearms, with no hanging wrists.
+            reach_hand('L',(1.20+.018*breath,-.18-.018*follow,-.48+.024*breath),
+                       Quaternion((0,1,0),.28+.025*follow)@Quaternion((1,0,0),.10))
+            reach_hand('R',(-1.16-.020*follow,-.27-.018*breath,-.25+.026*follow),
+                       Quaternion((0,1,0),-.42-.025*breath)@Quaternion((1,0,0),.06))
+            for suffix in ('L','R'):
+                for digit,base in [('Index',.11),('Middle',.16),('Ring',.21),('Pinky',.25),('Thumb',.12)]:
+                    for segment in range(1,3 if digit=='Thumb' else 4):
+                        curl=base*(1 if segment==1 else .72 if segment==2 else .50)
+                        rotate(f'{digit}.{segment:02d}.{suffix}',curl+.012*breath)
         elif name=='Wave':rotate('UpperArm.R',0,.1,-1.9*envelope);rotate('Forearm.R',.05,0,-.75*envelope);rotate('Hand.R',.2,0,wave*.30*envelope)
         elif name=='Listen':rotate('Root',.03,0,.07*envelope);rotate('Forearm.L',.12,0,.25*envelope)
         elif name=='Think':rotate('UpperArm.R',.35,0,-.58*envelope);rotate('Forearm.R',.5,0,-1.15*envelope)
@@ -625,7 +717,7 @@ for name,duration in CLIPS.items():
         elif name=='Build':
             strike=(.5+.5*math.sin(t*5))**2
             settle=min(1,t/.8,(duration-t)/.8);settle=settle*settle*(3-2*settle)
-            reach_hand('R',(-1.65,-.10,-.15+.35*strike),Quaternion((0,1,0),-math.pi/2+.30*strike),settle)
+            reach_hand('R',(-1.10,-.28,-.12+.34*strike),Quaternion((0,1,0),-math.pi/2+.30*strike),settle)
         elif name=='Glide':rotate('Root',0,.08,.12);rotate('Forearm.L',.1,0,.30);rotate('Forearm.R',.1,0,-.3)
         elif name.startswith('Closeup'):
             # Front is -Y in Blender. Positive fore/aft coordinates are never
@@ -742,11 +834,12 @@ bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'master.blend'))
 for other,group in forms.items():hide_tree(group,other!='property')
 ROOT.rotation_euler.z=0
 camera.data.type='PERSP';camera.data.lens=52
-for name,seconds in [('Wave',1.2),('Closeup_Thumb_R',1.6),('Closeup_Inspect_R',1.8),('Build',3.6)]:
+for name,seconds in [('Build',3.6),('Idle',1.0),('Wave',1.2),('Closeup_Thumb_R',1.6),('Closeup_Inspect_R',1.8)]:
+    camera.location=(0,-8,.4);camera.data.lens=52
     for track in rig.animation_data.nla_tracks:track.mute=True
     rig.animation_data.action=bpy.data.actions[name];scene.frame_set(round(seconds*30))
     bpy.context.view_layer.update()
-    if name.startswith('Closeup'):
+    if name.startswith('Closeup') or name=='Build':
         print('POSE_FRAME',name,'wrist',list(rig.pose.bones['Hand.R'].head),'lens',list(bpy.data.objects['LensCentre.R'].matrix_world.translation),flush=True)
     hide_tree(bpy.data.objects['Magnifier.R'],name!='Closeup_Inspect_R')
     hide_tree(bpy.data.objects['Hammer.R'],name!='Build');hide_tree(house,name!='Build')
@@ -758,7 +851,7 @@ for name,seconds in [('Wave',1.2),('Closeup_Thumb_R',1.6),('Closeup_Inspect_R',1
     ROOT.rotation_euler.z=.24
     scene.render.filepath=str(OUT/f'pose-{name}-quarter.png');bpy.ops.render.render(write_still=True)
     ROOT.rotation_euler.z=0
-    if name.startswith('Closeup'):
+    if name.startswith('Closeup') or name=='Build':
         previous_camera=(camera.location.copy(),camera.rotation_euler.copy(),camera.data.type,camera.data.lens,camera.data.ortho_scale)
         bpy.context.view_layer.update()
         palm=rig.pose.bones['Hand.R'];focus=palm.head+palm.matrix.to_3x3()@Vector((0,.15,0))
@@ -767,15 +860,27 @@ for name,seconds in [('Wave',1.2),('Closeup_Thumb_R',1.6),('Closeup_Inspect_R',1
             camera.location=focus+offset;camera.rotation_euler=(focus-camera.location).to_track_quat('-Z','Y').to_euler()
             scene.render.filepath=str(OUT/f'hand-{name}-{view}.png');bpy.ops.render.render(write_still=True)
         camera.location,camera.rotation_euler,camera.data.type,camera.data.lens,camera.data.ortho_scale=previous_camera
+    elif name=='Idle':
+        previous_camera=(camera.location.copy(),camera.rotation_euler.copy(),camera.data.type,camera.data.lens,camera.data.ortho_scale)
+        camera.data.type='ORTHO';camera.data.ortho_scale=.94
+        for suffix in ('L','R'):
+            palm=rig.pose.bones['Hand.'+suffix];focus=palm.head+palm.matrix.to_3x3()@Vector((0,.23,0))
+            for view,offset in [('front',Vector((0,-3,0))),('quarter',Vector((-1.4,-3,.3)))]:
+                camera.location=focus+offset;camera.rotation_euler=(focus-camera.location).to_track_quat('-Z','Y').to_euler()
+                scene.render.filepath=str(OUT/f'hand-Idle-{suffix}-{view}.png');bpy.ops.render.render(write_still=True)
+        camera.location,camera.rotation_euler,camera.data.type,camera.data.lens,camera.data.ortho_scale=previous_camera
 rig.animation_data.action=None
 for track in rig.animation_data.nla_tracks:track.mute=True
 for pose in rig.pose.bones:pose.rotation_quaternion=(1,0,0,0);pose.location=(0,0,0);pose.scale=(1,1,1)
 scene.frame_set(0);ROOT.rotation_euler.z=0
 for suffix in ('L','R'):
     hide_tree(bpy.data.objects['Magnifier.'+suffix],True);hide_tree(bpy.data.objects['Hammer.'+suffix],True)
+    bpy.data.objects['Eye_property_'+suffix].scale=(1,1,1)
 hide_tree(house,True)
 camera.location=(0,-8,.4);camera.rotation_euler=(Vector((0,0,0))-camera.location).to_track_quat('-Z','Y').to_euler()
 camera.data.type='ORTHO';camera.data.ortho_scale=4.4
+rig.animation_data.action=bpy.data.actions['Idle'];scene.frame_set(30)
+bpy.context.view_layer.update()
 for form in forms:
     for other,group in forms.items():hide_tree(group,other!=form)
     for view,angle in [('front',0),('three-quarter',.24),('profile',math.pi/2),('back',math.pi)]:
