@@ -591,6 +591,15 @@ def real_fetch_contract(page, fixtures):
     send(chat, "What does IIG do?")
     expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(1)
     assert fixtures.requests[-1]["history"] == [], "Clearing retained prior conversation history"
+    fixtures.answer("You're welcome.")
+    send(chat, "Thanks Buddy!")
+    expect(chat.locator('[data-buddy-turn="assistant"]')).to_have_count(2)
+    expect(chat).to_have_attribute('data-buddy-activity', 'approve')
+    expect(page.locator('[data-buddy-slot="chat"]')).to_have_attribute('data-buddy-slot-action', 'approve')
+    chat.get_by_label("Your question for Buddy", exact=True).fill("A new question")
+    expect(chat).to_have_attribute('data-buddy-activity', 'listen')
+    chat.get_by_label("Your question for Buddy", exact=True).fill("")
+    expect(chat).to_have_attribute('data-buddy-activity', 'idle')
     no_overflow(page)
     chat.screenshot(path=str(OUT / f"chat-{page.viewport_size['width']}.png"), animations="disabled")
 
@@ -1247,6 +1256,20 @@ def inspect_page_details(page, fixtures):
     expect(page.locator('[data-buddy-form]')).to_have_count(1)
     assert len(fixtures.requests) == before, 'Reading published page details made an AI request'
     no_overflow(page)
+    page.set_viewport_size({'width': page.viewport_size['width'], 'height': 320})
+    chat = chat_open(page)
+    chat.get_by_role('button', name='Explore this page with Buddy').click()
+    inspector = page.locator('[data-buddy-page-inspector]')
+    expect(inspector).to_be_visible()
+    box = inspector.bounding_box()
+    assert box['y'] >= 0 and box['y'] + box['height'] <= 320, 'Page inspector clips in a short viewport'
+    current_value = inspector.locator('p').nth(1).inner_text()
+    page.evaluate("""value => {
+      const node=[...document.querySelectorAll('main dd,main h2,main [data-buddy-detail]')].find(n=>n.textContent.replace(/\\s+/g,' ').trim()===value);
+      if(!node)throw new Error('Current inspected source not found');
+      node.textContent='Changed test page detail';
+    }""", current_value)
+    expect(inspector).to_have_count(0)
 
 
 try:

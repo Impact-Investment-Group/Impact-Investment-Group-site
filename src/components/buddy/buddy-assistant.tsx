@@ -77,6 +77,7 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const [typing, setTyping] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [approving, setApproving] = useState(false);
   const typingTimer = useRef<number | undefined>(undefined);
   const speakingTimer = useRef<number | undefined>(undefined);
   const abort = useRef<AbortController | null>(null);
@@ -89,19 +90,21 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
   const scroll = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const current = buddyTopics.find(item => item.id === topic)!;
-  const activity = busy ? "think" : typing ? "listen" : speaking ? "talk" : "idle";
+  const activity = busy ? "think" : typing ? "listen" : approving ? "approve" : speaking ? "talk" : "idle";
 
   const settleActivity = () => {
     window.clearTimeout(typingTimer.current);
     window.clearTimeout(speakingTimer.current);
     setTyping(false);
     setSpeaking(false);
+    setApproving(false);
   };
   const changeDraft = (value: string) => {
     setDraft(value);
     window.clearTimeout(typingTimer.current);
     window.clearTimeout(speakingTimer.current);
     setSpeaking(false);
+    setApproving(false);
     setTyping(value.length > 0);
     typingTimer.current = window.setTimeout(() => setTyping(false), 1500);
   };
@@ -226,8 +229,11 @@ export function BuddyAssistant({ initialTopic = "property", initialTrigger = nul
       if (isBuddyTopic(result.topic)) setTopic(result.topic);
       setRetry(null);
       setSpeaking(true);
+      // A friendly acknowledgement, never an endorsement of a property or return.
+      const thanks = /^(?:(?:many |great,? |perfect,? )?thanks|thank you)(?: buddy)?[!. ]*$/i.test(question.message.trim());
+      setApproving(thanks);
       const transformTime = changesForm && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? BUDDY_FORM_CHANGE_MS : 0;
-      speakingTimer.current = window.setTimeout(() => setSpeaking(false), transformTime + 1800);
+      speakingTimer.current = window.setTimeout(() => { setSpeaking(false); setApproving(false); }, transformTime + (thanks ? 3200 : 1800));
     } catch (failure) {
       if (id === requestId.current) setError(failure instanceof Error && failure.message === "limited" ? buddyCopy.limited : buddyCopy.unavailable);
     } finally {

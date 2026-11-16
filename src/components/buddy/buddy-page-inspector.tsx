@@ -6,27 +6,33 @@ import { buddyTopicForPath, isBuddyTopic, type BuddyTopic } from "@/content/budd
 
 type Detail = { node: HTMLElement; label: string; value: string; note: string; form: BuddyTopic };
 export const PAGE_INSPECTION_EVENT = "iig:inspect-page";
+const readable = (node: HTMLElement) => node.isConnected && node.getClientRects().length > 0 &&
+  !node.closest('nav, form, [aria-hidden="true"], [hidden], [inert], [data-buddy-chat]') &&
+  getComputedStyle(node).visibility !== "hidden";
+const words = (node: Element) => node.textContent?.replace(/\s+/g, " ").trim() ?? "";
+const noteOf = (node: HTMLElement) => node.tagName === "DD" ? Array.from(node.parentElement?.querySelectorAll<HTMLElement>("dd") ?? [])
+  .filter(item => item !== node && readable(item)).map(words).join(" ").slice(0, 400) : "";
+const labelOf = (node: HTMLElement) => node.tagName === "DD"
+  ? node.parentElement?.querySelector("dt")?.textContent?.trim() ?? "On this page" : "On this page";
+const formOf = (node: HTMLElement, pathname: string): BuddyTopic => {
+  const topic = node.closest<HTMLElement>("[data-buddy-topic]")?.dataset.buddyTopic;
+  return isBuddyTopic(topic) ? topic : buddyTopicForPath(pathname);
+};
 
 /** Only published page text, never form values, hidden tabs or assistant replies. */
 export function pageDetails(pathname: string): Detail[] {
   const main = document.querySelector("main");
   if (!main) return [];
-  const readable = (node: HTMLElement) => node.getClientRects().length > 0 &&
-    !node.closest('nav, form, [aria-hidden="true"], [hidden], [inert], [data-buddy-chat]') &&
-    getComputedStyle(node).visibility !== "hidden";
   const candidates = Array.from(main.querySelectorAll<HTMLElement>("dl dd, [data-buddy-detail], h2"));
   const seen = new Set<string>();
   return candidates.filter(readable).flatMap(node => {
-    const value = node.textContent?.replace(/\s+/g, " ").trim() ?? "";
+    const value = words(node);
     if (!value || value.length > 150 || seen.has(value)) return [];
     const isFigure = node.tagName === "DD";
     if (isFigure && !/[0-9£%]/.test(value)) return [];
     seen.add(value);
-    const row = isFigure ? node.parentElement : node.closest("section");
-    const label = (isFigure ? row?.querySelector("dt")?.textContent : "On this page")?.trim() ?? "On this page";
-    const note = isFigure ? Array.from(row?.querySelectorAll("dd") ?? []).filter(item => item !== node).map(item => item.textContent?.trim()).join(" ") : "";
-    const topic = node.closest<HTMLElement>("[data-buddy-topic]")?.dataset.buddyTopic;
-    return [{ node, label, value, note: note.slice(0, 400), form: isBuddyTopic(topic) ? topic : buddyTopicForPath(pathname) }];
+    const note = noteOf(node);
+    return [{ node, label: labelOf(node), value, note, form: formOf(node, pathname) }];
   }).sort((a, b) => {
     const middle = innerHeight / 2;
     return Math.abs(a.node.getBoundingClientRect().top - middle) - Math.abs(b.node.getBoundingClientRect().top - middle);
@@ -61,15 +67,17 @@ export function BuddyPageInspector() {
     let frame = 0;
     const position = () => {
       frame = 0;
-      if (!detail.node.isConnected) { setDetails([]); return; }
+      if (!readable(detail.node) || words(detail.node) !== detail.value || noteOf(detail.node) !== detail.note ||
+        labelOf(detail.node) !== detail.label || formOf(detail.node, pathname) !== detail.form) { setDetails([]); return; }
       const box = detail.node.getBoundingClientRect();
       const panel = card.current!;
       const outline = ring.current!;
       const width = Math.min(420, innerWidth - 24);
+      panel.style.width = `${width}px`;
+      panel.style.maxHeight = `${Math.max(1, innerHeight - 24)}px`;
       const left = Math.max(12, Math.min(innerWidth - width - 12, box.left));
       const below = box.bottom + 16;
       const top = below + panel.offsetHeight < innerHeight - 12 ? below : Math.max(76, box.top - panel.offsetHeight - 16);
-      panel.style.width = `${width}px`;
       panel.style.transform = `translate3d(${left}px,${Math.min(top, Math.max(12, innerHeight - panel.offsetHeight - 12))}px,0)`;
       outline.style.transform = `translate3d(${box.left}px,${box.top}px,0)`;
       outline.style.width = `${box.width}px`;
@@ -85,18 +93,22 @@ export function BuddyPageInspector() {
     close.current?.focus({ preventScroll: true });
     const observer = new ResizeObserver(schedule);
     observer.observe(detail.node); observer.observe(card.current);
+    const mutations = new MutationObserver(schedule);
+    const main = detail.node.closest("main");
+    if (main) mutations.observe(main, { subtree: true, childList: true, characterData: true, attributes: true,
+      attributeFilter: ["hidden", "aria-hidden", "inert", "class", "style", "data-buddy-topic"] });
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     window.addEventListener("keydown", key);
     window.addEventListener("iig:open-buddy", interrupted);
     return () => {
-      cancelAnimationFrame(frame); observer.disconnect();
+      cancelAnimationFrame(frame); observer.disconnect(); mutations.disconnect();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       window.removeEventListener("keydown", key);
       window.removeEventListener("iig:open-buddy", interrupted);
     };
-  }, [detail]);
+  }, [detail, pathname]);
 
   if (!detail) return null;
   return <>
