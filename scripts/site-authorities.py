@@ -174,6 +174,7 @@ def reading_controls(page, touch=False, lane_selector=LANE, track_selector=TRACK
         page.mouse.move(0, 0)
         assert sample_motion(page, track_selector)["delta"] < -0.5, "Motion does not resume after hover"
     if touch:
+        assert page.evaluate("matchMedia('(hover: none)').matches"), "Touch journey needs a non-hover device"
         lane.tap()
     else:
         lane.focus()
@@ -187,7 +188,10 @@ def reading_controls(page, touch=False, lane_selector=LANE, track_selector=TRACK
     lane.evaluate("node => {node.scrollLeft=node.scrollWidth}")
     assert lane.evaluate("node => node.scrollLeft > 100"), "Long catalogue is unreachable"
     lane.evaluate("node => node.blur()")
-    page.mouse.move(0, 0)
+    if not touch:
+        page.mouse.move(0, 0)
+    # A phone can retain :hover after the tap. Do not clear it with a synthetic
+    # mouse move: losing reading focus must resume motion on its own.
     expect(lane).to_have_js_property("scrollLeft", 0)
     running_animation(page, track_selector)
     resumed = sample_motion(page, track_selector)

@@ -636,9 +636,16 @@
    the lane did not stop for a pointer at all: a visitor trying to read a
    council's name had to tab into a lane whose contents are aria-hidden
    decoration. Reading the name is the only reason anybody stops it. */
-.logo-marquee:hover .logo-marquee__track,
 .logo-marquee:focus-within .logo-marquee__track {
   animation-play-state: paused;
+}
+
+/* Touch browsers can retain :hover after focus leaves. Their reading pause is
+   focus-driven; only a device with real hover should pause for the hover state. */
+@media (hover: hover) {
+  .logo-marquee:hover .logo-marquee__track {
+    animation-play-state: paused;
+  }
 }
 
 /* Touch motion is slower. Tapping the focusable lane enters the same static,
