@@ -393,6 +393,73 @@ with sync_playwright() as pw:
             expect(page.locator("textarea")).to_have_value("A test message that stays in this browser.")
             check(page.locator("form").count() == 1, "Contact form missing")
 
+        # ── Wave 1363: Register your interest registers an account, on one page.
+        def register_one_page():
+            # Every "Register your interest" link on the site opens /register.
+            page.goto(base + "/", wait_until="networkidle")
+            links = page.get_by_role("link", name=re.compile(r"^\s*Register your interest\s*$", re.I))
+            check(links.count() > 0, "No Register your interest link on the home page")
+            for href in links.evaluate_all("nodes => nodes.map(n => new URL(n.href).pathname)"):
+                check(href.rstrip("/") == "/register", f"Register your interest opens {href}, not /register")
+            # /register: the page's one h1, the role tiles, and no form until a role is chosen.
+            page.goto(base + "/register", wait_until="networkidle")
+            expect(page.locator("h1")).to_have_count(1)
+            expect(page.locator('[data-role="care-provider"]')).to_be_visible()
+            expect(page.locator("#email")).to_have_count(0)
+            # Choosing a role opens the account form on the same page, under it.
+            page.locator('[data-role="care-provider"]').click()
+            expect(page.locator("#email")).to_be_visible()
+            check(urlparse(page.url).path.rstrip("/") == "/register", f"Choosing a role left the page: {page.url}")
+            expect(page.locator("h1")).to_have_count(1)
+            expect(page.locator("h2#registration-heading")).to_have_text("Create your account")
+            expect(page.locator("[data-register-role]")).to_have_attribute("data-register-role", "care-provider")
+            check(page.locator("h1").bounding_box()["y"] < page.locator("#email").bounding_box()["y"], "The form is not under the page heading")
+            check_crafted_state("register-role-chosen")
+            # All roles brings the tiles back, still on the same page.
+            page.get_by_role("link", name="All roles", exact=True).click()
+            expect(page.locator('[data-role="investor"]')).to_be_visible()
+            expect(page.locator("#email")).to_have_count(0)
+            # /register/<role> stays a working address with that role chosen.
+            page.goto(base + "/register/investor", wait_until="networkidle")
+            expect(page.locator("[data-register-role]")).to_have_attribute("data-register-role", "investor")
+            expect(page.locator("#email")).to_be_visible()
+            expect(page.locator("h1")).to_have_count(1)
+            # The resident path keeps its crisis numbers above the questions.
+            page.goto(base + "/register/resident", wait_until="networkidle")
+            crisis = page.locator('[data-register-role="resident"] aside a[href^="tel:"]').first
+            expect(crisis).to_be_visible()
+            check(crisis.bounding_box()["y"] < page.locator("#email").bounding_box()["y"], "Crisis numbers are not above the resident form")
+
+        def contact_offers_no_waitlist():
+            page.goto(base + "/contact", wait_until="networkidle")
+            expect(page.locator("#enquiry-form-title")).to_have_text("Talk to the team")
+            expect(page.get_by_role("radio", name="Register your interest", exact=True)).to_have_count(0)
+            expect(page.locator('option[value="waitlist"]')).to_have_count(0)
+            # An old link carrying the retired waitlist enquiry lands on /register.
+            page.goto(base + "/contact/?enquiry=waitlist", wait_until="networkidle")
+            page.wait_for_url(re.compile(r"/register/?$"))
+            expect(page.locator('[data-role="investor"]')).to_be_visible()
+
+        def talk_to_the_team_sends_without_a_slot():
+            # The preview slots are optional. With none chosen the enquiry must
+            # still leave the browser (this context aborts every POST, so the
+            # attempt is what is counted, never a delivery).
+            attempts = []
+            listener = lambda request: attempts.append(request.url) if request.method == "POST" and request.url.endswith("/public/enquiry") else None
+            page.on("request", listener)
+            try:
+                page.goto(base + "/contact/?enquiry=demo", wait_until="networkidle")
+                page.locator("#name").fill("Browser example")
+                page.locator("#email").fill("example@example.com")
+                page.locator("#organisation").fill("Example organisation")
+                page.locator("#role").select_option("Other")
+                page.locator("#message").fill("A browser-only example message, never delivered.")
+                page.locator('form button[type="submit"]').click()
+                page.wait_for_timeout(1200)
+                check(len(attempts) == 1, f"Talk to the team without a slot sent {len(attempts)} requests")
+            finally:
+                page.remove_listener("request", listener)
+
         def mobile_menu():
             page.goto(base + "/", wait_until="networkidle")
             trigger = page.locator('header button[aria-controls="site-drawer"]')
@@ -434,8 +501,10 @@ with sync_playwright() as pw:
             page.goto(base + "/contact/?enquiry=investor&type=true&role=%5B%22Investor%22%5D&unexpected=ignored", wait_until="networkidle")
             expect(page.locator("#enquiry-form-title")).to_have_text("Investor enquiry")
             expect(page.locator("#role")).to_have_value("")
+            # Wave 1363: the fallback is Talk to the team. The waitlist route,
+            # headed "Register your interest", no longer exists on this form.
             page.goto(base + "/contact/?enquiry=123&type=%7B%22id%22%3A%22support%22%7D&role=false", wait_until="networkidle")
-            expect(page.locator("#enquiry-form-title")).to_have_text("Register your interest")
+            expect(page.locator("#enquiry-form-title")).to_have_text("Talk to the team")
             expect(page.locator("#role")).to_have_value("")
 
         def check_crafted_state(name):
@@ -812,6 +881,9 @@ with sync_playwright() as pw:
         interaction("contact validation without submission", contact_validation)
         interaction("registration progress and password feedback", registration_feedback)
         interaction("contact enquiry deep links", contact_deep_links)
+        interaction("register your interest registers an account on one page", register_one_page)
+        interaction("contact offers no waitlist enquiry", contact_offers_no_waitlist)
+        interaction("talk to the team sends without a slot", talk_to_the_team_sends_without_a_slot)
         if width == 390:
             interaction("home photo controls", photos)
             interaction("mobile menu focus return", mobile_menu)
