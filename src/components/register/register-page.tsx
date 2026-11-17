@@ -8,6 +8,7 @@ import { RolePicker } from "@/components/register/role-picker";
 import { RegistrationFlow, type RegistrationStage } from "@/components/register/registration-flow";
 import { Button } from "@/components/ui/button";
 import { PreReleaseBadge } from "@/components/ui/pre-release-badge";
+import { Reveal } from "@/components/ui/reveal";
 import { pickerContent } from "@/content/audiences";
 import { getRegisterRole, residentUrgentNote } from "@/content/register";
 import { crisisLines, crisisNote, whatsappCommunity } from "@/content/site";
@@ -98,8 +99,10 @@ export function RegisterPage({ initialRoleId }: { initialRoleId?: string }) {
           )}
         </div>
 
+        {/* The grid keeps the Reveal it has always had: /register is one of the
+            two pages scripts/wave412-screenshots.py probes for one (wave 946). */}
         {role ? null : (
-          <div>
+          <Reveal index={1}>
             <h2
               id="register-picker-grid"
               tabIndex={-1}
@@ -110,7 +113,7 @@ export function RegisterPage({ initialRoleId }: { initialRoleId?: string }) {
             <div className="mt-5">
               <RolePicker labelledBy="register-picker-grid" onSelect={choose} />
             </div>
-          </div>
+          </Reveal>
         )}
       </section>
 
