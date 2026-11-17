@@ -20,12 +20,12 @@ import { isPlainClick } from "@/lib/plain-click";
  * platform as a certain role, and not actually registered for an account."
  *
  * In order, top to bottom: the page's one h1 and its lede, then who you are
- * (the tiles), then the account form for that role. Choosing a tile does not
- * leave the page: the tiles fold away to the existing role row ("All roles"
- * and the chosen role), and the form opens under it with the keyboard and the
- * screen on its heading. /register/<role> is the same page with that role
- * already chosen, so every role address keeps working and is prerendered as
- * the form itself.
+ * (the tiles), then the account form for that role. Choosing a tile moves the
+ * address to /register/<role>, which is this same page with that role chosen:
+ * the tiles fold away to the existing role row ("All roles" and the chosen
+ * role) and the form opens under it, with the keyboard and the screen on its
+ * heading, or for the resident on the crisis card straight under the row.
+ * Every role address keeps working and is prerendered as the form itself.
  *
  * Once the account is created the row loses its "All roles" control: the
  * account exists in that role, and choosing another here would start a second
@@ -34,31 +34,46 @@ import { isPlainClick } from "@/lib/plain-click";
  * No string on this page is new. Every one was already on /register or on
  * /register/<role>.
  */
+/**
+ * Where the screen and the keyboard go when the page arrives after a choice
+ * made on it. Module scope because the move is a router navigation between the
+ * two register routes, which mounts a new page: the choice is made on one
+ * instance and honoured by the next. Set only by a plain click, read once.
+ */
+let arrival: "form" | "crisis" | "roles" | null = null;
+
+const arrivalTarget = {
+  form: "registration-heading",
+  crisis: "register-crisis-heading",
+  roles: "register-picker-grid",
+} as const;
+
 export function RegisterPage({ initialRoleId }: { initialRoleId?: string }) {
-  const [roleId, setRoleId] = React.useState<string | undefined>(initialRoleId);
   const [stage, setStage] = React.useState<RegistrationStage>("account");
-  const moved = React.useRef<"form" | "roles" | null>(null);
-  const role = roleId ? getRegisterRole(roleId) : undefined;
+  const role = initialRoleId ? getRegisterRole(initialRoleId) : undefined;
 
   React.useEffect(() => {
-    const target = moved.current;
+    const target = arrival;
+    arrival = null;
     if (!target) return;
-    moved.current = null;
-    const node = document.getElementById(
-      target === "form" ? "registration-heading" : "register-picker-grid",
-    );
+    const node = document.getElementById(arrivalTarget[target]);
     if (!node) return;
     const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ? "instant"
       : "smooth";
     node.focus({ preventScroll: true });
-    node.scrollIntoView({ behavior, block: "start" });
-  }, [roleId]);
+    /* WAVE 1363 (the second reading's major): THE RESIDENT LANDS ON THE CRISIS
+       NUMBERS, never on the form below them. The role row is scrolled to the
+       top of the screen and the card sits straight under it, so its heading
+       and its numbers are what somebody in difficulty sees the moment they
+       pick that tile. Every other role lands on the account form's heading. */
+    const anchor =
+      target === "crisis" ? (document.getElementById("register-role-row") ?? node) : node;
+    anchor.scrollIntoView({ behavior, block: "start" });
+  }, []);
 
   const choose = (id: string) => {
-    moved.current = "form";
-    setStage("account");
-    setRoleId(id);
+    arrival = id === "resident" ? "crisis" : "form";
   };
 
   return (
@@ -104,15 +119,16 @@ export function RegisterPage({ initialRoleId }: { initialRoleId?: string }) {
           data-register-role={role.id}
           className="registration-page mx-auto w-full max-w-[1040px] px-5 pb-8 sm:px-8 lg:pb-12"
         >
-          <div className="registration-context mx-auto mb-4 flex max-w-[820px] flex-wrap items-center justify-between gap-4">
+          <div
+            id="register-role-row"
+            className="registration-context mx-auto mb-4 flex max-w-[820px] flex-wrap items-center justify-between gap-4"
+          >
             {stage === "account" ? (
               <Link
                 to="/register"
+                resetScroll={false}
                 onClick={(event) => {
-                  if (!isPlainClick(event)) return;
-                  event.preventDefault();
-                  moved.current = "roles";
-                  setRoleId(undefined);
+                  if (isPlainClick(event)) arrival = "roles";
                 }}
                 className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-ink-muted underline underline-offset-4 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
               >
@@ -143,7 +159,11 @@ export function RegisterPage({ initialRoleId }: { initialRoleId?: string }) {
                 <div className="flex items-start gap-3">
                   <LifeBuoy aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-teal-600" />
                   <div>
-                    <h2 className="font-heading text-[19px] font-semibold text-ink">
+                    <h2
+                      id="register-crisis-heading"
+                      tabIndex={-1}
+                      className="font-heading text-[19px] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+                    >
                       {residentUrgentNote.heading}
                     </h2>
                     <p className="measure mt-2 text-[15px] leading-relaxed text-ink-muted">

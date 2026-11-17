@@ -6,10 +6,11 @@ import { isPlainClick } from "@/lib/plain-click";
 import "./registration-experience.css";
 
 /**
- * WAVE 1363: the tiles CHOOSE IN PLACE. Each is still a real link to
- * /register/<id>, so it works before hydration, without JavaScript and in a
- * new tab; once the page is live a plain click chooses the role on this page
- * instead of leaving it, and the account form opens underneath.
+ * WAVE 1363: each tile is a real link to /register/<id>, so it works before
+ * hydration, without JavaScript and in a new tab. Once the page is live the
+ * router moves the address there with a history entry and no reload (Back
+ * returns to the tiles, a reload keeps the role), and `onSelect` tells the
+ * page where to put the screen and the keyboard when it arrives.
  */
 export function RolePicker({
   labelledBy,
@@ -51,10 +52,9 @@ export function RolePicker({
                 params={{ role: role.id }}
                 data-role={role.id}
                 className="registration-role-link"
+                resetScroll={false}
                 onClick={(event) => {
-                  if (!onSelect || !isPlainClick(event)) return;
-                  event.preventDefault();
-                  onSelect(role.id);
+                  if (onSelect && isPlainClick(event)) onSelect(role.id);
                 }}
               >
                 {body}
