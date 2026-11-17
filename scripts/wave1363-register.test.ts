@@ -27,7 +27,11 @@ describe("wave 1363 enquiry form", () => {
     const none = buildEnquiryPayload({ ...demo, slot: null }, "demo", "Platform team");
     expect("slot" in none).toBe(false);
     expect(none).toMatchObject({ ...demo, route: "demo", routedTo: "Platform team" });
-    const chosen = buildEnquiryPayload({ ...demo, slot: "Friday · 09:30" }, "demo", "Platform team");
+    const chosen = buildEnquiryPayload(
+      { ...demo, slot: "Friday · 09:30" },
+      "demo",
+      "Platform team",
+    );
     expect(chosen.slot).toBe("Friday · 09:30");
   });
 
