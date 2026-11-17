@@ -9,6 +9,11 @@ import { contactDetails } from "@/content/site";
 import { cn } from "@/lib/utils";
 import { useDrawMark } from "@/hooks/use-draw-mark";
 import {
+  buildEnquiryPayload,
+  schemaFor,
+  type FormValues,
+} from "@/components/contact/enquiry-schema";
+import {
   previewSlots,
   entityTypeOptions,
   enquiryRoutes,
@@ -23,59 +28,6 @@ import {
  * One form for all six enquiry routes. The selected route changes the fields,
  * the routing and the promised reply time — there are no separate forms.
  */
-
-const base = {
-  name: z.string().trim().min(2, "Please give your full name").max(100),
-  email: z.string().trim().email("Use a valid work email address").max(255),
-  organisation: z.string().trim().min(2, "Please name your organisation").max(150),
-  role: z.string().trim().min(1, "Please select your role"),
-};
-
-function schemaFor(route: EnquiryRouteId) {
-  const message = z.string().trim().min(10, "Please give us a little more detail").max(2000);
-
-  switch (route) {
-    case "investor":
-      return z.object({
-        ...base,
-        ticketSize: z.string().trim().min(1, "Please choose a ticket size"),
-        acknowledgement: z.literal(true, {
-          errorMap: () => ({ message: "Please confirm you understand the risk statement" }),
-        }),
-      });
-    case "partner":
-      return z.object({
-        ...base,
-        message,
-        holdings: z.string().trim().min(10, "Tell us what you hold or what you need").max(2000),
-        entityType: z.string().trim().min(1, "Please choose an entity type"),
-      });
-    case "media":
-      return z.object({
-        ...base,
-        message,
-        deadline: z.string().trim().min(1, "Please give your deadline"),
-      });
-    case "demo":
-      return z.object({ ...base, message, slot: z.string().optional() });
-    default:
-      return z.object({ ...base, message });
-  }
-}
-
-type FormValues = {
-  name: string;
-  email: string;
-  organisation: string;
-  role: string;
-  message?: string;
-  slot?: string;
-  ticketSize?: string;
-  acknowledgement?: boolean;
-  holdings?: string;
-  entityType?: string;
-  deadline?: string;
-};
 
 /*
  * ⚠ WAVE 414: text-base, NOT text-sm, AND IT IS 16px FOR ONE REASON.
@@ -189,7 +141,7 @@ export function EnquiryForm({
       const res = await fetch(apiUrl("/public/enquiry"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, route, routedTo: config.routedTo }),
+        body: JSON.stringify(buildEnquiryPayload(values, route, config.routedTo)),
       });
       if (!res.ok) throw new Error("Request failed");
       setSent(true);
@@ -519,11 +471,7 @@ export function EnquiryForm({
             {isSubmitting ? (
               <Loader2 aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
             ) : null}
-            {isSubmitting
-              ? "Sending…"
-              : route === "waitlist"
-                ? "Register your interest"
-                : "Send enquiry"}
+            {isSubmitting ? "Sending…" : "Send enquiry"}
           </Button>
         </div>
         <p className="font-heading text-sm font-semibold text-ink-muted">{config.reply}</p>

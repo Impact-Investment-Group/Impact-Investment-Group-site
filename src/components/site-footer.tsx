@@ -341,14 +341,23 @@ export function SiteFooter() {
               <h2 className="eyebrow text-teal-600">Contact routes</h2>
               <ul className="flex flex-col gap-1 text-[13px]">
                 {contactRoutes.map((item) => (
-                  <li key={item.enquiry}>
-                    <Link
-                      to="/contact"
-                      search={{ enquiry: item.enquiry, type: item.enquiry }}
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center px-2 text-ink-muted transition-colors duration-200 hover:text-orange-700 lg:min-h-0 lg:min-w-0 lg:px-0 lg:py-px"
-                    >
-                      {item.label}
-                    </Link>
+                  <li key={item.label}>
+                    {"to" in item ? (
+                      <Link
+                        to={item.to}
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center px-2 text-ink-muted transition-colors duration-200 hover:text-orange-700 lg:min-h-0 lg:min-w-0 lg:px-0 lg:py-px"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/contact"
+                        search={{ enquiry: item.enquiry, type: item.enquiry }}
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center px-2 text-ink-muted transition-colors duration-200 hover:text-orange-700 lg:min-h-0 lg:min-w-0 lg:px-0 lg:py-px"
+                      >
+                        {item.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

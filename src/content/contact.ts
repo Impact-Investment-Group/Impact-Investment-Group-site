@@ -2,14 +2,15 @@
 
 import { companyRecord, privacyPolicyHref } from "@/content/legal";
 
-export const enquiryRouteIds = [
-  "demo",
-  "waitlist",
-  "partner",
-  "investor",
-  "media",
-  "support",
-] as const;
+/**
+ * WAVE 1363 (Callum, 17 Nov 2026): no `waitlist` route. Registering your
+ * interest creates an account by role on /register; an enquiry headed
+ * "Register your interest" left people believing they had registered when no
+ * account existed. Old `?enquiry=waitlist` links are forwarded to /register by
+ * routes/contact.tsx. The platform still accepts a `waitlist` enquiry; nothing
+ * here sends one.
+ */
+export const enquiryRouteIds = ["demo", "partner", "investor", "media", "support"] as const;
 
 export type EnquiryRouteId = (typeof enquiryRouteIds)[number];
 
@@ -28,13 +29,6 @@ export const enquiryRoutes: EnquiryRoute[] = [
     id: "demo",
     label: "Talk to the team",
     subline: "See the platform and ask us your questions · 30 min",
-    reply: "We reply within one working day",
-    routedTo: "Platform team",
-  },
-  {
-    id: "waitlist",
-    label: "Register your interest",
-    subline: "Join the waitlist for platform access",
     reply: "We reply within one working day",
     routedTo: "Platform team",
   },
@@ -174,7 +168,6 @@ export const registeredOffice = {
   address: companyRecord.registeredOffice,
   number: `Registered in ${companyRecord.jurisdiction}, company number ${companyRecord.number}`,
 };
-
 
 /* ══ THE REASSURANCE RAIL ════════════════════════════════════════════════ */
 

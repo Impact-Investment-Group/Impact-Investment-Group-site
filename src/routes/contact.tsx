@@ -18,8 +18,11 @@ function validateContactSearch(search: Record<string, unknown>): ContactSearch {
   return clean;
 }
 
+// WAVE 1363: the default is "Talk to the team". It used to be the waitlist
+// route, so a plain Contact Us link opened a form headed "Register your
+// interest" that registered nothing.
 function toRouteId(value: string | undefined): EnquiryRouteId {
-  return enquiryRouteIds.includes(value as EnquiryRouteId) ? (value as EnquiryRouteId) : "waitlist";
+  return enquiryRouteIds.includes(value as EnquiryRouteId) ? (value as EnquiryRouteId) : "demo";
 }
 
 export const Route = createFileRoute("/contact")({
@@ -54,6 +57,12 @@ function ContactPage() {
   // that same form first, then apply the visitor's deep-linked selection.
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
+  // WAVE 1363: a link still carrying the retired waitlist enquiry goes to the
+  // one place an interest is registered, /register.
+  const retiredWaitlist = enquiry === "waitlist" || type === "waitlist";
+  useEffect(() => {
+    if (retiredWaitlist) void navigate({ to: "/register", replace: true });
+  }, [retiredWaitlist, navigate]);
   const selected = toRouteId(hydrated ? (type ?? enquiry) : undefined);
 
   const select = (id: EnquiryRouteId) => {

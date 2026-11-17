@@ -9,7 +9,6 @@ import {
   Megaphone,
   Phone,
   Plus,
-  UsersRound,
 } from "lucide-react";
 import { EnquiryForm } from "@/components/contact/enquiry-form";
 import { BuddySlot } from "@/components/buddy/buddy-slot";
@@ -24,7 +23,6 @@ import "./contact-experience.css";
 const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
 const enquiryIcons = {
   demo: CalendarDays,
-  waitlist: UsersRound,
   partner: Handshake,
   investor: HandCoins,
   media: Megaphone,

@@ -122,10 +122,16 @@ export const footerSiteLinks: NavItem[] = [
   { label: "Contact Us", to: "/contact" },
 ];
 
-/** Each deep-links to /contact with the enquiry type pre-selected. */
-export const contactRoutes: { label: string; enquiry: string }[] = [
+/**
+ * Each deep-links to /contact with the enquiry type pre-selected, except
+ * `Register your interest`, which opens /register (wave 1363): an interest is
+ * registered as an account by role, never sent as an enquiry.
+ */
+export const contactRoutes: (
+  { label: string; enquiry: string } | { label: string; to: "/register" }
+)[] = [
   { label: "Talk to the team", enquiry: "demo" },
-  { label: "Register your interest", enquiry: "waitlist" },
+  { label: "Register your interest", to: "/register" },
   { label: "Become a partner", enquiry: "partner" },
   { label: "Investor enquiry", enquiry: "investor" },
   { label: "Media", enquiry: "media" },
