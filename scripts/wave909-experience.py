@@ -406,19 +406,53 @@ with sync_playwright() as pw:
             expect(page.locator("h1")).to_have_count(1)
             expect(page.locator('[data-role="care-provider"]')).to_be_visible()
             expect(page.locator("#email")).to_have_count(0)
-            # Choosing a role opens the account form on the same page, under it.
+            # Choosing a role opens the account form under the role row, and the
+            # router moves the address to /register/<role> without a reload.
+            page.evaluate("window.__wave1363 = 'same-document'")
             page.locator('[data-role="care-provider"]').click()
             expect(page.locator("#email")).to_be_visible()
-            check(urlparse(page.url).path.rstrip("/") == "/register", f"Choosing a role left the page: {page.url}")
+            page.wait_for_url(re.compile(r"/register/care-provider/?$"))
+            check(page.evaluate("window.__wave1363") == "same-document", "Choosing a role reloaded the page")
+            expect(page.locator("#registration-heading")).to_be_focused()
             expect(page.locator("h1")).to_have_count(1)
             expect(page.locator("h2#registration-heading")).to_have_text("Create your account")
             expect(page.locator("[data-register-role]")).to_have_attribute("data-register-role", "care-provider")
             check(page.locator("h1").bounding_box()["y"] < page.locator("#email").bounding_box()["y"], "The form is not under the page heading")
             check_crafted_state("register-role-chosen")
-            # All roles brings the tiles back, still on the same page.
-            page.get_by_role("link", name="All roles", exact=True).click()
+            # A reload keeps the role; Back returns to the tiles at /register.
+            page.reload(wait_until="networkidle")
+            expect(page.locator("[data-register-role]")).to_have_attribute("data-register-role", "care-provider")
+            page.go_back(wait_until="networkidle")
+            page.wait_for_url(re.compile(r"/register/?$"))
             expect(page.locator('[data-role="investor"]')).to_be_visible()
             expect(page.locator("#email")).to_have_count(0)
+            # All roles goes back to /register through the router, without a reload.
+            page.goto(base + "/register/landlord", wait_until="networkidle")
+            page.evaluate("window.__wave1363 = 'same-document'")
+            page.get_by_role("link", name="All roles", exact=True).click()
+            page.wait_for_url(re.compile(r"/register/?$"))
+            expect(page.locator('[data-role="investor"]')).to_be_visible()
+            expect(page.locator("#email")).to_have_count(0)
+            check(page.evaluate("window.__wave1363") == "same-document", "All roles reloaded the page")
+            # Choosing Resident in place lands on the crisis numbers, never the form below them.
+            page.locator('[data-role="resident"]').click()
+            page.wait_for_url(re.compile(r"/register/resident/?$"))
+            expect(page.locator("#register-crisis-heading")).to_be_focused()
+            page.wait_for_timeout(300)
+            card = page.locator('[data-register-role="resident"] aside').first
+            first_number = card.locator('a[href^="tel:"]').first
+            in_view = "n => { const r = n.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }"
+            check(page.locator("#register-crisis-heading").evaluate(in_view), "Crisis heading is not in view after choosing Resident")
+            check(first_number.evaluate(in_view), "First crisis number is not in view after choosing Resident")
+            # A direct load of /register/resident shows them above the fold on a phone.
+            if width == 390:
+                page.set_viewport_size({"width": 390, "height": 844})
+            try:
+                page.goto(base + "/register/resident", wait_until="networkidle")
+                check(page.locator("#register-crisis-heading").evaluate(in_view), "Crisis heading is below the fold on a direct load")
+                check(page.locator('[data-register-role="resident"] aside a[href^="tel:"]').first.evaluate(in_view), "First crisis number is below the fold on a direct load")
+            finally:
+                page.set_viewport_size({"width": width, "height": 900})
             # /register/<role> stays a working address with that role chosen.
             page.goto(base + "/register/investor", wait_until="networkidle")
             expect(page.locator("[data-register-role]")).to_have_attribute("data-register-role", "investor")
