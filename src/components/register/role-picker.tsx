@@ -2,9 +2,22 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { RoleIcon } from "@/components/register/role-icon";
 import { registerRoles } from "@/content/audiences";
+import { isPlainClick } from "@/lib/plain-click";
 import "./registration-experience.css";
 
-export function RolePicker({ labelledBy }: { labelledBy: string }) {
+/**
+ * WAVE 1363: the tiles CHOOSE IN PLACE. Each is still a real link to
+ * /register/<id>, so it works before hydration, without JavaScript and in a
+ * new tab; once the page is live a plain click chooses the role on this page
+ * instead of leaving it, and the account form opens underneath.
+ */
+export function RolePicker({
+  labelledBy,
+  onSelect,
+}: {
+  labelledBy: string;
+  onSelect?: (roleId: string) => void;
+}) {
   return (
     <ul aria-labelledby={labelledBy} className="registration-role-list">
       {registerRoles.map((role) => {
@@ -38,6 +51,11 @@ export function RolePicker({ labelledBy }: { labelledBy: string }) {
                 params={{ role: role.id }}
                 data-role={role.id}
                 className="registration-role-link"
+                onClick={(event) => {
+                  if (!onSelect || !isPlainClick(event)) return;
+                  event.preventDefault();
+                  onSelect(role.id);
+                }}
               >
                 {body}
               </Link>

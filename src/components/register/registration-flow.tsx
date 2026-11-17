@@ -174,8 +174,25 @@ function QuestionInput({
   );
 }
 
-export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
-  const [stage, setStage] = React.useState<"account" | "survey" | "done">("account");
+export type RegistrationStage = "account" | "survey" | "done";
+
+/**
+ * WAVE 1363: the flow sits under the role tiles on the one register page, and
+ * the page's h1 is the page's own, so the flow's step headings are h2. The
+ * page is told the stage so it can stop offering another role once the
+ * account exists.
+ */
+export function RegistrationFlow({
+  role,
+  onStageChange,
+}: {
+  role: RegisterRoleContent;
+  onStageChange?: (stage: RegistrationStage) => void;
+}) {
+  const [stage, setStage] = React.useState<RegistrationStage>("account");
+  React.useEffect(() => {
+    onStageChange?.(stage);
+  }, [stage, onStageChange]);
   const [details, setDetails] = React.useState<Details>(emptyDetails);
   const [errors, setErrors] = React.useState<Partial<Record<AccountField, string>>>({});
   const [showPassword, setShowPassword] = React.useState(false);
@@ -508,14 +525,14 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
             >
               <LockKeyhole size={22} />
             </span>
-            <h1
+            <h2
               ref={heading}
               id="registration-heading"
               tabIndex={-1}
               className="registration-heading font-heading text-[clamp(2rem,4vw,3rem)] font-bold leading-tight text-ink"
             >
               {copy.accountTitle}
-            </h1>
+            </h2>
             <p className="mt-3 max-w-xl text-base leading-relaxed text-ink-muted">
               {copy.accountIntro}
             </p>
@@ -816,14 +833,14 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
                   ) : null}
                   {role.label} preferences
                 </p>
-                <h1
+                <h2
                   ref={heading}
                   id="registration-heading"
                   tabIndex={-1}
                   className="registration-heading font-heading text-[clamp(1.9rem,4vw,2.8rem)] font-bold leading-tight text-ink"
                 >
                   {question.label}
-                </h1>
+                </h2>
                 {question.help && (
                   <p id="question-help" className="mt-3 text-base leading-relaxed text-ink-muted">
                     {question.help}
@@ -990,13 +1007,13 @@ export function RegistrationFlow({ role }: { role: RegisterRoleContent }) {
           >
             <HandHeart size={34} strokeWidth={1.6} />
           </span>
-          <h1
+          <h2
             ref={heading}
             tabIndex={-1}
             className="registration-heading mt-7 font-heading text-4xl font-bold text-ink"
           >
             {copy.doneTitle}
-          </h1>
+          </h2>
           <p
             role="status"
             className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-muted"

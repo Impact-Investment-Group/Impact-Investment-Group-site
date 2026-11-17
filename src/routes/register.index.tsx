@@ -1,13 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { RolePicker } from "@/components/register/role-picker";
-import { BuddySlot } from "@/components/buddy/buddy-slot";
-import { PreReleaseBadge } from "@/components/ui/pre-release-badge";
-import { Reveal } from "@/components/ui/reveal";
+import { RegisterPage } from "@/components/register/register-page";
 import { pickerContent } from "@/content/audiences";
 
 /**
- * /register, the picker.
+ * /register: the one register page with no role chosen yet (wave 1363). The
+ * page itself is components/register/register-page.tsx; the notes below are
+ * the picker's, and still hold for its tiles.
  *
  * R295-3: the heading, one line of lede, and the ten tiles. Nothing else is on
  * this page and nothing else should be added to it. A chooser earns its keep
@@ -39,38 +38,5 @@ export const Route = createFileRoute("/register/")({
 });
 
 function RegisterPickerPage() {
-  return (
-    <div className="registration-picker registration-directory">
-      <section className="registration-directory__layout mx-auto w-full max-w-[1200px] px-5 py-10 sm:px-8 lg:py-16">
-        <div className="registration-directory__intro">
-          <PreReleaseBadge className="mb-6 w-fit" />
-          <p className="eyebrow text-teal-600">{pickerContent.eyebrow}</p>
-          <h1 className="heading-tight mt-4 text-balance text-[clamp(2.125rem,4vw,3.5rem)] font-bold text-ink">
-            {pickerContent.h1}
-          </h1>
-          <p className="measure mt-5 text-base leading-relaxed text-ink-muted">
-            {pickerContent.lede}
-          </p>
-          <div className="registration-directory__characters">
-            <BuddySlot form="property" action="wave" animated className="mx-auto w-52 max-w-full" />
-          </div>
-          <p className="registration-directory__note mt-6 text-sm leading-relaxed text-ink-muted">
-            {pickerContent.footnote}
-          </p>
-        </div>
-
-        <Reveal index={1}>
-          <h2
-            id="register-picker-grid"
-            className="font-heading text-sm font-semibold uppercase tracking-[0.14em] text-ink-muted"
-          >
-            {pickerContent.gridLabel}
-          </h2>
-          <div className="mt-5">
-            <RolePicker labelledBy="register-picker-grid" />
-          </div>
-        </Reveal>
-      </section>
-    </div>
-  );
+  return <RegisterPage />;
 }
