@@ -29,6 +29,7 @@ import {
   normaliseRegistrationPhone,
   RegistrationError,
   saveRegistrationPreferences,
+  trapSprung,
   type AccountDetails,
   type RegistrationFailure,
   type SurveyAnswers,
@@ -382,7 +383,9 @@ export function RegistrationFlow({
       document.getElementById(firstError)?.focus();
       return;
     }
-    if (honeypot) {
+    // WAVE 1432: a value the browser's own autofill put in the hidden field
+    // is a person, not a script. See `trapSprung`.
+    if (trapSprung(honeypot, document.getElementById("registration-website"))) {
       setFailure("rejected");
       return;
     }

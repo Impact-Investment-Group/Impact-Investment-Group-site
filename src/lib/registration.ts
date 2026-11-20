@@ -99,3 +99,27 @@ export async function saveRegistrationPreferences(
   });
   if (result["status"] !== "saved") throw new RegistrationError("network");
 }
+
+/**
+ * WAVE 1432: is the hidden trap field sprung?
+ *
+ * The account form holds one field no person can see or reach. Anything
+ * typed into it marks the sender as a script, and the form refuses before it
+ * sends. A browser's own autofill can put a value there too, and that is a
+ * person: it reads the field's label, not the screen. The browser marks what
+ * it filled (`:autofill`, with the older engines' own spellings), and a
+ * script that sets a value is never marked, so a value the browser marked is
+ * not the trap being sprung. With no field to ask, a value still springs it.
+ */
+export function trapSprung(value: string, field: Pick<Element, "matches"> | null): boolean {
+  if (!value) return false;
+  if (!field) return true;
+  for (const selector of [":autofill", ":-webkit-autofill", ":-moz-autofill"]) {
+    try {
+      if (field.matches(selector)) return false;
+    } catch {
+      // An engine that does not know this spelling. Try the next.
+    }
+  }
+  return true;
+}
