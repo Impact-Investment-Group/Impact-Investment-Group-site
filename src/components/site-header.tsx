@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 /* WAVE 838 (Callum, 1 Nov 2026): "Log in" goes to the platform's own sign-in,
    where an investor, an agent or a co-sourcer signs in and a co-sourcer can
    also join. Until this wave it opened the site's wait-list enquiry form. */
-const platformLoginUrl = "https://app.impactinvestmentgroup.co.uk/login";
+export const platformLoginUrl = "https://app.impactinvestmentgroup.co.uk/login";
 
 /**
  * ── WAVE 413: THE HEADER GETS OUT OF THE WAY ──────────────────────────────

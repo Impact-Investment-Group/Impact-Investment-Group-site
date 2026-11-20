@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { platformLoginUrl } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import {
   CONSENT_VERSION,
@@ -757,7 +758,7 @@ export function RegistrationFlow({
               </div>
               <p className="mt-5 text-center text-sm">
                 <a
-                  href="https://app.impactinvestmentgroup.co.uk/auth/login"
+                  href={platformLoginUrl}
                   className="inline-flex min-h-11 items-center text-ink-muted underline underline-offset-4 hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-600"
                 >
                   {copy.signIn}
