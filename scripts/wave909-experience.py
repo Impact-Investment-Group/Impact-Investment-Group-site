@@ -474,6 +474,106 @@ with sync_playwright() as pw:
             page.wait_for_url(re.compile(r"/register/?$"))
             expect(page.locator('[data-role="investor"]')).to_be_visible()
 
+        # ── Wave 1432: a care or support provider's account form shows the
+        # organisation an email DOMAIN belongs to, under the email field. Only
+        # the domain leaves the page; a miss, a failure or a missing route draws
+        # nothing; no other audience asks; nothing is ever registered here.
+        def organisation_offer():
+            lookup = "**/public/registration/organisations"
+            offered = "#registration-organisation"
+            asked = []
+
+            def answer(route):
+                body = json.loads(route.request.post_data or "{}")
+                asked.append(body)
+                found = [{"name": "Example Care Limited"}] if body.get("domain") == "care.example.test" else []
+                route.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*", "Cache-Control": "no-store"}, body=json.dumps({"organisations": found}))
+
+            def gone(route):
+                asked.append("missing")
+                route.fulfill(status=404, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body=json.dumps({"detail": "Not Found"}))
+
+            errors = []
+            listener = lambda error: errors.append(str(error))
+            page.on("pageerror", listener)
+            page.route(lookup, answer)
+            try:
+                page.goto(base + "/register/care-provider", wait_until="networkidle")
+                expect(page.locator(offered)).to_have_count(0)
+                # An address the form would refuse asks nothing.
+                page.locator("#email").fill("made.up.person@care")
+                page.wait_for_timeout(900)
+                check(asked == [], f"An unfinished address asked {asked}")
+                # A whole address: the domain only is sent, once, and the one
+                # organisation is shown, chosen, under the email field.
+                page.locator("#email").fill("made.up.person@care.example.test")
+                expect(page.locator(offered)).to_be_visible()
+                check(asked == [{"role": "care-provider", "domain": "care.example.test"}], f"The lookup sent {asked}")
+                expect(page.locator('label[for="registration-organisation"]')).to_have_text("Your organisation")
+                expect(page.locator(offered + " option")).to_have_count(1)
+                expect(page.locator(offered)).to_have_value("Example Care Limited")
+                expect(page.locator("#registration-organisation-help")).to_have_text("This email address belongs to an organisation already on the platform. Your account joins it once your email is confirmed and your account is activated.")
+                expect(page.locator(offered)).to_have_attribute("aria-describedby", "registration-organisation-help")
+                check(not page.locator(offered).get_attribute("name"), "The organisation would be sent with the form")
+                email_box = page.locator("#email").bounding_box()
+                offer_box = page.locator(offered).bounding_box()
+                check(email_box["y"] + email_box["height"] <= offer_box["y"], "The organisation is not under the email field")
+                check(abs(email_box["x"] - offer_box["x"]) < 1 and abs(email_box["width"] - offer_box["width"]) < 1, "The organisation is not in the email field's column")
+                check(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), "The organisation overflows the page")
+                check_crafted_state("registration-organisation")
+                # The local part changing asks nothing more.
+                page.locator("#email").fill("another.made.up@care.example.test")
+                page.wait_for_timeout(900)
+                expect(page.locator(offered)).to_be_visible()
+                check(len(asked) == 1, f"A new local part asked again: {asked}")
+                # Another domain: the offer goes at once, and no organisation
+                # is no dropdown.
+                page.locator("#email").fill("made.up.person@nowhere.example.test")
+                expect(page.locator(offered)).to_have_count(0)
+                page.wait_for_timeout(900)
+                check(asked[1:] == [{"role": "care-provider", "domain": "nowhere.example.test"}], f"The second lookup sent {asked[1:]}")
+                expect(page.locator(offered)).to_have_count(0)
+                # Back to the first domain: shown again from the answer held.
+                page.locator("#email").fill("made.up.person@care.example.test")
+                expect(page.locator(offered)).to_be_visible()
+                check(len(asked) == 2, f"A domain already answered was asked again: {asked}")
+                check(not any("@" in json.dumps(item) or "made.up" in json.dumps(item) for item in asked), f"An address left the page: {asked}")
+                # The support provider is offered it too.
+                page.goto(base + "/register/support-provider", wait_until="networkidle")
+                page.locator("#email").fill("made.up.person@care.example.test")
+                expect(page.locator(offered)).to_be_visible()
+                check(asked[-1] == {"role": "support-provider", "domain": "care.example.test"}, f"The support provider's lookup sent {asked[-1]}")
+                # A route that is not there (the platform not yet carrying it)
+                # draws nothing, and the form is the form it was.
+                page.unroute(lookup)
+                page.route(lookup, gone)
+                page.goto(base + "/register/care-provider", wait_until="networkidle")
+                before = len(asked)
+                page.locator("#email").fill("made.up.person@care.example.test")
+                page.wait_for_timeout(1200)
+                check(asked[before:] == ["missing"], f"The missing route was asked {asked[before:]}")
+                expect(page.locator(offered)).to_have_count(0)
+                expect(page.locator("#phone")).to_be_visible()
+                # A lookup that fails outright (this context aborts every POST
+                # no page route answers) draws nothing either.
+                page.unroute(lookup)
+                page.goto(base + "/register/care-provider", wait_until="networkidle")
+                page.locator("#email").fill("made.up.person@care.example.test")
+                page.wait_for_timeout(1200)
+                expect(page.locator(offered)).to_have_count(0)
+                # No other audience asks at all.
+                page.route(lookup, answer)
+                before = len(asked)
+                page.goto(base + "/register/investor", wait_until="networkidle")
+                page.locator("#email").fill("made.up.person@care.example.test")
+                page.wait_for_timeout(1200)
+                check(len(asked) == before, f"An investor's form asked {asked[before:]}")
+                expect(page.locator(offered)).to_have_count(0)
+                check(not errors, f"The organisation lookup raised: {errors}")
+            finally:
+                page.unroute(lookup)
+                page.remove_listener("pageerror", listener)
+
         def talk_to_the_team_sends_without_a_slot():
             # The preview slots are optional. With none chosen the enquiry must
             # still leave the browser (this context aborts every POST, so the
@@ -916,6 +1016,7 @@ with sync_playwright() as pw:
         interaction("registration progress and password feedback", registration_feedback)
         interaction("contact enquiry deep links", contact_deep_links)
         interaction("register your interest registers an account on one page", register_one_page)
+        interaction("the account form shows the organisation an email domain belongs to", organisation_offer)
         interaction("contact offers no waitlist enquiry", contact_offers_no_waitlist)
         interaction("talk to the team sends without a slot", talk_to_the_team_sends_without_a_slot)
         if width == 390:
