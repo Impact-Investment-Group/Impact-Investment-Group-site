@@ -25,6 +25,10 @@ export const registrationJourney = {
   signIn: "Already registered? Sign in",
   name: "What should we call you?",
   organisation: "Which organisation are you with?",
+  organisationOffer: {
+    label: "Your organisation",
+    help: "This email address belongs to an organisation already on the platform. Your account joins it once your email is confirmed and your account is activated.",
+  },
   errors: {
     email: "Enter a valid email address.",
     phone: "Enter a UK phone number, starting 0 or +44.",

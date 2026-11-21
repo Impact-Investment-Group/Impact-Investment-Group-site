@@ -28,10 +28,16 @@ import { registrationJourney as copy } from "@/content/registration-journey";
 import {
   createRegistration,
   normaliseRegistrationPhone,
+  ORGANISATION_OFFER_ROLES,
+  organisationOfferKey,
+  registrationEmailDomain,
   RegistrationError,
   saveRegistrationPreferences,
   trapSprung,
+  watchOrganisationOffer,
   type AccountDetails,
+  type OrganisationOfferShown,
+  type OrganisationOfferWatch,
   type RegistrationFailure,
   type SurveyAnswers,
 } from "@/lib/registration";
@@ -245,6 +251,50 @@ export function RegistrationFlow({
   const questions = React.useMemo(() => getQuestions(role), [role]);
   const question = questions[index]!;
   const needsHealthConsent = role.id === "resident" && sensitiveAnswers(answers);
+  /*
+   * ── WAVE 1432: THE ORGANISATION AN EMAIL DOMAIN BELONGS TO ──────────────
+   *
+   * A care or support provider typing an address whose DOMAIN is a verified
+   * organisation's is shown that organisation, under the email field, as soon
+   * as the address is one the form would accept. The platform already places
+   * such an account in that organisation once its email is confirmed and it
+   * is activated; this only says so before the form is sent.
+   *
+   * ONLY THE DOMAIN LEAVES THE PAGE, never the address, and nothing about the
+   * registration request changes: the organisation is shown, not sent. Any
+   * answer but a name (none, a failure, a route that is not there) draws
+   * nothing, and the form is then exactly the form it was.
+   *
+   * The asking, the waiting and the holding of answers are
+   * `watchOrganisationOffer`'s (src/lib/registration.ts), where they are
+   * tested. Here the offer is only ever DRAWN against the domain it was
+   * answered for: change the domain and it is gone on the same render,
+   * before the watch has been told.
+   */
+  const organisationDomain =
+    stage === "account" && ORGANISATION_OFFER_ROLES.includes(role.id)
+      ? registrationEmailDomain(details.email)
+      : null;
+  const organisationKey = organisationOfferKey(role.id, organisationDomain);
+  const [organisationOffer, setOrganisationOffer] = React.useState<OrganisationOfferShown | null>(
+    null,
+  );
+  const organisationWatch = React.useRef<OrganisationOfferWatch | null>(null);
+  const offeredOrganisation =
+    organisationOffer && organisationOffer.key === organisationKey ? organisationOffer.name : null;
+
+  React.useEffect(() => {
+    const watch = watchOrganisationOffer(setOrganisationOffer);
+    organisationWatch.current = watch;
+    return () => {
+      watch.stop();
+      organisationWatch.current = null;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    organisationWatch.current?.set(role.id, organisationDomain);
+  }, [role.id, organisationDomain]);
 
   // Static HTML must never submit named password fields as a native GET
   // before React has attached the account submit handler.
@@ -657,6 +707,39 @@ export function RegistrationFlow({
                         {errors[field]}
                       </p>
                     )}
+                    {/* WAVE 1432: the organisation this address's domain
+                        belongs to, when the platform names one. One option,
+                        already chosen: the platform places the account by
+                        its domain whatever is picked here, so there is
+                        nothing else to choose and nothing is sent. Shown,
+                        with no entrance, only while the typed domain is the
+                        one the answer was for. */}
+                    {field === "email" && offeredOrganisation ? (
+                      <div className="mt-4" data-registration-organisation>
+                        <label
+                          htmlFor="registration-organisation"
+                          className="mb-2 block text-sm font-semibold text-ink"
+                        >
+                          {copy.organisationOffer.label}
+                        </label>
+                        <select
+                          id="registration-organisation"
+                          autoComplete="off"
+                          value={offeredOrganisation}
+                          aria-describedby="registration-organisation-help"
+                          className={cn(fieldClass, "cursor-pointer")}
+                          onChange={() => undefined}
+                        >
+                          <option value={offeredOrganisation}>{offeredOrganisation}</option>
+                        </select>
+                        <p
+                          id="registration-organisation-help"
+                          className="mt-2 text-sm max-lg:text-[15px] leading-relaxed text-ink-muted"
+                        >
+                          {copy.organisationOffer.help}
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </fieldset>
