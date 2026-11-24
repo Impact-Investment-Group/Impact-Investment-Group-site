@@ -85,7 +85,7 @@ function Summary({ lines }: { lines: Seg[][] }) {
 function AboutPage() {
   return (
     <div className="about-story">
-      <section id="our-vision" aria-labelledby="vision-heading" className="story-lead story-lead--vision wave-section story-from-white story-cream">
+      <section id="our-vision" aria-labelledby="vision-heading" className="story-lead story-lead--vision wave-section story-from-white story-mist">
         <div className="story-shell">
           <div className="story-copy">
             <p className="story-kicker">{visionMission[0]!.label}</p>
@@ -107,7 +107,7 @@ function AboutPage() {
           />
         </div>
       </section>
-      <section aria-labelledby="about-heading" className="about-people wave-section story-from-cream story-white">
+      <section aria-labelledby="about-heading" className="about-people wave-section story-from-mist story-white">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <div className="about-identity">
             <h2 id="about-heading" className="story-section-title">{whoWeAre.title}</h2>

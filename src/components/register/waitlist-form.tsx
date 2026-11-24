@@ -260,16 +260,7 @@ function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.Re
   );
 }
 
-/**
- * ⚠️ `text-destructive`, NEVER an orange. Two reasons and both matter.
- *
- * The brand orange is the one action a page exists to get, so setting a
- * failure in it tells a person the thing that just went wrong is the thing
- * they are meant to press. And it does not pass: `#c15f3c` is 4.23:1 on this
- * form's ground at 13px, under the 4.5:1 body floor. `--destructive` is picked
- * for the dark ground and `.section-light` re-points it for the light one, the
- * same way that block already re-points orange, teal and white.
- */
+/** Announce the specific error using the shared validation colour. */
 function ErrorText({ id, children }: { id: string; children?: string | undefined }) {
   if (!children) return null;
   return (

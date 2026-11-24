@@ -162,10 +162,10 @@
 }
 .legal-edition .legal-company-wave {
   --wave-from: var(--wave-white);
-  --wave-fill: var(--wave-cream);
+  --wave-fill: var(--wave-mist);
 }
 .legal-edition .legal-registers-wave {
-  --wave-from: var(--wave-cream);
+  --wave-from: var(--wave-mist);
   --wave-fill: var(--wave-white);
 }
 .legal-edition .wave-section {

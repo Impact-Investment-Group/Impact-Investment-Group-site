@@ -406,11 +406,11 @@
 
 .home-sections > .home-evidence {
   --wave-from: var(--wave-mint);
-  --wave-fill: var(--wave-cream);
+  --wave-fill: var(--wave-mist);
 }
 
 .home-sections > .home-role-directory {
-  --wave-from: var(--wave-cream);
+  --wave-from: var(--wave-mist);
   --wave-fill: var(--wave-white);
 }
 
@@ -437,7 +437,7 @@
 
 .home-sections > .home-faq-wave {
   --wave-from: var(--wave-white);
-  --wave-fill: var(--wave-cream);
+  --wave-fill: var(--wave-mist);
 }
 
 .home-sections > .wave-section {

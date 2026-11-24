@@ -402,7 +402,7 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
   const presentation = rolePresentations[profile.id] ?? rolePresentations["investor"]!;
 
   return (
-    <section id="role" aria-labelledby="role-heading" className="wave-section story-from-cream story-white">
+    <section id="role" aria-labelledby="role-heading" className="wave-section story-from-mist story-white">
       <div className="partner-craft-container partner-craft-ledger">
         <div>
           <p className="eyebrow text-teal-600">{presentation.eyebrow}</p>
@@ -617,7 +617,7 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
   return (
     <div className="partner-page partner-craft" data-buddy-topic={partnerBuddyForm(profile)}>
       {profile.crisisSignpost ? <CrisisSignpost signpost={profile.crisisSignpost} /> : null}
-      <section aria-labelledby={headingId} className="story-lead story-lead--partner wave-section story-from-white story-cream">
+      <section aria-labelledby={headingId} className="story-lead story-lead--partner wave-section story-from-white story-mist">
         <div className="story-shell">
           <div className="story-copy">
             <Link to="/partners" className="story-back">

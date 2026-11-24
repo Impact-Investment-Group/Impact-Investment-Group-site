@@ -21,12 +21,12 @@
  * WAVE 412, 19 Sep 2026. THE SITE IS LIGHT BY DEFAULT.
  * Callum's director read the site and found it much too dark: navy
  * everywhere, on every route, in every band. So the ground moved. White is
- * the page, cream is the alternating band, and navy is now INK and
+ * the page, pale logo tints alternate between bands, and navy is now INK and
  * STRUCTURE (headings, body text, rules, the logo's neutral parts) rather
  * than the surface everything sits on.
  *
  * Colour proportion target on any screen:
- *   white and cream 75 to 80% · navy 10 to 15%, as ink and islands ·
+ *   white and pale brand tints 75 to 80% · navy 10 to 15%, as ink and islands ·
  *   teal 5% · orange 3%
  * Orange marks the one action a page exists to get. Teal marks
  * secondary actions, active states, verification and data.
@@ -136,25 +136,30 @@
      chroma held). One value per colour role. Six-digit hex on purpose: the
      demand map's canvas parses --brand-ink and --brand-teal-on-ink as #RRGGBB.
      The orange values did not move (T777-1). */
+  /* Solid pixels from the supplied November 24 wordmark anchor the surface tints.
+     Existing action and ink variants serve the contrast each control needs. */
+  --logo-teal: #196f6d;
+  --logo-navy: #021e64;
+  --logo-orange: #fc5804;
   --brand-primary: #E15E31;
   --brand-primary-ink: #BB441B;
   /* The fill under a white label (R541-1): white on it 4.60:1. */
   --brand-primary-fill: #CC4A22;
-  --brand-primary-soft: var(--bg-bone);
+  --brand-primary-soft: var(--wave-peach);
   --brand-primary-light: #F07E56;
   --brand-primary-on-ink: #FFA181;
   --brand-teal: #258D8A;
   --brand-teal-ink: #267977;
-  --brand-teal-soft: #EBF6F6;
+  --brand-teal-soft: color-mix(in srgb, var(--logo-teal) 6%, white);
   --brand-teal-on-ink: #70CECC;
   --brand-ink: #14366A;
   --brand-slate: #647289;
-  /* Bone-white reference supplied 11 November 2026: dominant sampled RGB
-     249, 248, 243. Surface roles share this ground; depth stays neutral. */
-  --bg-bone: #F9F8F3;
+  /* Shared page, form and control surfaces. */
+  --bg-bone: #ffffff;
   --bg-canvas: var(--bg-bone);
-  --bg-tint: var(--bg-bone);
-  --bg-cream: #F1F0EB;
+  --bg-tint: color-mix(in srgb, var(--logo-navy) 3%, white);
+  --bg-cream: color-mix(in srgb, var(--logo-navy) 5%, white);
+  --brand-alert-ink: color-mix(in srgb, var(--logo-orange) 55%, var(--logo-navy));
   --dv-track: var(--bg-cream);
 }
 
@@ -191,7 +196,7 @@
   --color-surface: var(--bg-bone);
   --color-slate: var(--brand-slate);
   --color-slate-ink: #4e5a6e;
-  --color-destructive-on-light: #c92a2a;
+  --color-destructive-on-light: var(--brand-alert-ink);
 
   --color-page: var(--bg-canvas);
   --color-header: color-mix(in srgb, var(--color-page) 92%, transparent);
@@ -200,8 +205,7 @@
   --color-ink-muted: var(--color-slate-ink);
   --color-ink-soft: var(--brand-slate);
   --color-rule: color-mix(in oklab, var(--brand-slate) 20%, transparent);
-  /* Orange remains on glyphs and controls; their pale beds stay bone white. */
-  --color-tint-orange: var(--bg-cream);
+  --color-tint-orange: var(--wave-peach);
   --color-tint-teal: color-mix(in oklab, var(--brand-teal-ink) 12%, transparent);
 
   /* Type */
@@ -282,35 +286,13 @@
      secondary button's hover sit on this. */
   --secondary: var(--brand-teal-soft);
   --secondary-foreground: var(--brand-teal-ink);
-  --muted: var(--bg-tint); /* the cream */
-  --muted-foreground: #4e5a6e; /* 6.20:1 on the cream, 6.97:1 on white */
+  --muted: var(--bg-tint);
+  --muted-foreground: var(--color-slate-ink);
   --accent: var(--brand-teal-ink);
   --accent-foreground: #ffffff; /* 5.14:1 */
-  /* ERROR AND VALIDATION TEXT. Deliberately not a brand orange, so a failed
-     field never reads as the call to action, and picked for the DARK ground
-     because that is where the forms live: 4.57:1 on the register form's panel
-     and 5.04:1 on navy-950, against a 4.5:1 body floor. It was #d9430a, which
-     is 4.05:1 on that panel and failed.
-
-     ⚠️ ONE VALUE CANNOT SERVE BOTH GROUNDS AND THE ARITHMETIC SAYS SO, so do
-     not go looking for a cleverer red. To clear 4.5:1 on white the luminance
-     must be at most 0.1833; to clear it on the register form's panel it must
-     be at least 0.2143. The window is empty. `.section-light` therefore
-     re-points this to `--color-destructive-on-light` below, exactly the way
-     that block already re-points orange, teal and white.
-
-     `--destructive-foreground` is white at 3.91:1 on this fill, which clears
-     AA for large text only. That pairing is used by the shadcn `destructive`
-     button and badge variants, neither of which this site renders anywhere;
-     if one is ever used for a real control, re-measure it first. */
-  /* WAVE 412: the light value is now the only value. The note above was
-     written when the forms lived on navy and one token could not serve both
-     grounds; the forms are on white and cream now, so the window that was
-     empty no longer has to be straddled. #c92a2a is 5.46:1 on white and
-     4.85:1 on the cream, and the `.section-light` swap that used to make
-     this happen per-section is simply the default. */
-  --destructive: #c92a2a;
-  --destructive-foreground: #ffffff; /* 5.46:1 */
+  /* Fields identify errors with a written message and a dark shade of IIG orange. */
+  --destructive: var(--brand-alert-ink);
+  --destructive-foreground: var(--color-white);
   --border: color-mix(in oklab, var(--brand-slate) 20%, transparent);
   --input: color-mix(in oklab, var(--brand-slate) 20%, transparent);
   --ring: var(--brand-ink);

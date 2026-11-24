@@ -216,12 +216,12 @@
 .wave-section.story-from-white { --wave-from: var(--wave-white); }
 .wave-section.story-from-mint { --wave-from: var(--wave-mint); }
 .wave-section.story-from-peach { --wave-from: var(--wave-peach); }
-.wave-section.story-from-cream { --wave-from: var(--wave-cream); }
+.wave-section.story-from-mist { --wave-from: var(--wave-mist); }
 
 .wave-section.story-white { --wave-fill: var(--wave-white); background-color: var(--wave-fill); }
 .wave-section.story-mint { --wave-fill: var(--wave-mint); background-color: var(--wave-fill); }
 .wave-section.story-peach { --wave-fill: var(--wave-peach); background-color: var(--wave-fill); }
-.wave-section.story-cream { --wave-fill: var(--wave-cream); background-color: var(--wave-fill); }
+.wave-section.story-mist { --wave-fill: var(--wave-mist); background-color: var(--wave-fill); }
 
 .story-lead--network,
 .partner-crisis-panel {

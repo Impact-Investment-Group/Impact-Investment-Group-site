@@ -53,13 +53,7 @@ const STEP_EXIT_GRACE_MS = 60;
 type AccountField = "email" | "phone" | "password" | "confirmPassword";
 type Details = Record<AccountField, string>;
 const emptyDetails: Details = { email: "", phone: "", password: "", confirmPassword: "" };
-/* WAVE 413: `aria-invalid:border-destructive`. The message under a field is
-   the only thing that used to mark it, and on a form this long the message can
-   be the thing below the fold. The border is where the eye already is, and it
-   is driven off `aria-invalid`, which the fields already set, so the visual
-   state and the announced state cannot drift apart. Colour is not the only
-   channel: the message is still there, still `role="alert"`, and still names
-   what is wrong. */
+/* The invalid border accompanies a field-specific alert linked by aria-describedby. */
 const fieldClass =
   "registration-input min-h-14 w-full rounded-xl border border-rule bg-page px-4 py-3 text-base text-ink placeholder:text-ink-muted aria-invalid:border-destructive focus-visible:border-teal-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600";
 

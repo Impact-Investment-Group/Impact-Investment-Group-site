@@ -194,7 +194,7 @@ function LayerExplorer() {
 function SolutionsPage() {
   return (
     <div className="friendly-editorial friendly-solutions" data-buddy-topic="property">
-      <section aria-labelledby="solution-heading" className="story-lead story-lead--solution wave-section story-from-white story-cream">
+      <section aria-labelledby="solution-heading" className="story-lead story-lead--solution wave-section story-from-white story-mist">
         <div className="story-shell">
           <div className="story-copy">
             <p className="story-kicker">{solutionHero.eyebrow}</p>
@@ -224,7 +224,7 @@ function SolutionsPage() {
           </div>
         </div>
       </section>
-      <section aria-labelledby="layers-heading" className="friendly-section wave-section story-from-cream story-white">
+      <section aria-labelledby="layers-heading" className="friendly-section wave-section story-from-mist story-white">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <h2
             id="layers-heading"

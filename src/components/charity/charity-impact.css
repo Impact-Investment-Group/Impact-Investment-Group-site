@@ -7,12 +7,12 @@
 }
 .charity-home-logo-halo {
   background: radial-gradient(ellipse,
-    var(--color-cream-card) 0%,
+    var(--wave-mist) 0%,
     var(--color-page) 48%,
     transparent 72%);
 }
 .charity-home-logo-cutout {
-  filter: drop-shadow(0 8px 9px rgb(145 91 24 / 14%));
+  filter: drop-shadow(0 8px 9px color-mix(in srgb, var(--brand-ink) 14%, transparent));
 }
 .charity-home-logo-mark {
   /* Presentation-only outline of the approved 160px badge. A small margin

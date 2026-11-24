@@ -33,4 +33,8 @@ The first complete run passed the public journeys and Buddy. Its colour reader f
 
 The amendment supplies a transparent 400 by 64 pixel logo. The live light-background logo component serves that PNG unchanged in the header, mobile drawer and footer. The source and served file have SHA-256 `638fea61e33148442c1280b494e768436f3b3379f040b9123f90f9d37b4edfd4`. The favicon uses the supplied emblem and the share preview uses the complete lockup on white.
 
-The homepage opens on pure white. A reusable curved section boundary joins the mint, cream, peach and white bands. Colour comes from CSS and a small vector mask follows the available width. Editorial, evidence, partnership and service routes reuse the curve where their page backgrounds change. Section text uses darker secondary ink on pastels. Browser inspection verified the byte-identical image at its three mounts, the white hero, and all eight homepage transitions.
+The homepage opens on pure white. A reusable curved section boundary joins the pale teal, blue mist, pale orange and white bands. Colour comes from CSS and a small vector mask follows the available width. Editorial, evidence, partnership and service routes reuse the curve where their page backgrounds change. Section text uses darker secondary ink on pastels. Browser inspection verified the byte-identical image at its three mounts, the white hero, and all eight homepage transitions.
+
+## IIG colour palette
+
+Three solid colours sampled from the supplied PNG anchor the tinted backgrounds. The teal is #196F6D, navy is #021E64 and orange is #FC5804. Mixing each with white gives the section fills #E8F1F0, #EBEDF3 and #FFF2EB respectively. Shared card, form, validation, navigation and footer styles use the same brand families. The browser check checks text, borders, outlines, backgrounds and gradient colours on each public page, including pseudo-elements. Photography and partner logos retain their original artwork.

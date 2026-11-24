@@ -21,6 +21,7 @@ roles_block = roles_source.split("export const registerRoles", 1)[1].split("\n];
 roles = [re.search(r'id:\s*"([a-z0-9-]+)"', block).group(1)
          for block in re.findall(r'\{([^{}]+)\}', roles_block)
          if 'href:' not in block and re.search(r'id:\s*"([a-z0-9-]+)"', block)]
+brand_surface_check = (ROOT / "scripts/check-brand-surfaces.js").read_text(encoding="utf-8")
 partners = ["/" + p.stem for p in sorted((ROOT / "src/routes").glob("partner-with-*.tsx"))]
 paths = ["/", "/about", "/platform", "/pricing", "/the-problem", "/solutions", "/partners", "/contact", "/faqs", "/register", "/legal"]
 paths += partners + ["/register/" + role for role in roles] + ["/this-route-does-not-exist"]
@@ -101,6 +102,8 @@ with sync_playwright() as pw:
                 check(page.locator("main").count() == 1, "Expected exactly one main landmark")
                 check(page.locator("h1").count() == 1, "Expected exactly one h1")
                 expect(page.locator("h1")).to_be_visible()
+                outside_brand = page.evaluate(brand_surface_check)
+                check(not outside_brand, f"Page contains surfaces outside IIG colours: {outside_brand}")
                 lives = page.locator("span, figcaption").filter(has_text=re.compile(r"^\s*Transforming Lives\.?\s*$"))
                 if not path.startswith("/register") and path != "/this-route-does-not-exist":
                     check(lives.count() > 0, "Expected the shared closing statement")

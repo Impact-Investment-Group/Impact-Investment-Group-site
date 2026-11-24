@@ -189,7 +189,7 @@
   margin-top: 28px;
   padding: 32px;
   border-radius: 32px 32px 32px 8px;
-  background: var(--color-cream-card);
+  background: var(--wave-mist);
 }
 
 .friendly-editorial .friendly-tool-tabs {
@@ -289,7 +289,7 @@
 .friendly-editorial .friendly-demand-strip {
   padding: 30px;
   border-radius: 32px;
-  background: var(--color-cream-card);
+  background: var(--wave-mist);
 }
 
 .friendly-editorial .friendly-demand-strip dl dd:first-of-type {
@@ -626,7 +626,7 @@
 }
 
 .friendly-editorial .friendly-evidence-stage[data-stage="opportunity"] {
-  background: var(--color-cream-card);
+  background: var(--wave-mist);
 }
 
 .friendly-editorial .friendly-evidence-intro {

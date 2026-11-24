@@ -35,38 +35,9 @@ const DIRECTOR_ICONS: Record<string, LucideIcon> = {
 const icon = (name?: string): LucideIcon => (name && DIRECTOR_ICONS[name]) || UserRound;
 
 /**
- * A person on the team, on a cream card.
- *
- * Renders a real photograph when one is supplied, otherwise the person's
- * initials. Never a stock face — a placeholder head is worse than no head,
- * because a reader assumes it is them.
- *
- * ── Why every colour here is written out longhand ──────────────────────────
- *
- * The card is cream and sits on the cream About page. Every colour is stated
- * longhand rather than left to `.section-light`, because these cards also have
- * to survive being dropped on a navy section — the homepage may yet want them.
- * All of it is measured against the CREAM, which is the harsher of the two
- * grounds. From the contrast
- * table in CLAUDE.md, measured against #f7f1e6:
- *
- *   navy-900    16.8:1  ✓ names
- *   slate-ink    6.2:1  ✓ bio and credential lines
- *   teal-600     4.7:1  ✓ roles
- *   orange-700   5.78:1 ✓ at any size since wave 295 (was 4.1:1)
- *   orange-600   4.75:1 ✓ (was 3.0:1)
- *   orange-500   3.76:1 ✗ icon glyphs and fills only (was 2.3:1)
- *
- * ⚠ WAVE 295 MOVED THREE OF THOSE. The orange became the platform's
- * terracotta and the ramp was re-derived against this cream, so orange is no
- * longer barred from small text here. The roles below stay TEAL anyway: that
- * was a decision about what the card should say, not only about what passes.
- *
- * So no role is set in orange, including Israel's. His seniority is carried by
- * things that are not text and therefore have no contrast floor: the card runs
- * full width, it takes a 4px orange left rule, and his portrait ring, icon and
- * credential markers are orange. Everyone else's are teal. That keeps the
- * hierarchy obvious and the accent legal at the same time.
+ * Show the supplied portrait or the person's initials. Names use navy ink and
+ * roles use teal. On the card variants the pale navy surface separates the
+ * portrait, role and credentials from the surrounding page.
  *
  * Five shapes, one component:
  *
@@ -146,7 +117,7 @@ export function DirectorCard({
     return (
       <article
         className={cn(
-          "section-light flex h-full flex-col overflow-hidden rounded-2xl bg-cream-card",
+          "section-light flex h-full flex-col overflow-hidden rounded-2xl bg-(--wave-mist)",
           "border border-[color-mix(in_oklab,var(--color-navy-900)_14%,transparent)]",
           "shadow-[0_1px_2px_color-mix(in_srgb,var(--brand-ink)_5%,transparent),0_10px_30px_-18px_color-mix(in_srgb,var(--brand-ink)_25%,transparent)]",
           className,
@@ -214,7 +185,7 @@ export function DirectorCard({
     return (
       <article
         className={cn(
-          "flex items-center gap-3.5 rounded-xl bg-cream-card px-4 py-3.5",
+          "flex items-center gap-3.5 rounded-xl bg-(--wave-mist) px-4 py-3.5",
           "border border-[color-mix(in_oklab,var(--color-navy-900)_14%,transparent)]",
           "shadow-[0_1px_2px_color-mix(in_srgb,var(--brand-ink)_4%,transparent)]",
           className,
@@ -254,7 +225,6 @@ export function DirectorCard({
 
   const lead = variant === "lead";
 
-  /* Graphics, not text — orange is permitted on cream as a fill or a glyph. */
   const ring = orange ? "ring-orange-600" : "ring-teal-600";
   const glyph = orange ? "text-orange-600" : "text-teal-600";
   const marker = orange ? "bg-orange-600" : "bg-teal-600";
@@ -262,11 +232,7 @@ export function DirectorCard({
   return (
     <article
       className={cn(
-        "flex h-full flex-col rounded-2xl bg-cream-card",
-        /* cream-card (#efe6d6), not the page cream (#f7f1e6): the About page
-           is now one continuous cream ground, so a card in the same cream as
-           the page behind it would have no edge at all. One step darker plus a
-           navy hairline is what makes it read as a card. */
+        "flex h-full flex-col rounded-2xl bg-(--wave-mist)",
         "border border-[color-mix(in_oklab,var(--color-navy-900)_14%,transparent)]",
         "shadow-[0_1px_2px_color-mix(in_srgb,var(--brand-ink)_5%,transparent),0_10px_30px_-18px_color-mix(in_srgb,var(--brand-ink)_25%,transparent)]",
         orange && "border-l-4 border-l-orange-600",
