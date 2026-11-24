@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowRight, House, Users } from "lucide-react";
+import { BuddySlot } from "@/components/buddy/buddy-slot";
 import { impactSources, nationFigures, problemHero, problemSections } from "@/content/problem";
 import { variantSrcSet } from "@/lib/responsive-image";
 import "./impact-evidence.css";
@@ -61,11 +62,11 @@ function TheProblemPage() {
             <strong>430,000+</strong>
             <h3>People facing homelessness across the UK</h3>
             <p>
-              Homewards and LandAid cited this UK estimate when they launched the Homelessness Data
-              Lab in June 2026.
+              This UK estimate was cited at the launch of the Homewards Homelessness Data Lab in
+              June 2026. The four nations record homelessness differently.
             </p>
             <a className="impact-source" href={impactSources.need}>
-              Homewards and LandAid estimate
+              LandAid’s account of the Data Lab launch
             </a>
           </article>
           <article className="impact-fact">
@@ -188,6 +189,8 @@ function TheProblemPage() {
             <section
               key={section.id}
               id={section.id}
+              data-stage={section.id}
+              data-buddy-topic={section.buddyTopic}
               className="impact-aside-layout impact-archive-section"
               aria-labelledby={section.id + "-heading"}
             >
@@ -201,6 +204,14 @@ function TheProblemPage() {
                     Read the earlier release
                   </a>
                 </details>
+                {section.buddyTopic !== "support" && (
+                  <BuddySlot
+                    form={section.buddyTopic}
+                    action="explain"
+                    expression="thoughtful"
+                    className="mt-4 w-32 max-w-full"
+                  />
+                )}
               </div>
               <dl className="impact-ledger">
                 {section.rows.map((row) => (

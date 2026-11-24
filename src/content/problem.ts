@@ -52,6 +52,7 @@ export const nationFigures = [
 export const problemSections = [
   {
     id: "scale",
+    buddyTopic: "property" as const,
     title: "Waiting for social housing",
     lead: "Housing registers include people who already have somewhere to live. England's waiting list in March 2025 was its largest since 2014. The four nations count different units, so each figure stands alone.",
     earlier: {
@@ -87,6 +88,7 @@ export const problemSections = [
   },
   {
     id: "cost",
+    buddyTopic: "support" as const,
     title: "The cost of waiting",
     earlier: {
       label:
@@ -118,6 +120,7 @@ export const problemSections = [
   },
   {
     id: "opportunity",
+    buddyTopic: "investment" as const,
     title: "What public funding can deliver",
     earlier: {
       label:

@@ -60,7 +60,7 @@ export function HomeHousingEvidence() {
             <dt>People facing homelessness in the UK</dt>
             <dd>430,000+</dd>
             <dd>
-              <a href={impactSources.need}>Homewards and LandAid</a> estimate, June 2026
+              Estimate cited at the <a href={impactSources.need}>Homelessness Data Lab launch</a>, June 2026
             </dd>
           </div>
           <div>

@@ -19,7 +19,7 @@ The homepage leads with a UK partnership mission and a daylight key handover. Vi
 
 ## Evidence policy
 
-The UK figure is attributed to Homewards and LandAid. The market figure is an analyst's dated listing count. A suitable home requires local matching, affordable terms and support. The Crisis and PwC estimate covers Great Britain over 2018 to 2041 in 2017 prices. The pilot evidence belongs to the pilot and establishes no IIG outcome. The redesign presents ending homelessness as the goal. It makes no national efficacy or return guarantee.
+The UK figure is cited in LandAid's account of the Homewards Homelessness Data Lab launch. The market figure is an analyst's dated listing count. A suitable home requires local matching, affordable terms and support. The Crisis and PwC estimate covers Great Britain over 2018 to 2041 in 2017 prices. The pilot evidence belongs to the pilot and establishes no IIG outcome. The redesign presents ending homelessness as the goal. It makes no national efficacy or return guarantee.
 
 ## Verification before publication
 
