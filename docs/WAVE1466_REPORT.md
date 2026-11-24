@@ -24,3 +24,7 @@ The UK figure is cited in LandAid's account of the Homewards Homelessness Data L
 ## Verification before publication
 
 Reviewed the public pages and verified the content families against the previous implementation. The editorial and partner routes were checked in Chromium at 390 and 1280 pixels. The homepage was checked at 320, 390, 768 and 1280 pixels. The calculator was checked at 320, 390 and 1440 pixels, including missing and invalid inputs and a negative cash flow. Local preview did not submit a business form. The production build, accessibility checks and GitHub Pages publication run in the existing release workflow. The deployment and live checks are recorded in the shared Context Library.
+
+## Release check correction
+
+The first complete run passed the public journeys and Buddy. Its colour reader flagged the third mobile gallery caption because its rectangle was wholly outside the screenshot of the first slide. The reader now recognises fully clipped slides before trying to crop their pixels. The gallery journey also selects every slide and measures its computed text colour against the most frequent colour in a screenshot of its visible caption, requiring at least 4.5 to 1 on desktop and phone.

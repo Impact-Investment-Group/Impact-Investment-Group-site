@@ -855,7 +855,7 @@ async () => {
         if (strip && strip.scrollWidth > strip.clientWidth + 2) {
           const lane = strip.getBoundingClientRect();
           const shown = Math.min(box.right, lane.right) - Math.max(box.left, lane.left);
-          if (shown < box.width / 2) entry.pastScrollEdge = true;
+          if (shown <= 0) entry.pastScrollEdge = true;
         }
       }
       incomplete.push(entry);
@@ -951,18 +951,17 @@ def measure_incomplete(path: Path, nodes):
             if not box or node["overWhite"] is None:
                 unmeasured.append((*label, "axe named an element the page no longer has"))
                 continue
+            # The gallery's inactive slides can be entirely outside the image.
+            # The journey check selects each slide and measures its caption's ink and ground.
+            if node.get("pastScrollEdge"):
+                off_screen.append((*label, "past the edge of the hero strip"))
+                continue
             left = max(0, min(width, box[0]))
             top = max(0, min(height, box[1]))
             right = max(0, min(width, box[2]))
             bottom = max(0, min(height, box[3]))
             if right - left < 2 or bottom - top < 2:
                 unmeasured.append((*label, "no area inside the shot"))
-                continue
-            # The same rule, one box in: a node past the edge of its own
-            # snap strip (the hero, below 768 only) is not on the screen either. See the
-            # note beside `pastScrollEdge` in the collector above.
-            if node.get("pastScrollEdge"):
-                off_screen.append((*label, "past the edge of the hero strip"))
                 continue
 
             # THE GROUND IS THE MODAL PIXEL INSIDE THE BOX THAT IS NOT A

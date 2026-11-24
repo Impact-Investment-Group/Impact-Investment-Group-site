@@ -4,11 +4,13 @@ Uses the real static build. No enquiry or registration is ever submitted.
 """
 import functools
 import http.server
+import io
 import json
 import re
 import threading
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
+from PIL import Image
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +33,22 @@ charity_pledge = "10% of all profits made go to Metro World Child UK to bring ho
 charity_capture_style = ".site-header,.page-outline,.back-to-top{visibility:hidden!important}"
 def answer_stock(route):
     route.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body=json.dumps(stock_fixture))
+
+
+def caption_contrast(caption):
+    ink = caption.evaluate("n => getComputedStyle(n).color")
+    with Image.open(io.BytesIO(caption.screenshot(animations="disabled"))) as image:
+        colours = image.convert("RGB").getcolors(image.width * image.height)
+    ground = max(colours, key=lambda item: item[0])[1]
+
+    def luminance(rgb):
+        srgb = [channel / 255 for channel in rgb]
+        linear = [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in srgb]
+        return sum(x * weight for x, weight in zip(linear, (0.2126, 0.7152, 0.0722)))
+
+    red, green, blue = map(int, re.fullmatch(r"rgb\((\d+), (\d+), (\d+)\)", ink).groups())
+    dark, light = sorted((luminance((red, green, blue)), luminance(ground)))
+    return (light + 0.05) / (dark + 0.05)
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -803,6 +821,9 @@ with sync_playwright() as pw:
                     const frame = panel.parentElement.getBoundingClientRect();
                     return photo.left >= frame.left - 2 && photo.right <= frame.right + 2;
                 }""", arg=index)
+                caption = page.locator(".hero-panel figcaption").nth(index)
+                ratio = caption_contrast(caption)
+                check(ratio >= 4.5, f"{name} caption contrast is {ratio:.2f}:1")
                 check_crafted_state("photo-" + str(index))
 
         def investor_contribution():
