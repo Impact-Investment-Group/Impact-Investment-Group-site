@@ -150,16 +150,16 @@
   --brand-primary-on-ink: #FFA181;
   --brand-teal: #258D8A;
   --brand-teal-ink: #267977;
-  --brand-teal-soft: color-mix(in srgb, var(--logo-teal) 6%, white);
+  --brand-teal-soft: #f1f6f6; /* 6% logo teal on white */
   --brand-teal-on-ink: #70CECC;
   --brand-ink: #14366A;
   --brand-slate: #647289;
   /* Shared page, form and control surfaces. */
   --bg-bone: #ffffff;
   --bg-canvas: var(--bg-bone);
-  --bg-tint: color-mix(in srgb, var(--logo-navy) 3%, white);
-  --bg-cream: color-mix(in srgb, var(--logo-navy) 5%, white);
-  --brand-alert-ink: color-mix(in srgb, var(--logo-orange) 55%, var(--logo-navy));
+  --bg-tint: #f7f8fa; /* 3% logo navy on white */
+  --bg-cream: #f2f4f7; /* 5% logo navy on white */
+  --brand-alert-ink: #8c3e2f; /* 55% logo orange mixed with navy */
   --dv-track: var(--bg-cream);
 }
 

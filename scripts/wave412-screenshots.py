@@ -88,6 +88,7 @@ different code than the after number is not a comparison.
 import argparse
 import functools
 import http.server
+import io
 import json
 import socketserver
 import sys
@@ -747,24 +748,6 @@ async () => {
     runOnly: { type: 'rule', values: ['color-contrast'] },
   });
 
-  // Read a CSS colour twice, over white and over black, so the caller can
-  // recover its alpha and composite it over the ground it ACTUALLY sits on.
-  // Parsing `rgba(...)` here would be a second place for the maths to be
-  // wrong; the compositor is already in the browser.
-  const canvas = document.createElement('canvas');
-  canvas.width = 1;
-  canvas.height = 1;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  const read = (value, under) => {
-    ctx.clearRect(0, 0, 1, 1);
-    ctx.fillStyle = under;
-    ctx.fillRect(0, 0, 1, 1);
-    ctx.fillStyle = value;
-    ctx.fillRect(0, 0, 1, 1);
-    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-    return [r, g, b];
-  };
-
   const violations = results.violations.flatMap((v) =>
     v.nodes
       .filter((n) => n.impact === 'serious' || n.impact === 'critical')
@@ -775,16 +758,46 @@ async () => {
         detail: (n.any[0] && n.any[0].message) || '',
       })),
   );
+  const incomplete = results.incomplete.flatMap(rule => rule.nodes.map(node => ({
+    target: node.target.join(' '),
+  })));
+  return { violations, incomplete };
+}
+"""
+
+# The pixel reader uses viewport coordinates measured after any scrolling.
+# Full-page capture can lay out height-dependent sections differently from
+# the ordinary viewport where axe identified the elements.
+READ_CONTRAST_NODES = r"""
+(nodes) => {
+  // Read a CSS colour twice, over white and over black, so the caller can
+  // recover its alpha and composite it over the ground it ACTUALLY sits on.
+  // Parsing `rgba(...)` here would be a second place for the maths to be
+  // wrong; the compositor is already in the browser.
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const read = (value, under, opacity = 1) => {
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = under;
+    ctx.fillRect(0, 0, 1, 1);
+    ctx.fillStyle = value;
+    ctx.globalAlpha = opacity;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return [r, g, b];
+  };
 
   // INCOMPLETE IS NOT A CLEAN BILL OF HEALTH. axe returns it when it cannot
   // resolve what is behind the text: a background image, a translucent
   // ancestor, an absolutely positioned overlay. Those are exactly the places
   // an inverted palette goes wrong, so every one of them comes back here with
   // enough information for the caller to measure it off the screenshot.
-  const incomplete = [];
-  for (const rule of results.incomplete) {
-    for (const node of rule.nodes) {
-      const selector = node.target.join(' ');
+  const header = document.querySelector('.site-header');
+  return nodes.map(node => {
+      const selector = node.target;
       let element = null;
       try {
         element = document.querySelector(selector);
@@ -792,10 +805,7 @@ async () => {
         element = null;
       }
       const entry = {
-        id: rule.id,
-        impact: node.impact || '',
         target: selector,
-        detail: (node.any[0] && node.any[0].message) || '',
         text: '',
         colour: '',
         overWhite: null,
@@ -805,18 +815,26 @@ async () => {
         fontWeight: 400,
         rect: null,
         pastScrollEdge: false,
+        inFrame: false,
+        probe: false,
       };
       if (element) {
-        const style = getComputedStyle(element);
+        const isTextControl = element instanceof HTMLTextAreaElement ||
+          (element instanceof HTMLInputElement &&
+            ['text','search','email','url','tel','password','number'].includes(element.type));
+        const placeholder = isTextControl && !element.value && element.matches(':placeholder-shown') &&
+          element.placeholder.trim();
+        const style = getComputedStyle(element, placeholder ? '::placeholder' : null);
+        const opacity = placeholder ? Number(style.opacity) : 1;
         const box = element.getBoundingClientRect();
-        const isTextControl = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
-        entry.text = (isTextControl ? (element.type === 'password' ? 'masked password' : element.value) : (element.innerText || element.textContent || ''))
+        entry.probe = isTextControl && !element.value && !element.matches(':disabled') && !element.readOnly;
+        entry.text = (isTextControl ? (placeholder || (element.type === 'password' && element.value ? 'masked password' : element.value)) : (element.innerText || element.textContent || ''))
           .trim()
           .replace(/\s+/g, ' ')
           .slice(0, 60);
         entry.colour = style.color;
-        entry.overWhite = read(style.color, '#ffffff');
-        entry.overBlack = read(style.color, '#000000');
+        entry.overWhite = read(style.color, '#ffffff', opacity);
+        entry.overBlack = read(style.color, '#000000', opacity);
         // Every text colour whose own box OVERLAPS this one. An inline
         // <span> inside a two-colour headline has its SIBLING'S glyphs inside
         // its own bounding box, and without this list the ground reader picks
@@ -843,11 +861,14 @@ async () => {
         entry.fontSize = parseFloat(style.fontSize) || 0;
         entry.fontWeight = parseInt(style.fontWeight, 10) || 400;
         entry.rect = [
-          Math.floor(box.left + scrollX),
-          Math.floor(box.top + scrollY),
-          Math.ceil(box.right + scrollX),
-          Math.ceil(box.bottom + scrollY),
+          Math.floor(box.left),
+          Math.floor(box.top),
+          Math.ceil(box.right),
+          Math.ceil(box.bottom),
         ];
+        const top = header && !header.contains(element) ? header.getBoundingClientRect().bottom : 0;
+        entry.inFrame = box.top >= top && box.bottom <= innerHeight && box.width > 0 &&
+          box.height > 0 && box.left < innerWidth && box.right > 0;
         // The hero shows one photograph at a time at every width.
         // Every photograph state is also checked by wave909-experience.
         entry.pastScrollEdge = false;
@@ -858,11 +879,8 @@ async () => {
           if (shown <= 0) entry.pastScrollEdge = true;
         }
       }
-      incomplete.push(entry);
-    }
-  }
-
-  return { violations, incomplete };
+      return entry;
+  });
 }
 """
 
@@ -877,7 +895,7 @@ async () => {
 # and a gate that reads only the first list reports a clean page.
 #
 # So the screenshot answers instead. For each incomplete node: take its
-# bounding box out of the full-page shot, call the MODAL pixel in that box the
+# bounding box out of its current screenshot, call the MODAL pixel in that box the
 # ground (in a box drawn round a line of text, the ground is most of it), take
 # the element's own computed colour composited onto that ground as the glyph,
 # and measure the pair against the floor its size and weight answer to.
@@ -926,7 +944,7 @@ def floor_for(font_size: float, font_weight: int) -> float:
     return AA_LARGE if large else AA_BODY
 
 
-def measure_incomplete(path: Path, nodes):
+def measure_incomplete(path, nodes):
     """Measure every axe `incomplete` colour-contrast node off the pixels.
 
     Returns (measured, unmeasured, off_screen). A measured row is
@@ -1052,6 +1070,73 @@ def measure_incomplete(path: Path, nodes):
     return measured, unmeasured, off_screen
 
 
+def measure_viewports(page, nodes):
+    """Read incomplete nodes in their ordinary viewport, with fresh geometry."""
+    measured, unmeasured, off_screen = [], [], []
+    initial = page.evaluate(READ_CONTRAST_NODES, nodes)
+    pending = []
+    probes = []
+    for node in initial:
+        if node["pastScrollEdge"]:
+            off_screen.append((node["target"], node["text"], node["colour"],
+                               "past the edge of the hero strip"))
+            continue
+        if node["probe"]:
+            probes.append(node["target"])
+            # A placeholder has a real painted state of its own. A genuinely
+            # blank input supplies its first glyph only when a value is set.
+            if not node["text"]:
+                continue
+        pending.append({"target": node["target"]})
+
+    def capture(pending):
+        while pending:
+            first = pending[0]["target"]
+            page.evaluate("""async selector => {
+              try {
+                document.querySelector(selector)?.scrollIntoView({block:'center', behavior:'instant'});
+              } catch { /* Missing selectors are reported by the pixel reader. */ }
+              await document.fonts.ready;
+              await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
+            }""", first)
+            for attempt in range(3):
+                candidates = page.evaluate(READ_CONTRAST_NODES, pending)
+                frame = [n for n in candidates if n["inFrame"] or n["target"] == first]
+                shot = io.BytesIO(page.screenshot())
+                # A late image, webfont or moving layout can shift an element
+                # during capture. Only trust the frame if its rects stayed put.
+                after = page.evaluate(READ_CONTRAST_NODES, [{"target": n["target"]} for n in frame])
+                stable = [before for before, now in zip(frame, after) if before == now]
+                if len(frame) == len(stable):
+                    break
+            else:
+                if not any(n["target"] == first for n in stable):
+                    unmeasured.append((first, frame[0]["text"], frame[0]["colour"],
+                                       "the element changed during three viewport captures"))
+            readings, missing, hidden = measure_incomplete(shot, stable)
+            measured.extend(readings)
+            unmeasured.extend(missing)
+            off_screen.extend(hidden)
+            done = {n["target"] for n in stable} | {first}
+            pending = [n for n in pending if n["target"] not in done]
+
+    capture(pending)
+    for selector in probes:
+        # Set only the DOM value, without focus, input/change events or form
+        # submission. Search filtering and calculator state stay untouched.
+        control = page.locator(selector)
+        prior = control.evaluate("el => el.value")
+        try:
+            control.evaluate("""el => {
+              const fixtures = {email:'audit@example.invalid', url:'https://example.invalid'};
+              el.value = fixtures[el.type] || '86725';
+            }""")
+            capture([{"target": selector}])
+        finally:
+            control.evaluate("(el, value) => { el.value = value; }", prior)
+    return measured, unmeasured, off_screen
+
+
 def main() -> None:
     # Element text comes straight off the page, and the page is full of
     # middots, arrows and curly quotes. A gate that dies of cp1252 on page 9
@@ -1141,9 +1226,7 @@ def main() -> None:
                 page.add_script_tag(content=axe_source)
                 axe_result = json.loads(json.dumps(page.evaluate(AXE_RUN)))
                 violations = axe_result["violations"]
-                measured, unmeasured, off_screen = measure_incomplete(
-                    target, axe_result["incomplete"]
-                )
+                measured, unmeasured, off_screen = measure_viewports(page, axe_result["incomplete"])
 
                 body_luminance = luminance(grounds["bodyRgb"])
                 header_luminance = luminance(grounds["barRgb"])
@@ -1155,7 +1238,7 @@ def main() -> None:
                     f"body_L={body_luminance:.3f}  header_L={header_luminance:.3f}  "
                     f"islands={islands}  axe={len(violations)}  "
                     f"incomplete={len(axe_result['incomplete'])}"
-                    f"(measured {len(measured)}, unmeasured {len(unmeasured)}, "
+                    f"(measured text states {len(measured)}, unmeasured {len(unmeasured)}, "
                     f"off screen {len(off_screen)})  "
                     f"text={text_chars}  "
                     f"scrollWidth={overflow[0]}/{overflow[1]}"
@@ -1273,7 +1356,7 @@ def main() -> None:
     off_screen_shots = [f"{e[0]} @ {e[1]}" for e in incomplete_tally if e[5]]
     print(
         f"\naxe colour-contrast INCOMPLETE nodes: {total_incomplete} across "
-        f"{len(incomplete_tally)} shots, {total_measured} measured off the pixels, "
+        f"{len(incomplete_tally)} shots, {total_measured} text states measured off the pixels, "
         f"{total_unmeasured} unmeasured; {total_off_screen} off screen past the "
         f"hero strip's edge, on {', '.join(off_screen_shots) or 'no shot'}."
     )

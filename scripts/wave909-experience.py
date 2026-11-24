@@ -790,6 +790,14 @@ with sync_playwright() as pw:
                 expect(logo).to_have_attribute("src", expected_logo)
                 check(logo.evaluate("img => new URL(img.currentSrc).pathname") == expected_logo, "Stale logo candidate")
             expect(page.locator(".home-opening")).to_have_css("background-color", "rgb(255, 255, 255)")
+            for surface, colour, amount in (("mint", "teal", 0.10), ("mist", "navy", 0.08), ("peach", "orange", 0.08)):
+                source, actual = page.evaluate("""([colour, surface]) => {
+                    const style = getComputedStyle(document.documentElement);
+                    return ["--logo-" + colour, "--wave-" + surface].map(name => style.getPropertyValue(name).trim());
+                }""", [colour, surface])
+                channels = [int(source[i:i + 2], 16) for i in (1, 3, 5)]
+                expected = "#" + "".join(f"{round(value * amount + 255 * (1 - amount)):02x}" for value in channels)
+                check(actual.lower() == expected, f"{surface} should be a {amount:.0%} tint of the logo's {colour}")
             waves = page.locator(".home-sections > .wave-section")
             expect(waves).to_have_count(8)
             check(waves.evaluate_all("""sections => sections.every(section => {

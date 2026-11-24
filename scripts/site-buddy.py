@@ -1351,13 +1351,17 @@ def ambient_companion(page, fixtures):
     page.get_by_role('button', name='Minimize Buddy', exact=True).click()
     reopen = page.get_by_role('button', name='Show Buddy', exact=True)
     expect(reopen).to_be_focused()
-    page.wait_for_timeout(100)
-    draws = page.evaluate('window.__buddyAmbientDraws')
+    expect(page.locator('[data-buddy-actor]')).to_be_hidden()
+    expect(character).to_have_attribute('data-buddy-motion', 'off')
+    draws = page.evaluate('window.__buddyDraws')
+    # A resize also requests a static repaint, independently of the ambient clock.
+    page.evaluate('window.dispatchEvent(new Event("resize"))')
     page.wait_for_timeout(300)
-    assert page.evaluate('window.__buddyAmbientDraws') == draws, 'Hidden Buddy retained ambient frames'
+    assert page.evaluate('window.__buddyDraws') == draws, 'Hidden Buddy retained ambient frames'
     page.keyboard.press('Enter')
     expect(page.locator('[data-buddy-launcher]')).to_be_focused()
     assert_fixed_widget(page)
+    page.wait_for_function('previous => window.__buddyDraws > previous', arg=draws)
     assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Hide/reopen contacted AI'
     chat_open(page)
     expect(page.locator('[data-buddy-widget]:visible')).to_have_count(0)

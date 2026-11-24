@@ -124,6 +124,7 @@ export function BuddyCharacter({
   useEffect(() => {
     const container = containerRef.current!,
       canvas = canvasRef.current!;
+    const actor = container.closest<HTMLElement>("[data-buddy-actor]");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false,
       visible = !window.IntersectionObserver,
@@ -179,14 +180,19 @@ export function BuddyCharacter({
       frame = undefined;
       container.dataset.buddyMotion = "off";
     }
-    function canMove() {
+    function canDraw() {
+      // The placement actor hides in place. IntersectionObserver still reports
+      // it in view, so read the actor's own state without forcing layout.
       return (
-        options.animated &&
-        !reduced.matches &&
         visible &&
         !document.hidden &&
-        !failed
+        !failed &&
+        !disposed &&
+        (!actor || (actor.style.visibility === "visible" && actor.style.display !== "none"))
       );
+    }
+    function canMove() {
+      return options.animated && !reduced.matches && canDraw();
     }
     function family() {
       return !options.ambient
@@ -198,7 +204,7 @@ export function BuddyCharacter({
             : "rest";
     }
     function draw() {
-      if (!renderer || disposed || !visible || document.hidden) return;
+      if (!renderer || !canDraw()) return;
       const gestureEnded = actionTime >= duration[options.action];
       let acting: BuddyAction =
         gestureEnded && !options.inspect ? "idle" : options.action;

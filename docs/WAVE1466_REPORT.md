@@ -37,4 +37,6 @@ The homepage opens on pure white. A reusable curved section boundary joins the p
 
 ## IIG colour palette
 
-Three solid colours sampled from the supplied PNG anchor the tinted backgrounds. The teal is #196F6D, navy is #021E64 and orange is #FC5804. Mixing each with white gives the section fills #E8F1F0, #EBEDF3 and #FFF2EB respectively. Shared card, form, validation, navigation and footer styles use the same brand families. The browser check checks text, borders, outlines, backgrounds and gradient colours on each public page, including pseudo-elements. Photography and partner logos retain their original artwork.
+Three solid colours sampled from the supplied PNG anchor the tinted backgrounds. The teal is #196F6D, navy is #021E64 and orange is #FC5804. Mixing each with white gives the section fills #E8F1F0, #EBEDF3 and #FFF2EB respectively. Shared card, form, validation, navigation and footer styles use the same brand families. The release workflow checks text, borders, outlines, backgrounds and gradient colours on each public page, including pseudo-elements. Photography and partner logos retain their original artwork.
+
+The vision and evidence links use the sampled logo teal. In the phone preview they measured 5.17 to 1 on pale teal and 5.07 to 1 on pale navy. The contrast reader measures individual text regions in their current viewport and checks the placeholder and typed states on editable controls. Buddy stops WebGL drawing while hidden.

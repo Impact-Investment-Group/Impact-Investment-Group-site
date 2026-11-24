@@ -255,11 +255,11 @@
   align-items: center;
   gap: 0.5rem;
   min-height: 44px;
-  color: var(--brand-teal-ink);
+  color: var(--logo-teal);
   font-weight: 650;
   line-height: 1.4;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--brand-teal-ink) 42%, transparent);
+  text-decoration-color: color-mix(in srgb, currentColor 42%, transparent);
   text-underline-offset: 0.27em;
 }
 
@@ -394,7 +394,7 @@
 
 .home-evidence dd a,
 .home-evidence__context a {
-  color: var(--brand-teal-ink);
+  color: var(--logo-teal);
   text-decoration: underline;
   text-underline-offset: 0.18em;
 }
