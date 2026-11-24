@@ -816,6 +816,7 @@ READ_CONTRAST_NODES = r"""
         rect: null,
         pastScrollEdge: false,
         inFrame: false,
+        covered: false,
         probe: false,
       };
       if (element) {
@@ -869,6 +870,19 @@ READ_CONTRAST_NODES = r"""
         const top = header && !header.contains(element) ? header.getBoundingClientRect().bottom : 0;
         entry.inFrame = box.top >= top && box.bottom <= innerHeight && box.width > 0 &&
           box.height > 0 && box.left < innerWidth && box.right > 0;
+        // A fixed launcher can cover a whole short label while it is inside
+        // the viewport. Defer obstructed neighbours until their own centered
+        // capture so the launcher's pixels cannot stand in for the label.
+        const left = Math.max(0, box.left), right = Math.min(innerWidth, box.right);
+        const firstY = Math.max(0, box.top), lastY = Math.min(innerHeight, box.bottom);
+        if (left < right && firstY < lastY) {
+          const exposed = [0.2, 0.5, 0.8].map(fraction => {
+            const hit = document.elementFromPoint(left + (right - left) * fraction, (firstY + lastY) / 2);
+            return hit && (element.contains(hit) || hit.contains(element));
+          });
+          entry.covered = !exposed.some(Boolean);
+          entry.inFrame = entry.inFrame && exposed.every(Boolean);
+        }
         // The hero shows one photograph at a time at every width.
         // Every photograph state is also checked by wave909-experience.
         entry.pastScrollEdge = false;
@@ -1113,7 +1127,11 @@ def measure_viewports(page, nodes):
                 if not any(n["target"] == first for n in stable):
                     unmeasured.append((first, frame[0]["text"], frame[0]["colour"],
                                        "the element changed during three viewport captures"))
-            readings, missing, hidden = measure_incomplete(shot, stable)
+            for n in stable:
+                if n["covered"]:
+                    unmeasured.append((n["target"], n["text"], n["colour"],
+                                       "another element covers its centered viewport measurement"))
+            readings, missing, hidden = measure_incomplete(shot, [n for n in stable if not n["covered"]])
             measured.extend(readings)
             unmeasured.extend(missing)
             off_screen.extend(hidden)

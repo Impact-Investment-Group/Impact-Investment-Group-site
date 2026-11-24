@@ -102,6 +102,9 @@ export function BuddyActor() {
           kind: "corner", visible: false, ambient: false });
         return;
       }
+      // A clear landing point does not make the flight between two corners
+      // clear. On phones, put the actor directly into the verified space.
+      if (corner && current.kind === "corner" && window.innerWidth < 640) position = undefined;
       node.style.visibility = "visible";
       assign({ form: destination.dataset.buddySlotForm as BuddyForm,
         action: destination.dataset.buddySlotAction as BuddyAction,
@@ -128,6 +131,12 @@ export function BuddyActor() {
       dirty = true;
       if (!frame && !document.hidden) { previousTime = 0; frame = window.requestAnimationFrame(tick); }
     }
+    function scrollChanged() {
+      // Scrolling invalidates the last clear rectangle before the next measure.
+      // The independent launcher stays usable throughout.
+      if (current.kind === "corner" && window.innerWidth < 640) node.style.visibility = "hidden";
+      update();
+    }
     function visibilityChanged() {
       if (document.hidden) { window.cancelAnimationFrame(frame); frame = 0; }
       else update();
@@ -137,26 +146,26 @@ export function BuddyActor() {
     const mutations = new MutationObserver(update);
     mutations.observe(document.body, { childList: true, subtree: true, attributes: true,
       attributeFilter: ["data-buddy-slot-form", "data-buddy-slot-action", "data-buddy-slot-expression", "aria-hidden", "aria-modal", "hidden", "inert"] });
-    window.addEventListener("scroll", update, { passive: true, capture: true });
+    window.addEventListener("scroll", scrollChanged, { passive: true, capture: true });
     window.addEventListener("resize", update);
     window.addEventListener("animationend", update, true);
     window.addEventListener("transitionend", update, true);
     window.addEventListener("iig:buddy-slots", update);
     viewport?.addEventListener("resize", update);
-    viewport?.addEventListener("scroll", update);
+    viewport?.addEventListener("scroll", scrollChanged);
     reduced.addEventListener("change", update);
     document.addEventListener("visibilitychange", visibilityChanged);
     update();
     return () => {
       window.cancelAnimationFrame(frame);
       resize.disconnect(); mutations.disconnect();
-      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("scroll", scrollChanged, true);
       window.removeEventListener("resize", update);
       window.removeEventListener("animationend", update, true);
       window.removeEventListener("transitionend", update, true);
       window.removeEventListener("iig:buddy-slots", update);
       viewport?.removeEventListener("resize", update);
-      viewport?.removeEventListener("scroll", update);
+      viewport?.removeEventListener("scroll", scrollChanged);
       reduced.removeEventListener("change", update);
       document.removeEventListener("visibilitychange", visibilityChanged);
       destination?.removeAttribute("data-buddy-occupied");

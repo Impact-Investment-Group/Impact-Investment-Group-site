@@ -24,8 +24,10 @@ export function safeBuddyCorner(preferred: BuddyDestinationRect, previous?: Budd
     const known = visibility.get(element);
     if (known !== undefined) return known;
     const style = window.getComputedStyle(element);
+    // An opacity entrance can start between measurements. Reserve its laid-out
+    // text and controls before the first visible animation frame.
     const result = style.display !== "none" && style.visibility !== "hidden" && style.visibility !== "collapse" &&
-      Number(style.opacity) !== 0 && (!element.parentElement || visible(element.parentElement));
+      (!element.parentElement || visible(element.parentElement));
     visibility.set(element, result);
     return result;
   }

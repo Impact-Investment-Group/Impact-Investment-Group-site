@@ -1298,6 +1298,38 @@ def no_animation_controls(page):
     expect(page.locator('[data-buddy-playground], [data-buddy-play-launcher]')).to_have_count(0)
 
 
+def assert_mobile_charity_scroll_clear(page):
+    section = page.locator('[data-charity-home]')
+    result = section.evaluate("""async section => {
+      const actor = document.querySelector('[data-buddy-actor]');
+      const canvas = actor.querySelector('canvas');
+      const content = [...section.querySelectorAll('h2, h3, p, button')];
+      const range = document.createRange();
+      const start = Math.max(0, section.getBoundingClientRect().top + scrollY - innerHeight * .75);
+      let visibleHeading = false;
+      for (let step = 0; step <= 8; step++) {
+        scrollTo({top: start + step * innerHeight / 9, behavior: 'instant'});
+        for (let frame = 0; frame < 6; frame++) {
+          await new Promise(requestAnimationFrame);
+          const heading = section.querySelector('h2').getBoundingClientRect();
+          visibleHeading ||= heading.top >= 0 && heading.bottom < innerHeight;
+          if (!actor.checkVisibility({visibilityProperty: true})) continue;
+          const art = canvas.getBoundingClientRect();
+          for (const element of content) {
+            range.selectNodeContents(element);
+            const boxes = element.matches('button') ? element.getClientRects() : range.getClientRects();
+            if ([...boxes].some(b => b.width && b.height && art.left < b.right && art.right > b.left &&
+                art.top < b.bottom && art.bottom > b.top)) {
+              return {conflict: element.textContent.trim().slice(0, 100), frame, scrollY};
+            }
+          }
+        }
+      }
+      return {visibleHeading};
+    }""")
+    assert result.get('visibleHeading'), f'Mobile Buddy covered the charity section or failed to scroll through it: {result}'
+
+
 def ambient_companion(page, fixtures):
     # Pin only the decorative random source so construction is a predictable
     # first scene. Real elapsed time and the real canvas controller still run.
@@ -1363,6 +1395,8 @@ def ambient_companion(page, fixtures):
     assert_fixed_widget(page)
     page.wait_for_function('previous => window.__buddyDraws > previous', arg=draws)
     assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Hide/reopen contacted AI'
+    if page.viewport_size['width'] < 640:
+        assert_mobile_charity_scroll_clear(page)
     chat_open(page)
     expect(page.locator('[data-buddy-widget]:visible')).to_have_count(0)
     assert not fixtures.requests, 'Opening the regular chat submitted an ambient action'
