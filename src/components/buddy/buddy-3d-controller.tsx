@@ -180,19 +180,16 @@ export function BuddyCharacter({
       frame = undefined;
       container.dataset.buddyMotion = "off";
     }
-    function canDraw() {
-      // The placement actor hides in place. IntersectionObserver still reports
-      // it in view, so read the actor's own state without forcing layout.
+    function inActiveViewport() {
       return (
         visible &&
         !document.hidden &&
         !failed &&
-        !disposed &&
-        (!actor || (actor.style.visibility === "visible" && actor.style.display !== "none"))
+        !disposed
       );
     }
     function canMove() {
-      return options.animated && !reduced.matches && canDraw();
+      return options.animated && !reduced.matches && inActiveViewport();
     }
     function family() {
       return !options.ambient
@@ -204,7 +201,11 @@ export function BuddyCharacter({
             : "rest";
     }
     function draw() {
-      if (!renderer || !canDraw()) return;
+      if (!renderer || !inActiveViewport()) return;
+      // A mobile scroll can briefly hide a still-active actor before placement
+      // checks the new rectangle. Skip GPU work while preserving its clock.
+      // Minimising and no-clear-space placements also set animated to false.
+      if (actor && (actor.style.visibility !== "visible" || actor.style.display === "none")) return;
       const gestureEnded = actionTime >= duration[options.action];
       let acting: BuddyAction =
         gestureEnded && !options.inspect ? "idle" : options.action;

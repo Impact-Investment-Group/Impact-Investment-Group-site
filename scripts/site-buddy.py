@@ -1396,6 +1396,15 @@ def ambient_companion(page, fixtures):
     page.wait_for_function('previous => window.__buddyDraws > previous', arg=draws)
     assert not fixtures.chat_chunks and not fixtures.status_requests and not fixtures.requests, 'Hide/reopen contacted AI'
     if page.viewport_size['width'] < 640:
+        # A scroll notification can leave the same corner clear. Its existing
+        # render clock must continue even when there are no new placement props.
+        draws = page.evaluate("""async () => {
+          window.dispatchEvent(new Event('scroll'));
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          return window.__buddyDraws;
+        }""")
+        expect(character).to_have_attribute('data-buddy-motion', 'on')
+        page.wait_for_function('previous => window.__buddyDraws > previous', arg=draws)
         assert_mobile_charity_scroll_clear(page)
     chat_open(page)
     expect(page.locator('[data-buddy-widget]:visible')).to_have_count(0)
