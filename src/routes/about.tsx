@@ -85,7 +85,7 @@ function Summary({ lines }: { lines: Seg[][] }) {
 function AboutPage() {
   return (
     <div className="about-story">
-      <section id="our-vision" aria-labelledby="vision-heading" className="story-lead story-lead--vision">
+      <section id="our-vision" aria-labelledby="vision-heading" className="story-lead story-lead--vision wave-section story-from-white story-cream">
         <div className="story-shell">
           <div className="story-copy">
             <p className="story-kicker">{visionMission[0]!.label}</p>
@@ -107,7 +107,7 @@ function AboutPage() {
           />
         </div>
       </section>
-      <section aria-labelledby="about-heading" className="about-people">
+      <section aria-labelledby="about-heading" className="about-people wave-section story-from-cream story-white">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <div className="about-identity">
             <h2 id="about-heading" className="story-section-title">{whoWeAre.title}</h2>
@@ -156,7 +156,7 @@ function AboutPage() {
           </aside>
         </div>
       </section>
-      <section aria-labelledby="why-heading" className="border-t border-rule bg-page-alt">
+      <section aria-labelledby="why-heading" className="wave-section story-from-white story-mint">
         <div className="mx-auto grid w-full max-w-[1200px] gap-9 px-5 py-14 sm:px-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-14 lg:py-20">
           <div>
             <h2
@@ -219,8 +219,10 @@ function AboutPage() {
           </div>
         </div>
       </section>
-      <CharityImpact />
-      <section aria-labelledby="what-heading" className="border-t border-rule">
+      <div className="about-charity-band wave-section story-from-mint story-peach">
+        <CharityImpact />
+      </div>
+      <section aria-labelledby="what-heading" className="wave-section story-from-peach story-white">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <h2
             id="what-heading"

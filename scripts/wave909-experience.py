@@ -781,6 +781,18 @@ with sync_playwright() as pw:
             expect(page.get_by_role("tablist", name="How the connection works")).to_have_count(0)
             expect(page.locator('a[href="#connection-heading"]')).to_have_count(0)
             expect(page.locator(".hero-panel")).to_have_count(3)
+            expected_logo = "/images/brand/logo-lockup-20261124.png"
+            for mount in (".site-header__logo img", "footer img[src*='logo-lockup']"):
+                logo = page.locator(mount)
+                expect(logo).to_have_attribute("src", expected_logo)
+                check(logo.evaluate("img => new URL(img.currentSrc).pathname") == expected_logo, "Stale logo candidate")
+            expect(page.locator(".home-opening")).to_have_css("background-color", "rgb(255, 255, 255)")
+            waves = page.locator(".home-sections > .wave-section")
+            expect(waves).to_have_count(8)
+            check(waves.evaluate_all("""sections => sections.every(section => {
+                const wave = getComputedStyle(section, '::before');
+                return wave.maskImage.includes('section-wave.svg') && parseFloat(wave.height) >= 16;
+            })"""), "Home section has no curved transition")
             sources = page.locator("#data-sources")
             sources.scroll_into_view_if_needed()
             lane = sources.locator(".logo-marquee")

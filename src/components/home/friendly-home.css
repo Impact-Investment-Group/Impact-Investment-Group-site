@@ -40,7 +40,7 @@
 }
 
 .home-opening {
-  background: linear-gradient(110deg, var(--brand-teal-soft), var(--color-page) 78%);
+  background: var(--color-white);
   color: var(--color-ink);
 }
 
@@ -192,9 +192,6 @@
   margin-left: 0.35rem;
 }
 
-.home-pathways {
-  background: var(--color-page);
-}
 
 .home-pathways__grid {
   display: grid;
@@ -278,8 +275,6 @@
 
 .home-evidence {
   padding-block: clamp(2.8rem, 5vw, 5.4rem);
-  border-block: 1px solid var(--color-rule);
-  background: var(--brand-teal-soft);
 }
 
 .home-evidence h2,
@@ -402,4 +397,60 @@
   color: var(--brand-teal-ink);
   text-decoration: underline;
   text-underline-offset: 0.18em;
+}
+
+.home-sections > .home-pathways {
+  --wave-from: var(--wave-white);
+  --wave-fill: var(--wave-mint);
+}
+
+.home-sections > .home-evidence {
+  --wave-from: var(--wave-mint);
+  --wave-fill: var(--wave-cream);
+}
+
+.home-sections > .home-role-directory {
+  --wave-from: var(--wave-cream);
+  --wave-fill: var(--wave-white);
+}
+
+.home-sections > .mission-editorial {
+  --wave-from: var(--wave-white);
+  --wave-fill: var(--wave-peach);
+}
+
+.home-sections > .home-charity-wave {
+  --wave-from: var(--wave-peach);
+  --wave-fill: var(--wave-white);
+}
+
+.home-sections > .council-panel {
+  --wave-from: var(--wave-white);
+  --wave-fill: var(--wave-mint);
+  padding-block-start: calc(clamp(1rem, 3.4vw, 3.25rem) + 1.25rem);
+}
+
+.home-sections > .home-demand-friendly {
+  --wave-from: var(--wave-mint);
+  --wave-fill: var(--wave-white);
+}
+
+.home-sections > .home-faq-wave {
+  --wave-from: var(--wave-white);
+  --wave-fill: var(--wave-cream);
+}
+
+.home-sections > .wave-section {
+  border-block: 0;
+  background: var(--wave-fill);
+}
+
+.home-sections > .wave-section:nth-child(odd)::before {
+  transform: scaleX(-1);
+}
+
+.home-sections .home-charity-wave > section,
+.home-sections .home-faq-wave > section {
+  border-block: 0;
+  background: transparent;
 }

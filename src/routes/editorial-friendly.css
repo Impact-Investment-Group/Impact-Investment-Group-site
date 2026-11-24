@@ -1016,8 +1016,12 @@
   box-shadow: none;
 }
 
-.friendly-services .friendly-section-tinted {
-  margin-inline: 0;
-  border-radius: 0;
-  border-block: 1px solid var(--color-rule);
+.services-buddy-band > section {
+  background: transparent;
+  border-block: 0;
+}
+
+.services-sourcing-band > details,
+.solution-home-help > div {
+  padding-block-start: clamp(3rem, 7vw, 5rem);
 }

@@ -44,7 +44,7 @@ export function MissionSolution() {
     <section
       data-buddy-topic={active === 0 ? "property" : "support"}
       aria-labelledby="mission-heading"
-      className="mission-editorial border-y border-rule bg-page"
+      className="wave-section mission-editorial"
     >
       <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8 lg:py-16">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16">

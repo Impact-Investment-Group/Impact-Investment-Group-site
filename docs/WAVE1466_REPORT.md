@@ -28,3 +28,9 @@ Reviewed the public pages and verified the content families against the previous
 ## Release check correction
 
 The first complete run passed the public journeys and Buddy. Its colour reader flagged the third mobile gallery caption because its rectangle was wholly outside the screenshot of the first slide. The reader now recognises fully clipped slides before trying to crop their pixels. The gallery journey also selects every slide and measures its computed text colour against the most frequent colour in a screenshot of its visible caption, requiring at least 4.5 to 1 on desktop and phone.
+
+## Logo and flowing backgrounds
+
+The amendment supplies a transparent 400 by 64 pixel logo. The live light-background logo component serves that PNG unchanged in the header, mobile drawer and footer. The source and served file have SHA-256 `638fea61e33148442c1280b494e768436f3b3379f040b9123f90f9d37b4edfd4`. The favicon uses the supplied emblem and the share preview uses the complete lockup on white.
+
+The homepage opens on pure white. A reusable curved section boundary joins the mint, cream, peach and white bands. Colour comes from CSS and a small vector mask follows the available width. Editorial, evidence, partnership and service routes reuse the curve where their page backgrounds change. Section text uses darker secondary ink on pastels. Browser inspection verified the byte-identical image at its three mounts, the white hero, and all eight homepage transitions.

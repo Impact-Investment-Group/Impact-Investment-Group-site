@@ -8,7 +8,7 @@ export function CouncilPanel() {
     <section
       data-buddy-topic="property"
       aria-labelledby="commissioning-councils"
-      className="council-panel border-y border-rule bg-page py-6 sm:py-7"
+      className="wave-section council-panel py-6 sm:py-7"
     >
       <h2 id="commissioning-councils" className="sr-only">{councilsEyebrow}</h2>
       <p className="px-5 text-center sm:px-8">

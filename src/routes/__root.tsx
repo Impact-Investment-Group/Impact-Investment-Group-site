@@ -127,7 +127,7 @@ export const Route = createRootRoute({
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.png?v=20261105-3", type: "image/png" },
+      { rel: "icon", href: "/images/brand/logo-mark-20261124.png", type: "image/png" },
       ...[barlow800, barlow700, interVariable].map((href) => ({
         rel: "preload",
         as: "font",

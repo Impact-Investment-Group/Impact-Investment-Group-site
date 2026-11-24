@@ -114,7 +114,7 @@ export function PartnersHub() {
       <section
         id="ecosystem"
         aria-labelledby="ecosystem-heading"
-        className="partner-craft-directory"
+        className="partner-craft-directory wave-section story-from-white story-mint"
       >
         <div className="partner-craft-container">
           <div className="partner-craft-directory__intro">

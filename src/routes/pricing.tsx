@@ -84,7 +84,7 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="pricing-next" aria-labelledby="pricing-next-heading">
+      <section className="pricing-next wave-section" aria-labelledby="pricing-next-heading">
         <Reveal className="pricing-next__inner">
           <div className="pricing-next__mark" aria-hidden="true">
             <Handshake size={46} strokeWidth={1.4} />

@@ -57,3 +57,38 @@ footer nav[aria-label="Partner pages"] a {
     margin: 0;
   }
 }
+
+:root {
+  --wave-white: var(--color-white);
+  --wave-mint: #e2f3ec;
+  --wave-peach: #fff0e6;
+  --wave-cream: #fff7df;
+}
+.wave-section, .faq-page .faq-page-heading, .registration-directory__intro {
+  --color-teal-600: #206c68;
+  --color-ink-soft: var(--color-ink-muted);
+}
+.wave-section {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--wave-fill, var(--wave-mint));
+  border-top: 0;
+}
+.wave-section::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: clamp(1rem, 3.4vw, 3.25rem);
+  z-index: -1;
+  pointer-events: none;
+  background: var(--wave-from, var(--wave-white));
+  mask: url("/images/brand/section-wave.svg") center top / 100% 100% no-repeat;
+}
+.site-header {
+  background-color: var(--wave-white);
+}
+
+#main > .home-sections:last-child {
+  padding-bottom: clamp(2.25rem, 4.5vw, 5rem);
+  background: var(--wave-cream);
+}

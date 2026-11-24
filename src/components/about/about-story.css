@@ -33,3 +33,9 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+.about-charity-band .charity-impact {
+  background: transparent;
+  border-block: 0;
+}

@@ -333,7 +333,13 @@
 }
 
 .pricing-page {
-  background: var(--color-page-alt);
+  background: var(--wave-white);
+}
+.pricing-page .pricing-next {
+  --wave-from: var(--wave-white);
+  --wave-fill: var(--wave-peach);
+  background: var(--wave-fill);
+  border-top: 0;
 }
 .pricing-page .pricing-intro {
   gap: clamp(2rem, 5vw, 5rem);

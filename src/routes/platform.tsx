@@ -52,17 +52,15 @@ function Section({
   id,
   title,
   children,
-  muted = false,
 }: {
   id: string;
   title: string;
   children: React.ReactNode;
-  muted?: boolean;
 }) {
   return (
     <section
       aria-labelledby={id}
-      className={cn("friendly-section", muted && "friendly-section-tinted")}
+      className="friendly-section wave-section story-from-peach story-mint"
     >
       <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
         <h2
@@ -292,7 +290,7 @@ function DifferenceStory() {
 function ServicesPage() {
   return (
     <div className="friendly-editorial friendly-services">
-      <section aria-labelledby="services-heading" className="story-lead story-lead--services">
+      <section aria-labelledby="services-heading" className="story-lead story-lead--services wave-section story-from-white story-mint">
         <div className="story-shell">
           <div className="story-copy">
             <p className="story-kicker">{servicesHero.eyebrow}</p>
@@ -323,14 +321,16 @@ function ServicesPage() {
           </figure>
         </div>
       </section>
-      <div id="services-preview">
+      <div id="services-preview" className="wave-section story-from-mint story-white">
         <PlatformGuides />
       </div>
-      <BuddyServices />
+      <div className="services-buddy-band wave-section story-from-white story-peach">
+        <BuddyServices />
+      </div>
       <Section id="steps-heading" title="From search to supported home">
         <ServiceJourney />
       </Section>
-      <section className="friendly-section friendly-section-tinted">
+      <section className="friendly-section services-sourcing-band wave-section story-from-mint story-white">
         <details className="mx-auto w-full max-w-[1200px] px-5 py-10 sm:px-8" data-services-more>
           <summary
             id="services-more-heading"

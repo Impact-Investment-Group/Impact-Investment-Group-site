@@ -276,10 +276,6 @@
   font: 500 12px/1.6 var(--font-mono);
   color: var(--color-teal-600);
 }
-.partner-craft-journey-section {
-  background: var(--secondary);
-  border-block: 1px solid var(--color-rule);
-}
 .partner-craft-journey {
   padding-block: 76px;
 }

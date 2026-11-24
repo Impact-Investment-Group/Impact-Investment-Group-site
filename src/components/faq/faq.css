@@ -43,7 +43,7 @@
   margin: 0;
   padding: clamp(1.5rem, 3.5vw, 3rem);
   border-radius: 0.75rem 2.75rem 0.75rem 0.75rem;
-  background: var(--secondary);
+  background: var(--wave-mint);
   text-align: left;
 }
 .faq-page .faq-page-heading h1 {

@@ -112,14 +112,7 @@ export function SiteFooter() {
           preserveAspectRatio="none"
           className="absolute inset-0 size-full"
         >
-          <path d="M0 140 C 380 -44 1060 -44 1440 140 Z" fill="var(--color-page)" />
-          <path
-            d="M0 140 C 380 -44 1060 -44 1440 140"
-            fill="none"
-            stroke="var(--color-rule)"
-            strokeWidth={1}
-            vectorEffect="non-scaling-stroke"
-          />
+          <path d="M0 70 C210 134 362 124 580 76 S984 17 1194 58 Q1332 86 1440 56 V140 H0Z" fill="var(--wave-white)" />
         </svg>
       </div>
 
@@ -148,7 +141,7 @@ export function SiteFooter() {
        * which is 275 nodes across 28 shots at this head with none unmeasured.
        * See section 5 of docs/WAVE421_REPORT.md.
        */}
-      <div className="bg-page text-ink-muted">
+      <div className="site-footer-body bg-white text-ink-muted">
         {/*
          * THE FUNNEL. One copy, at the top of the footer, on every page BUT
          * `/register` and everything under `/register/`. Wave 567, Callum,

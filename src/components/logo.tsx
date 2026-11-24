@@ -1,29 +1,15 @@
 import { variantSrcSet } from "@/lib/responsive-image";
 import { cn } from "@/lib/utils";
 
-/**
- * The live header, mobile drawer and footer use the user's latest logo of
- * 5 November 2026, preserving its supplied artwork and colours. Excess transparent
- * outer space is trimmed for the existing header dimensions. Responsive
- * lossless WebP copies preserve alpha and use a versioned filename.
- *
- * The light logo is 2023 by 326, approximately 6.21:1. Existing heights give
- * a 211px phone/drawer logo, 273px tablet/wide-desktop logo and 223px logo
- * between 1280 and 1439px. The footer scales down to its column. The sizes
- * hints deliberately round these widths up to the existing small bounds.
- *
- * All current mounts explicitly use on-cream. The historical reverse artwork
- * remains available for an explicitly requested dark-background variant.
- */
-
+/** The light lockup uses the exact transparent PNG supplied on 24 November. */
 const LOCKUP = {
   "on-navy": "/images/brand/logo-lockup-reverse.webp",
-  "on-cream": "/images/brand/logo-lockup-20261105-v3.webp",
+  "on-cream": "/images/brand/logo-lockup-20261124.png",
 } as const;
 
 const MARK = {
   "on-navy": "/images/brand/logo-mark-reverse.webp",
-  "on-cream": "/images/brand/logo-mark.webp",
+  "on-cream": "/images/brand/logo-mark-20261124.png",
 } as const;
 
 /**
@@ -76,8 +62,8 @@ export function Logo({
         fetchPriority="high"
         alt=""
         aria-hidden="true"
-        width={variant === "on-cream" ? 2023 : 2006}
-        height={variant === "on-cream" ? 326 : 310}
+        width={variant === "on-cream" ? 400 : 2006}
+        height={variant === "on-cream" ? 64 : 310}
         className={SIZE[size].className}
       />
       <span className="sr-only">{LOGO_HOME_NAME}</span>
@@ -107,8 +93,8 @@ export function LogoMark({
       fetchPriority="high"
       alt=""
       aria-hidden="true"
-      width={254}
-      height={264}
+      width={variant === "on-cream" ? 64 : 254}
+      height={variant === "on-cream" ? 64 : 264}
       className={cn("h-9 w-auto", className)}
     />
   );

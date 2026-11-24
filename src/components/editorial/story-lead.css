@@ -2,7 +2,6 @@
 .story-lead {
   color: var(--color-ink);
   background: var(--color-page-alt);
-  border-bottom: 1px solid var(--color-rule);
 }
 
 .story-shell {
@@ -128,10 +127,6 @@
   border-start-end-radius: clamp(2rem, 5vw, 5rem);
 }
 
-.story-lead--network {
-  background: var(--color-page);
-}
-
 .story-network-visual,
 .story-solution-visual {
   position: relative;
@@ -148,10 +143,6 @@
 
 .story-lead--solution .story-photo {
   border-end-start-radius: clamp(2rem, 5vw, 5rem);
-}
-
-.story-lead--services {
-  background: var(--secondary);
 }
 
 .story-product {
@@ -220,4 +211,19 @@
     column-gap: 1.25rem;
     margin-top: 0.8rem;
   }
+}
+
+.wave-section.story-from-white { --wave-from: var(--wave-white); }
+.wave-section.story-from-mint { --wave-from: var(--wave-mint); }
+.wave-section.story-from-peach { --wave-from: var(--wave-peach); }
+.wave-section.story-from-cream { --wave-from: var(--wave-cream); }
+
+.wave-section.story-white { --wave-fill: var(--wave-white); background-color: var(--wave-fill); }
+.wave-section.story-mint { --wave-fill: var(--wave-mint); background-color: var(--wave-fill); }
+.wave-section.story-peach { --wave-fill: var(--wave-peach); background-color: var(--wave-fill); }
+.wave-section.story-cream { --wave-fill: var(--wave-cream); background-color: var(--wave-fill); }
+
+.story-lead--network,
+.partner-crisis-panel {
+  background-color: var(--wave-white);
 }

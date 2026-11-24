@@ -194,7 +194,7 @@ function LayerExplorer() {
 function SolutionsPage() {
   return (
     <div className="friendly-editorial friendly-solutions" data-buddy-topic="property">
-      <section aria-labelledby="solution-heading" className="story-lead story-lead--solution">
+      <section aria-labelledby="solution-heading" className="story-lead story-lead--solution wave-section story-from-white story-cream">
         <div className="story-shell">
           <div className="story-copy">
             <p className="story-kicker">{solutionHero.eyebrow}</p>
@@ -224,7 +224,7 @@ function SolutionsPage() {
           </div>
         </div>
       </section>
-      <section aria-labelledby="layers-heading" className="friendly-section">
+      <section aria-labelledby="layers-heading" className="friendly-section wave-section story-from-cream story-white">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
           <h2
             id="layers-heading"
@@ -239,7 +239,7 @@ function SolutionsPage() {
           <LayerExplorer />
         </div>
       </section>
-      <section aria-labelledby="product-heading" className="friendly-section friendly-product">
+      <section aria-labelledby="product-heading" className="friendly-section wave-section story-from-white story-mint">
         <div className="mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_350px] lg:py-20">
           <div>
             <h2
@@ -272,7 +272,7 @@ function SolutionsPage() {
           </div>
         </div>
       </section>
-      <section aria-label="Looking for a home" className="border-t border-rule" data-buddy-topic="support">
+      <section aria-label="Looking for a home" className="solution-home-help wave-section story-from-mint story-white" data-buddy-topic="support">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-6 sm:px-8">
           <p className="max-w-[95ch] text-sm leading-relaxed text-ink-muted">
             {lookingForHome.body}{" "}

@@ -46,7 +46,7 @@ function CrisisSignpost({ signpost }: { signpost: NonNullable<PartnerProfile["cr
 
        An earlier revision made this a <p> to keep the outline clean and lost
        the heading. If you change it back, know what you are trading away. */
-    <section aria-labelledby="crisis-signpost-heading" className="border-b border-teal-600 bg-page">
+    <section aria-labelledby="crisis-signpost-heading" className="partner-crisis-panel">
       <div className="mx-auto grid w-full max-w-[1200px] gap-5 px-5 py-6 sm:px-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
         <div>
           <h2
@@ -402,7 +402,7 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
   const presentation = rolePresentations[profile.id] ?? rolePresentations["investor"]!;
 
   return (
-    <section id="role" aria-labelledby="role-heading" className="bg-page">
+    <section id="role" aria-labelledby="role-heading" className="wave-section story-from-cream story-white">
       <div className="partner-craft-container partner-craft-ledger">
         <div>
           <p className="eyebrow text-teal-600">{presentation.eyebrow}</p>
@@ -447,7 +447,7 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
     <section
       id="platform-journey"
       aria-labelledby="platform-heading"
-      className="partner-craft-journey-section"
+      className="partner-craft-journey-section wave-section story-from-white story-mint"
     >
       <div className="partner-craft-container partner-craft-journey">
         <div className="partner-craft-journey__intro">
@@ -617,7 +617,7 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
   return (
     <div className="partner-page partner-craft" data-buddy-topic={partnerBuddyForm(profile)}>
       {profile.crisisSignpost ? <CrisisSignpost signpost={profile.crisisSignpost} /> : null}
-      <section aria-labelledby={headingId} className="story-lead story-lead--partner">
+      <section aria-labelledby={headingId} className="story-lead story-lead--partner wave-section story-from-white story-cream">
         <div className="story-shell">
           <div className="story-copy">
             <Link to="/partners" className="story-back">
@@ -653,7 +653,7 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
       <PartnerRoleLedger profile={profile} />
       <PartnerPlatformStack key={profile.id} profile={profile} />
 
-      <section id="connected-network" aria-labelledby="network-heading" className="bg-page">
+      <section id="connected-network" aria-labelledby="network-heading" className="wave-section story-from-mint story-white">
         <div className="partner-craft-container py-14 lg:py-16">
           <div className="max-w-[760px]">
             <p className="eyebrow text-teal-600">The connected network</p>

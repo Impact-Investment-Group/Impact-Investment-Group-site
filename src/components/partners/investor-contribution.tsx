@@ -72,7 +72,11 @@ export function InvestorContribution() {
     annualRent !== null && annualExpenses !== null ? annualRent - annualExpenses : null;
 
   return (
-    <section id="your-impact" className="impact-investor" aria-labelledby="contribution-heading">
+    <section
+      id="your-impact"
+      className="wave-section impact-investor"
+      aria-labelledby="contribution-heading"
+    >
       <div className="impact-evidence-wrap">
         <p className="impact-kicker">Your impact as a property investor</p>
         <h2 id="contribution-heading">How many homes could you help fund?</h2>

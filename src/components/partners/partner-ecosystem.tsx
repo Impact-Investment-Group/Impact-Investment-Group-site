@@ -36,7 +36,7 @@ export function PartnerEcosystem() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   return (
-    <section id="ecosystem-map" aria-labelledby="ecosystem-map-heading" className="scroll-mt-24 bg-page">
+    <section id="ecosystem-map" aria-labelledby="ecosystem-map-heading" className="scroll-mt-24 wave-section story-from-mint story-white">
       <div className="mx-auto max-w-[1200px] px-5 pb-8 pt-14 sm:px-8 lg:pt-20">
         <div className="mx-auto max-w-[720px] text-center">
           <p className="eyebrow text-teal-600">One connected ecosystem</p>

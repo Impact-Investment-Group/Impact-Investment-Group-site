@@ -174,7 +174,7 @@ export function ContactLayout({
         </section>
       </div>
 
-      <section aria-labelledby="faq-heading" className="contact-faq">
+      <section aria-labelledby="faq-heading" className="contact-faq wave-section">
         <div className="contact-container contact-faq__inner">
           <div>
             <p className="eyebrow text-teal-600">{faqEyebrow}</p>

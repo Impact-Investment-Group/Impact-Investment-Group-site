@@ -219,7 +219,7 @@ export function HomeHero() {
 
 export function HomeRoleDirectory() {
   return (
-    <section aria-labelledby="register-as" className="home-role-directory">
+    <section aria-labelledby="register-as" className="wave-section home-role-directory">
       <div className="home-content-width">
         <h2 id="register-as">{registerAsDivider}</h2>
         <ul aria-labelledby="register-as" className="hero-role-grid mt-6">

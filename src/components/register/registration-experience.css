@@ -269,7 +269,7 @@
 
 .registration-directory[data-choosing-role="true"] .registration-directory__intro {
   padding: clamp(1.5rem, 3.5vw, 3rem);
-  background: var(--secondary);
+  background: var(--wave-mint);
   border-radius: 0.75rem clamp(2.5rem, 6vw, 5rem) 0.75rem 0.75rem;
 }
 .registration-directory[data-choosing-role="true"] .registration-directory__note {

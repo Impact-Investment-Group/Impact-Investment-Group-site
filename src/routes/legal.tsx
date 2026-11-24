@@ -162,7 +162,7 @@ function LegalPage() {
       </section>
 
       {/* ── The company ──────────────────────────────────────────────────── */}
-      <section aria-labelledby="company-heading" className="section-light">
+      <section aria-labelledby="company-heading" className="section-light legal-company-wave wave-section">
         <div className="mx-auto w-full max-w-[1200px] px-5 pb-14 sm:px-8">
           <Reveal className="legal-record">
             <div className="flex items-center gap-4">
@@ -226,7 +226,7 @@ function LegalPage() {
       </section>
 
       {/* ── Registrations ────────────────────────────────────────────────── */}
-      <section aria-labelledby="registrations-heading" className="section-light">
+      <section aria-labelledby="registrations-heading" className="section-light legal-registers-wave wave-section">
         <div className="mx-auto w-full max-w-[1200px] px-5 pb-14 sm:px-8">
           <Reveal>
             <div className="flex items-center gap-4">

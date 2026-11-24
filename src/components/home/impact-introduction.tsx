@@ -31,7 +31,7 @@ const pathways = [
 
 export function HomePathways() {
   return (
-    <section className="home-pathways" aria-label="Our vision, delivery and impact">
+    <section className="wave-section home-pathways" aria-label="Our vision, delivery and impact">
       <div className="home-content-width home-pathways__grid">
         {pathways.map(({ icon: Icon, title, body, link, to, hash }) => (
           <article key={title}>
@@ -52,7 +52,7 @@ export function HomePathways() {
 
 export function HomeHousingEvidence() {
   return (
-    <section aria-labelledby="home-evidence-heading" className="home-evidence">
+    <section aria-labelledby="home-evidence-heading" className="wave-section home-evidence">
       <div className="home-content-width">
         <h2 id="home-evidence-heading">What would it take to end homelessness?</h2>
         <dl className="home-evidence__numbers">

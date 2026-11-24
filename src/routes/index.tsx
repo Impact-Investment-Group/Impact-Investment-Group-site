@@ -49,7 +49,7 @@ export const Route = createFileRoute("/")({
          under 300 KB: WhatsApp ignores a relative path and a larger file. */
       {
         property: "og:image",
-        content: "https://impactinvestmentgroup.co.uk/images/brand/og-default-20261105-v3.png",
+        content: "https://impactinvestmentgroup.co.uk/images/brand/og-default-20261124.png",
       },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:image",
-        content: "https://impactinvestmentgroup.co.uk/images/brand/og-default-20261105-v3.png",
+        content: "https://impactinvestmentgroup.co.uk/images/brand/og-default-20261124.png",
       },
     ],
     links: [{ rel: "canonical", href: "https://impactinvestmentgroup.co.uk/" }],
@@ -66,18 +66,20 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
-    <>
+    <div className="home-sections">
       <HomeHero />
       <HomePathways />
       <HomeHousingEvidence />
       <HomeRoleDirectory />
       <MissionSolution />
-      <CharityImpact variant="home" />
+      <div className="wave-section home-charity-wave">
+        <CharityImpact variant="home" />
+      </div>
       <CouncilPanel />
       <section
         data-buddy-topic="property"
         aria-labelledby="demand-heading"
-        className="home-demand-friendly section-light border-t border-rule"
+        className="wave-section home-demand-friendly section-light"
       >
         <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8 lg:py-16">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,600px)] lg:gap-14">
@@ -148,7 +150,9 @@ function HomePage() {
           </div>
         </div>
       </section>
-      <HomeFaq />
-    </>
+      <div className="wave-section home-faq-wave">
+        <HomeFaq />
+      </div>
+    </div>
   );
 }
