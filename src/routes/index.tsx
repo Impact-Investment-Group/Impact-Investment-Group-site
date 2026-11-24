@@ -4,7 +4,8 @@ import type { LucideIcon } from "lucide-react";
 
 import { CouncilPanel } from "@/components/home/council-panel";
 import { DemandMap } from "@/components/home/demand-map";
-import { HomeHero } from "@/components/home/hero";
+import { HomeHero, HomeRoleDirectory } from "@/components/home/hero";
+import { HomeHousingEvidence, HomePathways } from "@/components/home/impact-introduction";
 import { MissionSolution } from "@/components/home/mission-solution";
 import { HomeFaq } from "@/components/faq/home-faq";
 import { CharityImpact } from "@/components/charity/charity-impact";
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
   head: () => ({
     meta: [
-      { title: "Impact Investment Group — Social Impact Property & Supported Housing" },
+      { title: "Impact Investment Group | Social Impact Property & Supported Housing" },
       {
         name: "description",
         content:
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "Impact Investment Group — Social Impact Property & Supported Housing",
+        content: "Impact Investment Group | Social Impact Property & Supported Housing",
       },
       {
         property: "og:description",
@@ -67,6 +68,9 @@ function HomePage() {
   return (
     <>
       <HomeHero />
+      <HomePathways />
+      <HomeHousingEvidence />
+      <HomeRoleDirectory />
       <MissionSolution />
       <CharityImpact variant="home" />
       <CouncilPanel />

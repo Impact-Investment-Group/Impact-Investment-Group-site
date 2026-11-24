@@ -848,11 +848,11 @@ async () => {
           Math.ceil(box.right + scrollX),
           Math.ceil(box.bottom + scrollY),
         ];
-        // Only the mobile hero snap strip can put captions beyond its edge.
+        // The hero shows one photograph at a time at every width.
         // Every photograph state is also checked by wave909-experience.
         entry.pastScrollEdge = false;
         const strip = element.closest('.hero-band');
-        if (innerWidth < 768 && strip && strip.scrollWidth > strip.clientWidth + 2) {
+        if (strip && strip.scrollWidth > strip.clientWidth + 2) {
           const lane = strip.getBoundingClientRect();
           const shown = Math.min(box.right, lane.right) - Math.max(box.left, lane.left);
           if (shown < box.width / 2) entry.pastScrollEdge = true;
@@ -1276,7 +1276,7 @@ def main() -> None:
         f"\naxe colour-contrast INCOMPLETE nodes: {total_incomplete} across "
         f"{len(incomplete_tally)} shots, {total_measured} measured off the pixels, "
         f"{total_unmeasured} unmeasured; {total_off_screen} off screen past the "
-        f"hero strip's edge below 768, on {', '.join(off_screen_shots) or 'no shot'}."
+        f"hero strip's edge, on {', '.join(off_screen_shots) or 'no shot'}."
     )
 
     worst_raw = max(rows, key=lambda r: r[2])

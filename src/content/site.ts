@@ -16,8 +16,8 @@ export const primaryNav: NavItem[] = [
   { label: "About Us", to: "/about" },
   { label: "Our Services", to: "/platform" },
   { label: "Pricing", to: "/pricing" },
-  { label: "The Problem", to: "/the-problem" },
-  { label: "The Solution", to: "/solutions" },
+  { label: "Housing need", to: "/the-problem" },
+  { label: "Our approach", to: "/solutions" },
   { label: "Partners", to: "/partners" },
   { label: "Contact Us", to: "/contact" },
 ];
@@ -116,8 +116,8 @@ export const footerSiteLinks: NavItem[] = [
   { label: "About Us", to: "/about" },
   { label: "Our Services", to: "/platform" },
   { label: "Pricing", to: "/pricing" },
-  { label: "The Problem", to: "/the-problem" },
-  { label: "The Solution", to: "/solutions" },
+  { label: "Housing need", to: "/the-problem" },
+  { label: "Our approach", to: "/solutions" },
   { label: "Partners", to: "/partners" },
   { label: "Contact Us", to: "/contact" },
 ];

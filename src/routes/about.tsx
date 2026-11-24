@@ -14,11 +14,14 @@ import {
   team,
   teamTitle,
   whatWeDo,
+  visionMission,
   whoWeAre,
   whyWeExist,
   type Seg,
 } from "@/content/about";
-import { variantSrcSet } from "@/lib/responsive-image";
+import "@/components/about/about-story.css";
+import "@/components/editorial/story-lead.css";
+import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,
@@ -81,19 +84,36 @@ function Summary({ lines }: { lines: Seg[][] }) {
 
 function AboutPage() {
   return (
-    <div>
-      <section aria-labelledby="about-heading" className="page-intro">
+    <div className="about-story">
+      <section id="our-vision" aria-labelledby="vision-heading" className="story-lead story-lead--vision">
+        <div className="story-shell">
+          <div className="story-copy">
+            <p className="story-kicker">{visionMission[0]!.label}</p>
+            <h1 id="vision-heading" className="story-title">{visionMission[0]!.title}</h1>
+            <p className="story-intro">{visionMission[0]!.body}</p>
+            <div className="story-links">
+              <a href="#team-heading">Meet the team <ArrowRight aria-hidden="true" /></a>
+              <Link to="/the-problem" hash="uk-impact">Learn about our impact <ArrowRight aria-hidden="true" /></Link>
+            </div>
+          </div>
+          <img
+            className="story-photo"
+            src="/images/hero-lives.webp"
+            srcSet={variantSrcSet("/images/hero-lives.webp")}
+            sizes="(min-width: 1200px) 540px, (min-width: 800px) 45vw, 100vw"
+            width={intrinsic("/images/hero-lives.webp")?.width}
+            height={intrinsic("/images/hero-lives.webp")?.height}
+            alt="A family gathered on the front step of a home."
+          />
+        </div>
+      </section>
+      <section aria-labelledby="about-heading" className="about-people">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
-            <h1
-              id="about-heading"
-              className="font-heading text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight text-ink"
-            >
-              {whoWeAre.title}
-            </h1>
+          <div className="about-identity">
+            <h2 id="about-heading" className="story-section-title">{whoWeAre.title}</h2>
             <Summary lines={summaries.whoWeAre!} />
           </div>
-          <h2 className="mt-12 font-heading text-2xl font-semibold text-ink">{teamTitle}</h2>
+          <h2 id="team-heading" className="story-section-title mt-12">{teamTitle}</h2>
           <ul
             aria-label="Leadership team"
             className="mt-6 grid gap-x-7 gap-y-8 sm:grid-cols-2 lg:grid-cols-3"
@@ -161,6 +181,7 @@ function AboutPage() {
             />
             <Link
               to="/the-problem"
+              hash="uk-impact"
               className="mt-5 inline-flex min-h-11 items-center gap-2 font-semibold text-teal-600 underline decoration-rule underline-offset-4 hover:decoration-teal-600"
             >
               See the full evidence

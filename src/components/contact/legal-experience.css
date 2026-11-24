@@ -151,3 +151,17 @@
     transform: none;
   }
 }
+
+.legal-edition .legal-intro {
+  background: var(--secondary);
+  border-radius: 0 0 clamp(1.5rem, 5vw, 4rem) 0;
+  margin-bottom: 2rem;
+}
+.legal-edition .section-light {
+  background: var(--color-page);
+}
+.legal-edition .legal-record {
+  background: var(--color-page-alt);
+  border-radius: 0.75rem 2.5rem 0.75rem 0.75rem;
+  box-shadow: none;
+}

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, ChevronDown, Search, Calculator, HeartHandshake } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   aiTeamNote,
   compareUpdated,
@@ -16,8 +15,10 @@ import {
   workflow,
   workflowFooter,
 } from "@/content/services";
+import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 import { cn } from "@/lib/utils";
 import "./editorial-friendly.css";
+import "@/components/editorial/story-lead.css";
 import { PlatformGuides } from "@/components/services/platform-guides";
 import { BuddyServices } from "@/components/buddy/buddy-services";
 
@@ -291,40 +292,35 @@ function DifferenceStory() {
 function ServicesPage() {
   return (
     <div className="friendly-editorial friendly-services">
-      <section aria-labelledby="services-heading" className="page-intro friendly-hero">
-        <div className="mx-auto w-full max-w-[1200px] px-5 py-14 sm:px-8 lg:py-20">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
-            <div>
-              <p className="text-sm font-semibold text-teal-600">{servicesHero.eyebrow}</p>
-              <h1
-                id="services-heading"
-                className="mt-4 max-w-[15ch] font-heading text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.05] text-ink"
-              >
-                See how the platform works for you.
-              </h1>
-            </div>
-            <div className="lg:pt-8">
-              <p className="text-xl font-medium leading-relaxed text-ink">
-                From finding a property to looking after a home.
-              </p>
-              <p className="mt-4 text-base leading-relaxed text-ink-muted">
-                Choose your role to explore the tools you can use, see the real screens and follow a
-                simple walkthrough. Housing teams can also explore our housing management customer
-                relationship management (CRM) system.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button variant="primary" asChild>
-                  <a href="#platform-guides">Find your role</a>
-                </Button>
-                <Button variant="secondary" asChild withArrow={false}>
-                  <Link to="/contact">Talk to our team</Link>
-                </Button>
-              </div>
-              <p className="mt-3 text-sm text-ink-muted">
-                Explore the walkthroughs here, or talk to us about access for your organisation.
-              </p>
+      <section aria-labelledby="services-heading" className="story-lead story-lead--services">
+        <div className="story-shell">
+          <div className="story-copy">
+            <p className="story-kicker">{servicesHero.eyebrow}</p>
+            <h1 id="services-heading" className="story-title">From finding a property to looking after a home.</h1>
+            <p className="story-intro">
+              See how the platform works for you. Choose your role to explore the tools,
+              see the real screens and follow a walkthrough.
+            </p>
+            <p className="story-detail">
+              Housing teams can explore the customer relationship management (CRM) tools
+              for managing their homes. Talk to us about access for your organisation.
+            </p>
+            <div className="story-links">
+              <a href="#platform-guides">Find your role <ArrowRight aria-hidden="true" /></a>
+              <Link to="/contact">Talk to our team <ArrowRight aria-hidden="true" /></Link>
             </div>
           </div>
+          <figure className="story-product">
+            <img
+              src={servicesHero.image.src}
+              srcSet={variantSrcSet(servicesHero.image.src)}
+              sizes="(min-width: 1200px) 510px, (min-width: 800px) 44vw, 90vw"
+              width={intrinsic(servicesHero.image.src)?.width}
+              height={intrinsic(servicesHero.image.src)?.height}
+              alt={servicesHero.image.alt}
+            />
+            <figcaption>The Property Finder, shown with illustrative listings.</figcaption>
+          </figure>
         </div>
       </section>
       <div id="services-preview">

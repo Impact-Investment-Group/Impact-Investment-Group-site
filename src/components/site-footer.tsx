@@ -164,7 +164,7 @@ export function SiteFooter() {
          * never split; the line either fits or wraps at a full stop.
          */}
         {registering ? null : (
-          <section aria-labelledby="funnel-heading" className="border-b border-rule">
+          <section aria-labelledby="funnel-heading" className="site-invitation border-b border-rule">
             <div className="mx-auto w-full max-w-[1440px] px-5 pb-8 pt-1 text-center sm:px-8">
               <h2 id="funnel-heading" className="sr-only">
                 Register your interest
@@ -194,7 +194,7 @@ export function SiteFooter() {
                 housing, care and support — not an estate agency, a{" "}
                 <strong className="font-bold text-ink">national network</strong>.
               </p>
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+              <div className="site-invitation__actions mt-5 flex flex-wrap items-center justify-center gap-3">
                 <Button variant="primary" asChild>
                   <Link to={registerRoute.to}>{registerRoute.label}</Link>
                 </Button>
@@ -521,7 +521,7 @@ export function SiteFooter() {
               298 made through the remap (`text-mist` resolving to slate-ink)
               said in the class itself, and the other labels wave 298 had to
               leave failing at 4.33:1 went with it in wave 412. */}
-          <p className="mx-auto mt-3 max-w-[120ch] text-balance text-center text-[11px] max-lg:text-[15px] leading-relaxed text-ink-muted">
+          <p className="mx-auto mt-3 max-w-[100ch] text-balance text-center text-[13px] max-lg:text-[15px] leading-relaxed text-ink-muted">
             {legalNotice}
           </p>
         </div>

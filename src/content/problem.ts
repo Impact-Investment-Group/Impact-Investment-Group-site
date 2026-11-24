@@ -1,146 +1,156 @@
-/**
- * /the-problem — the four sections, and every figure on them.
- *
- * ── WHAT MAY GO ON THIS PAGE ──────────────────────────────────────────────
- *
- * Published statistics only. Every entry below carries `source` and, where the
- * publisher gives one, a date. A figure without both does not ship.
- *
- * ⚠️ NO MARKET SIZING. An earlier draft of this page carried indicative asset
- * values (£425bn for the whole backlog, £4.25bn for a 1% share) and a market-
- * penetration table. All of it was cut at Callum's decision and none of it may
- * come back. Two reasons, and the second is the important one:
- *
- *   1. Those numbers are arithmetic, not statistics — a count multiplied by an
- *      average house price. They have no publisher.
- *   2. They are forward-looking financial projections on a public page, from a
- *      company that is NOT authorised or regulated by the FCA. That is the
- *      single riskiest thing that could sit here.
- *
- * They belong in the investor deck. They do not belong on the open web.
- *
- * Three further figures were offered and rejected for this page:
- *   · "19 million retail investors"     — no source given
- *   · "2.3–2.8 million landlords"       — a range of estimates, no single publisher
- *   · "400,000–430,000 homes per year"  — contested; the government target is
- *                                         300,000 and other bodies say 340,000,
- *                                         so it cannot be stated as a fact
- *
- * ── THE ONE FIGURE HERE THAT IS NOT A GOVERNMENT RELEASE ─────────────────
- *
- * The £102m NHS cost is sourced to Inside Housing — trade press reporting on a
- * figure, rather than the figure's publisher. Everything around it is gov.uk.
- * It is flagged rather than removed because the claim is real and useful, but
- * if a primary source cannot be found it should come off rather than sit in a
- * row of government statistics borrowing their authority.
- */
-
-export interface ProblemFigure {
-  value: string;
-  label: string;
-  source: string;
-}
-
-/** Buddy's form beside a section, if any. See the note on section 2. */
-export type ProblemBuddyForm = "property" | "investment" | "support";
-
-export interface ProblemSection {
-  id: string;
-  eyebrow: string;
-  /** The one enormous number. */
-  headline: string;
-  /** Prose under the headline. Two sentences at the very most. */
-  lead: string;
-  /** Rows down the right-hand column. */
-  rows: { label: string; value: string }[];
-  source?: string;
-  /**
-   * ⚠️ A CHARACTER MAY POINT AT DATA. A CHARACTER MAY NOT POINT AT SUFFERING.
-   *
-   * Section 2 is deliberately `undefined` and must stay that way. It carries
-   * "176,130 children living in temporary accommodation", and a cartoon
-   * gesturing cheerfully at that number is indefensible — it is the kind of
-   * thing that gets screenshotted and quoted back at you. Buddy can
-   * explain the system and the funding, without presenting other people's
-   * hardship.
-   */
-  buddyForm?: ProblemBuddyForm;
-  /** Cream band rather than navy. The page alternates. */
-  light?: boolean;
-}
-
 export const problemHero = {
-  title: "The Problem",
+  title: "Where could the next home come from?",
   description:
-    "1.34 million households are on English housing registers. 134,210 are in temporary accommodation. Here is what that costs, why it persists, and what is already committed to fixing it.",
+    "A family in temporary accommodation needs a home they can afford, near the people and services they rely on. What would it take to put more of the UK's homes within reach?",
 };
 
-export const problemSections: ProblemSection[] = [
+export const impactSources = {
+  need: "https://landaid.org/news-and-stories/landaid-and-homewards-launches-uks-first-homelessness-data-lab/",
+  market: "https://propertyindustryeye.com/the-uk-property-market-is-dead-who-told-the-buyers/",
+  vacancies:
+    "https://analysisfunction.civilservice.gov.uk/policy-store/empty-homes-statistics-from-across-the-uk-2026/",
+  definitions:
+    "https://www.ons.gov.uk/peoplepopulationandcommunity/housing/articles/ukhomelessness/2004to2024",
+  plan: "https://www.crisis.org.uk/ending-homelessness/the-plan-to-end-homelessness/targets-and-costs/chapter-15-cost-of-ending-homelessness/",
+  pilot:
+    "https://www.homelessnessimpact.org/publication/everyone-in-social-investment-pilot-final-evaluation",
+};
+
+export const englandTemporaryHouseholdsMarch2026 = 135_580;
+
+export const nationFigures = [
+  {
+    nation: "England",
+    households: englandTemporaryHouseholdsMarch2026.toLocaleString("en-GB"),
+    emptyHomes: "303,185",
+    source:
+      "https://www.gov.uk/government/statistics/statutory-homelessness-in-england-january-to-march-2026/statutory-homelessness-in-england-january-to-march-2026",
+  },
+  {
+    nation: "Scotland",
+    households: "19,004",
+    emptyHomes: "44,453",
+    source:
+      "https://www.gov.scot/publications/homelessness-in-scotland-2025-26/pages/the-extent-of-homelessness-in-scotland/",
+  },
+  {
+    nation: "Wales",
+    households: "6,201",
+    emptyHomes: "23,033",
+    source: "https://www.gov.wales/homelessness-april-2025-march-2026-html",
+  },
+  {
+    nation: "Northern Ireland",
+    households: "5,633",
+    emptyHomes: "21,472",
+    source:
+      "https://datavis.nisra.gov.uk/communities/northern-ireland-homelessness-bulletin-october-2025-march-2026.html",
+  },
+];
+
+// Keep populations, periods and source definitions attached to each measure.
+export const problemSections = [
   {
     id: "scale",
-    eyebrow: "The scale",
-    headline: "1.34m",
-    lead: "That is the number on English local-authority housing registers — the highest since 2014.",
+    title: "Waiting for social housing",
+    lead: "Housing registers include people who already have somewhere to live. England's waiting list in March 2025 was its largest since 2014. The four nations count different units, so each figure stands alone.",
+    earlier: {
+      label:
+        "In December 2025, Northern Ireland recorded 49,755 households waiting for social housing.",
+      source: "https://www.nisra.gov.uk/news/almost-50000-households-housing-waiting-list",
+    },
     rows: [
-      { label: "England — households on housing registers, 31 Mar 2025", value: "1.34m" },
-      { label: "Scotland — housing applications, 31 Mar 2025", value: "180,074" },
-      { label: "Wales — people waiting for a home", value: "~140,000" },
-      { label: "Northern Ireland — households on the waiting list", value: "49,755" },
+      {
+        label: "Households on English council registers, March 2025",
+        value: "1.34m",
+        source:
+          "https://www.gov.uk/government/statistics/social-housing-lettings-in-england-april-2024-to-march-2025/social-housing-lettings-in-england-tenants-april-2024-to-march-2025",
+      },
+      {
+        label: "Applications to 26 Scottish council or common registers, March 2025",
+        value: "180,074",
+        source: "https://www.gov.scot/publications/housing-statistics-2025-key-trends-summary/",
+      },
+      {
+        label: "People waiting in Wales, October 2023 survey cited by Senedd Research",
+        value: "~139,000",
+        source:
+          "https://research.senedd.wales/research-articles/lists-within-lists-how-can-people-access-social-housing-in-wales/",
+      },
+      {
+        label: "Households on Northern Ireland's waiting list, March 2026",
+        value: "50,381",
+        source:
+          "https://datavis.nisra.gov.uk/communities/northern-ireland-housing-statistics-2025-26.html",
+      },
     ],
-    /*
-     * ⚠️ THE "NOT SIMPLY ADDITIVE" CLAUSE IS LOAD-BEARING. The four nations
-     * count different things — England and NI count households, Scotland counts
-     * applications, Wales counts people. Presenting a summed total without
-     * saying so would be a fabricated statistic. That is why the combined
-     * figure is given as "~1.6 million households and applications" and why
-     * this line travels with it.
-     */
-    source:
-      "gov.uk · Scottish Government · Welsh Government · NIHE. Recorded on different bases and not simply additive.",
-    buddyForm: "property",
-    light: true,
   },
   {
     id: "cost",
-    eyebrow: "The cost of waiting",
-    headline: "£2.7bn",
-    lead: "Temporary accommodation is the most expensive way to house someone badly.",
+    title: "The cost of waiting",
+    earlier: {
+      label:
+        "On 31 December 2025, 134,210 households and 176,130 dependent children were in temporary accommodation in England.",
+      source:
+        "https://www.gov.uk/government/statistics/statutory-homelessness-in-england-october-to-december-2025/statutory-homelessness-in-england-october-to-december-2025",
+    },
+    lead: "A shortage of suitable housing can keep families in temporary accommodation and people in hospital after they are ready to leave.",
     rows: [
-      { label: "households in temporary accommodation · gov.uk · 31 Dec 2025", value: "134,210" },
-      { label: "children living in temporary accommodation · gov.uk · 31 Dec 2025", value: "176,130" },
-      { label: "council spend on temporary accommodation · gov.uk · 2024–25", value: "£2.7bn" },
+      {
+        label: "Children in temporary accommodation in England, 31 March 2026",
+        value: "177,530",
+        source: nationFigures[0].source,
+      },
+      {
+        label: "English councils' temporary accommodation spend excluding administration, 2024/25",
+        value: "~£2.7bn",
+        source:
+          "https://england.shelter.org.uk/media/press_release/bill_for_homeless_accommodation_soars_by_25_hitting_28_bn_",
+      },
       {
         label:
-          "a year — NHS cost of people stuck in hospital waiting for supported housing · Inside Housing",
-        value: "£102m",
+          "Cost to English mental health services of discharge delays while people waited for supported housing, 2024/25",
+        value: "~£102m",
+        source:
+          "https://www.lookahead.org.uk/supported-housing-crisis-costs-nhs-mental-health-services-in-england-102-million-a-year-new-report-finds/",
       },
     ],
   },
   {
     id: "opportunity",
-    eyebrow: "The opportunity",
-    headline: "£39bn",
-    lead: "The Social and Affordable Homes Programme runs 2026 to 2036. A further £3.6bn is committed to homelessness and rough sleeping from 2026/27.",
+    title: "What public funding can deliver",
+    earlier: {
+      label:
+        "In April 2026 the government reported £3.6 billion for homelessness prevention and rough sleeping services from 2026/27 to 2028/29.",
+      source:
+        "https://questions-statements.parliament.uk/written-questions/detail/2026-04-16/HL16470",
+    },
+    lead: "England's Social and Affordable Homes Programme runs from 2026 to 2036. Its original £39 billion settlement increased in the November 2026 Budget.",
     rows: [
-      { label: "over ten years", value: "£39bn" },
-      { label: "homes to be delivered", value: "~300,000" },
-      { label: "at social rent", value: "60%+" },
+      {
+        label: "Programme investment over ten years, after the Budget increase",
+        value: "£40bn+",
+        source: "https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html",
+      },
+      {
+        label: "Original ambition for new social and affordable homes",
+        value: "~300,000",
+        source:
+          "https://www.gov.uk/government/news/thousands-more-families-to-get-warm-secure-social-homes",
+      },
+      {
+        label: "Target share of programme homes for social rent",
+        value: "60%+",
+        source:
+          "https://www.gov.uk/government/news/thousands-more-families-to-get-warm-secure-social-homes",
+      },
+      {
+        label:
+          "Separate funding for homelessness and rough sleeping services over three years, announced October 2026",
+        value: "£4.4bn+",
+        source:
+          "https://questions-statements.parliament.uk/written-statements/detail/2026-10-26/hcws419",
+      },
     ],
-    source: "gov.uk — Social and Affordable Homes Programme 2026–2036",
-    buddyForm: "investment",
-    light: true,
   },
 ];
-
-/**
- * Section five.
- *
- * ⚠️ THERE IS NO HEADLINE HERE ON PURPOSE. The close is the site-wide strapline
- * — "Providing Homes. Delivering Support. Transforming Lives." — which lives in
- * content/site.ts as `closingBeats`, exactly as it does on /about and
- * /platform. A bespoke headline was written here once and it made this page the
- * odd one out. Only the button label belongs to this page.
- */
-export const problemClose = {
-  cta: "Register Your Interest",
-};

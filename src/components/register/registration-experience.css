@@ -266,3 +266,40 @@
     transform: none;
   }
 }
+
+.registration-directory[data-choosing-role="true"] .registration-directory__intro {
+  padding: clamp(1.5rem, 3.5vw, 3rem);
+  background: var(--secondary);
+  border-radius: 0.75rem clamp(2.5rem, 6vw, 5rem) 0.75rem 0.75rem;
+}
+.registration-directory[data-choosing-role="true"] .registration-directory__note {
+  border-left: 2px solid var(--color-teal-600);
+  border-radius: 0;
+  padding-block: 0;
+  background: transparent;
+}
+.registration-directory .registration-role-list {
+  gap: 0.7rem;
+}
+.registration-directory .registration-role-link {
+  border-radius: 0.75rem;
+  box-shadow: none;
+}
+@media (min-width: 64rem) {
+  .registration-directory .registration-role-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .registration-directory .registration-role-link,
+  .registration-directory .registration-role-link[data-role="resident"] {
+    min-height: 7.5rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1.15rem;
+  }
+  .registration-directory .registration-role-link .registration-role-arrow,
+  .registration-directory .registration-role-link[data-role="resident"] .registration-role-arrow {
+    position: static;
+    margin: 0 0 0 auto;
+  }
+}

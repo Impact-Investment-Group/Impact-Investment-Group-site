@@ -1,0 +1,35 @@
+.about-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: clamp(1.2rem, 4vw, 3.5rem);
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.about-people [aria-label="Leadership team"] article {
+  height: 100%;
+  padding: 1.2rem 0;
+  border-top: 2px solid var(--color-rule);
+}
+
+.about-people [aria-label="Leadership team"] article > img {
+  width: 5.5rem;
+  height: 6.25rem;
+  border-radius: 0.4rem;
+  filter: none;
+}
+
+.about-people [aria-label="Leadership team"] h3 {
+  font-size: 1.5rem;
+}
+
+.about-people [aria-label="Leadership team"] article > div > p {
+  font-weight: 600;
+  color: var(--color-teal-600);
+}
+
+@media (max-width: 799px) {
+  .about-identity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

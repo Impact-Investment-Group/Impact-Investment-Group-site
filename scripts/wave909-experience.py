@@ -794,15 +794,31 @@ with sync_playwright() as pw:
             page.goto(base + "/", wait_until="networkidle")
             names = ["providing homes", "delivering support", "transforming lives"]
             for index, name in enumerate(names):
-                if width < 768:
-                    control = page.get_by_role("button", name="Show " + name, exact=True)
-                    control.click()
-                    expect(control).to_have_attribute("aria-pressed", "true")
-                else:
-                    expect(page.get_by_role("group", name="Photograph controls", include_hidden=True)).to_be_hidden()
-                visible = page.locator(".hero-panel").nth(index)
-                check(visible.evaluate("n => {const p=n.getBoundingClientRect(),b=n.parentElement.getBoundingClientRect();return p.left >= b.left-2 && p.right <= b.right+2}"), "Selected photograph is clipped")
+                control = page.get_by_role("button", name="Show " + name, exact=True)
+                control.click()
+                expect(control).to_have_attribute("aria-pressed", "true")
+                page.wait_for_function("""index => {
+                    const panel = document.querySelectorAll('.hero-panel')[index];
+                    const photo = panel.getBoundingClientRect();
+                    const frame = panel.parentElement.getBoundingClientRect();
+                    return photo.left >= frame.left - 2 && photo.right <= frame.right + 2;
+                }""", arg=index)
                 check_crafted_state("photo-" + str(index))
+
+        def investor_contribution():
+            page.goto(base + "/the-problem", wait_until="networkidle")
+            expect(page.locator("#four-nations tbody tr")).to_have_count(4)
+            page.locator('#main a[href="/partner-with-investor#your-impact"]').first.click()
+            scenario = page.locator("#your-impact")
+            expect(scenario).to_be_in_viewport()
+            scenario.locator("#investor-count").fill("5")
+            scenario.locator("#homes-each").fill("2")
+            scenario.locator("#home-budget").fill("150000")
+            expect(scenario.locator(".impact-result strong").first).to_have_text("10")
+            expect(scenario.locator(".impact-result")).to_contain_text("~£1,500,000")
+            scenario.locator("#homes-each").fill("1.5")
+            expect(scenario.locator("#homes-each")).to_have_attribute("aria-invalid", "true")
+            expect(scenario.locator(".impact-result")).to_contain_text("Awaiting figures")
 
         def solution_layers():
             page.goto(base + "/solutions", wait_until="networkidle")
@@ -998,6 +1014,7 @@ with sync_playwright() as pw:
         interaction("Zoopla hover, keyboard and reduced motion", zoopla_discovery)
         interaction("restored hero and centred data credits", restored_home_layout)
         interaction("all three hero photograph states", photo_variants)
+        interaction("four-nation housing evidence and investor contribution", investor_contribution)
         interaction("company record copy controls", legal_copy)
         interaction("home evidence and response tabs", home_mission)
         interaction("solution layer responsibilities", solution_layers)

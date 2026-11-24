@@ -24,6 +24,7 @@ import { partnerProfiles, type PartnerProfile } from "@/content/partners";
 import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 import { PartnerEcosystem } from "./partner-ecosystem";
 import "./partner-editorial.css";
+import "@/components/editorial/story-lead.css";
 
 const icons: Record<string, LucideIcon> = {
   Building2,
@@ -75,55 +76,40 @@ export function PartnersHub() {
 
   return (
     <div className="partner-hub partner-craft">
-      <section className="partner-craft-hero section-light" aria-labelledby="partners-heading">
-        <div className="partner-craft-hero__layout">
-          <div className="partner-craft-hero__title">
-            <p className="eyebrow text-teal-600">Connected roles. Shared purpose.</p>
-            <h1 id="partners-heading" className="partner-craft-hero__heading">
-              Every role. <span className="text-orange-700">One connected journey.</span>
-            </h1>
+      <section className="story-lead story-lead--network" aria-labelledby="partners-heading">
+        <div className="story-shell">
+          <div className="story-copy">
+            <p className="story-kicker">Our partners</p>
+            <h1 id="partners-heading" className="story-title">Together we can turn housing need into homes.</h1>
+            <p className="story-intro">
+              A suitable home takes more than a set of keys. Meet the people who bring the
+              property, investment, care and support together, and find where you fit.
+            </p>
+            <div className="story-links">
+              <a href="#ecosystem">Find your role <ArrowRight aria-hidden="true" /></a>
+              <a href="#ecosystem-map">Explore the ecosystem <ArrowRight aria-hidden="true" /></a>
+            </div>
           </div>
-          <figure className="partner-craft-hero__media">
+          <div className="story-network-visual">
             <img
-              className="partner-craft-hero__photo"
-              src="/images/ecosystem-band.jpg"
-              srcSet={variantSrcSet("/images/ecosystem-band.jpg")}
-              sizes="(min-width: 1200px) 1215px, (min-width: 900px) 104vw, 188vw"
-              width={intrinsic("/images/ecosystem-band.jpg")?.width}
-              height={intrinsic("/images/ecosystem-band.jpg")?.height}
-              loading="eager"
-              alt=""
+              className="story-photo"
+              src="/images/human-meeting.jpg"
+              srcSet={variantSrcSet("/images/human-meeting.jpg")}
+              sizes="(min-width: 1200px) 540px, (min-width: 800px) 45vw, 100vw"
+              width={intrinsic("/images/human-meeting.jpg")?.width}
+              height={intrinsic("/images/human-meeting.jpg")?.height}
+              alt="Four people sit around a table in conversation."
             />
-            <span className="partner-craft-hero__seal" aria-hidden="true">
-              <Network />
-            </span>
-            <div className="partner-craft-hero__companion">
+            <div className="story-network-buddy">
               <BuddySlot
                 form={stage === "need" || stage === "delivery" || stage === "outcome" ? "support" : "property"}
                 action={stage === "need" || stage === "delivery" || stage === "outcome" ? "reassure" : "wave"}
                 animated
               />
             </div>
-          </figure>
-          <div className="partner-craft-hero__support">
-            <p className="partner-craft-hero__summary">
-              Working together to turn housing need into the right home, with people at the centre.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Button variant="primary" asChild>
-                <a href="#ecosystem-map">Explore the ecosystem</a>
-              </Button>
-              <Button variant="secondary" asChild withArrow={false}>
-                <Link to="/contact" search={{ enquiry: "partner", type: "partner" }}>
-                  Become a partner
-                </Link>
-              </Button>
-            </div>
           </div>
         </div>
       </section>
-
-      <PartnerEcosystem />
 
       <section
         id="ecosystem"
@@ -133,15 +119,12 @@ export function PartnersHub() {
         <div className="partner-craft-container">
           <div className="partner-craft-directory__intro">
             <div>
-              <p className="eyebrow text-teal-600">One connected ecosystem</p>
               <h2 id="ecosystem-heading" className="partner-craft-heading mt-3">
-                Ten partners.
-                <br />
-                <span className="text-orange-700">One connected outcome.</span>
+                Which part can you play?
               </h2>
               <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-ink-muted">
-                See how each role moves a housing need towards a suitable home. Select any partner
-                to explore its part.
+                Explore the ten roles that connect a housing need with a suitable home.
+                Find yours by name or look through the stages below.
               </p>
             </div>
             <div className="partner-craft-directory__controls">
@@ -255,9 +238,7 @@ export function PartnersHub() {
             ))}
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-5 border-t border-rule pt-7">
-            <p className="text-base font-semibold text-ink">
-              Select any partner to explore its role.
-            </p>
+            <p className="text-base font-semibold text-ink">Become a partner</p>
             <Button variant="primary" asChild>
               <Link to="/contact" search={{ enquiry: "partner", type: "partner" }}>
                 Talk to the team
@@ -266,6 +247,7 @@ export function PartnersHub() {
           </div>
         </div>
       </section>
+      <PartnerEcosystem />
     </div>
   );
 }

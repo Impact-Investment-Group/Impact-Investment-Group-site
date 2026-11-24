@@ -57,16 +57,16 @@ export const purposeStats: PurposeStat[] = [
   },
   {
     id: "waiting-lists",
-    value: "1.6 million",
+    value: "~1.6 million",
     label: "Households on social housing waiting lists",
-    basis: "Combined UK housing registers",
+    basis: "Earlier IIG estimate across UK registers. Nations count applications differently.",
     icon: "ClipboardList",
   },
   {
     id: "temporary-accommodation",
     value: "~150,000",
     label: "Households in temporary accommodation",
-    basis: "Great Britain, latest published",
+    basis: "Earlier IIG estimate for Great Britain. See the four-nation figures for March 2026.",
     icon: "House",
   },
   {
@@ -87,9 +87,9 @@ export const purposeStats: PurposeStat[] = [
   },
   {
     id: "asset-requirement",
-    value: "£425 billion",
-    label: "Indicative asset requirement",
-    basis: "Illustrative market value, not a budget",
+    value: "~£425 billion",
+    label: "Indicative property market value",
+    basis: "Earlier IIG illustration of property value. The national costed plan covers different spending.",
     icon: "PoundSterling",
   },
 ];

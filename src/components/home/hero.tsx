@@ -5,20 +5,14 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { RoleIcon } from "@/components/register/role-icon";
 import { registerRoles, registerAsDivider } from "@/content/audiences";
 import { cn } from "@/lib/utils";
-import { SIZES_HERO_GROUND, variantSrcSet } from "@/lib/responsive-image";
+import { Button } from "@/components/ui/button";
+import { variantSrcSet } from "@/lib/responsive-image";
 import { ZooplaDiscovery } from "./zoopla-discovery";
-
-const headlines = [
-  { id: "homes", text: "Providing Homes", orange: false },
-  { id: "support", text: "Delivering Support", orange: true },
-  { id: "lives", text: "Transforming Lives", orange: false },
-] as const;
-
-const HEADLINE_FILL_CQW = 11.85;
 
 const photos = [
   {
     id: "homes",
+    caption: "Providing Homes",
     src: "/images/hero-homes.webp",
     width: 1280,
     height: 1024,
@@ -26,6 +20,7 @@ const photos = [
   },
   {
     id: "support",
+    caption: "Delivering Support",
     src: "/images/hero-support.webp",
     width: 1280,
     height: 1024,
@@ -33,6 +28,7 @@ const photos = [
   },
   {
     id: "lives",
+    caption: "Transforming Lives",
     src: "/images/hero-lives.webp",
     width: 1280,
     height: 1024,
@@ -40,16 +36,10 @@ const photos = [
   },
 ] as const;
 
-const panels = photos.map((photo) => ({
-  ...photo,
-  headline: headlines.find((line) => line.id === photo.id) ?? headlines[0],
-}));
-
 const heroRoles = registerRoles.filter((role) => !role.pickerOnly);
 
 export function HomeHero() {
   const bandRef = React.useRef<HTMLDivElement | null>(null);
-  const [scrollable, setScrollable] = React.useState(false);
   const [activePanel, setActivePanel] = React.useState(0);
 
   const goToPanel = (index: number) => {
@@ -108,162 +98,131 @@ export function HomeHero() {
       observer.disconnect();
     };
   }, []);
-  React.useEffect(() => {
-    const query = window.matchMedia("(max-width: 767px)");
-    const read = () => setScrollable(query.matches);
-    read();
-    query.addEventListener("change", read);
-    return () => query.removeEventListener("change", read);
-  }, []);
-
   return (
-    <section
-      data-buddy-topic="property"
-      aria-labelledby="hero-heading"
-      className="relative isolate flex flex-col justify-center overflow-hidden bg-page md:min-h-[calc(100svh_-_77px)]"
-    >
-      <div
-        aria-hidden="true"
-        className="hero-ground-layer pointer-events-none absolute inset-0 z-0"
-      >
-        <img
-          data-hero-wash=""
-          src="/images/hero-ground-street.webp"
-          loading="eager"
-          fetchPriority="low"
-          width={1672}
-          height={941}
-          alt=""
-          decoding="async"
-          className="hero-ground-photo size-full object-cover object-[60%_45%]"
-
-          srcSet={variantSrcSet("/images/hero-ground-street.webp", {
-            withOriginal: false,
-          })}
-          sizes={SIZES_HERO_GROUND}
-        />
-        <div className="hero-ground absolute inset-0" />
-      </div>
-
-      <h1 id="hero-heading" className="sr-only">
-        Providing homes, delivering support, transforming lives
-      </h1>
-
-      <div className="hero-shell relative z-10 mx-auto w-full max-w-[1440px] px-5 pt-8 sm:px-8">
-        <div
-          id="hero-photographs"
-          ref={bandRef}
-          role="group"
-          aria-labelledby="hero-heading"
-          tabIndex={scrollable ? 0 : undefined}
-          onKeyDown={(event) => {
-            if (!scrollable) return;
-            const next =
-              event.key === "ArrowRight"
-                ? Math.min(activePanel + 1, panels.length - 1)
-                : event.key === "ArrowLeft"
-                  ? Math.max(activePanel - 1, 0)
-                  : event.key === "Home"
-                    ? 0
-                    : event.key === "End"
-                      ? panels.length - 1
-                      : null;
-            if (next !== null) {
-              event.preventDefault();
-              goToPanel(next);
-            }
-          }}
-          className="hero-band grid grid-cols-1 gap-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 md:grid-cols-3"
-        >
-          {panels.map((panel) => (
-            <figure key={panel.id} className="hero-panel flex flex-col">
-              <img
-                src={panel.src}
-                srcSet={variantSrcSet(panel.src)}
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-                alt={panel.alt}
-                width={panel.width}
-                height={panel.height}
-                sizes="(min-width: 768px) 30vw, 88vw"
-                className="aspect-[5/4] w-full rounded-xl border border-rule object-cover"
-              />
-
-              <figcaption
-                style={{ fontSize: `${HEADLINE_FILL_CQW}cqw` }}
-                className={cn(
-                  "whitespace-nowrap pt-4 text-center font-heading font-extrabold leading-tight tracking-[-0.02em]",
-
-                  panel.id === "lives"
-                    ? "text-teal-600"
-                    : panel.headline.orange
-                      ? "text-orange-700"
-                      : "text-ink",
-                )}
-              >
-                {panel.headline.text}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-        <div
-          role="group"
-          className="mt-3 flex items-center justify-center gap-3 md:hidden"
-          aria-label="Photograph controls"
-        >
-          <button
-            type="button"
-            aria-label="Previous photograph"
-            aria-controls="hero-photographs"
-            disabled={activePanel === 0}
-            onClick={() => goToPanel(activePanel - 1)}
-            className="grid size-11 place-items-center rounded-full border border-rule bg-page text-ink transition-colors hover:border-teal-600 hover:bg-secondary disabled:cursor-default disabled:opacity-40"
-          >
-            <ArrowLeft aria-hidden="true" className="size-4" />
-          </button>
-          {panels.map((panel, index) => (
-            <button
-              key={panel.id}
-              type="button"
-              aria-label={`Show ${panel.headline.text.toLowerCase()}`}
-              aria-controls="hero-photographs"
-              aria-pressed={activePanel === index}
-              onClick={() => goToPanel(index)}
-              className="grid size-11 place-items-center rounded-full"
-            >
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "h-2 rounded-full transition-all motion-reduce:transition-none",
-                  activePanel === index ? "w-6 bg-teal-600" : "w-2 bg-ink-muted/40",
-                )}
-              />
-            </button>
-          ))}
-          <button
-            type="button"
-            aria-label="Next photograph"
-            aria-controls="hero-photographs"
-            disabled={activePanel === panels.length - 1}
-            onClick={() => goToPanel(activePanel + 1)}
-            className="grid size-11 place-items-center rounded-full border border-rule bg-page text-ink transition-colors hover:border-teal-600 hover:bg-secondary disabled:cursor-default disabled:opacity-40"
-          >
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="relative z-10 mx-auto w-full max-w-[1440px] px-5 pb-6 sm:px-8">
-        <div className="hero-waitlist mt-8 flex items-center justify-center gap-3 sm:gap-4">
-          <span aria-hidden="true" className="h-0.5 w-8 shrink-0 bg-orange-500 sm:w-[90px]" />
-          <p id="register-as" className="text-center text-[15px] font-normal leading-snug text-ink">
-            {registerAsDivider}
+    <section data-buddy-topic="property" aria-labelledby="hero-heading" className="home-opening">
+      <div className="home-opening__inner">
+        <div className="home-opening__copy">
+          <h1 id="hero-heading">
+            Ending homelessness, <span>together.</span>
+          </h1>
+          <p>
+            We’ve built a way for property investors, housing associations and local support teams
+            to turn suitable properties into homes for people facing homelessness across the UK.
           </p>
-          <span aria-hidden="true" className="h-0.5 w-8 shrink-0 bg-orange-500 sm:w-[90px]" />
+          <div className="home-opening__actions">
+            <Button variant="primary" asChild>
+              <Link to="/partner-with-investor">For property investors</Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link to="/partner-with-resident">Find housing support</Link>
+            </Button>
+          </div>
         </div>
+        <div className="home-opening__gallery">
+          <div
+            id="hero-photographs"
+            className="hero-band"
+            ref={bandRef}
+            role="group"
+            aria-label="Providing homes, delivering support, transforming lives"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              const next =
+                event.key === "ArrowRight"
+                  ? Math.min(activePanel + 1, photos.length - 1)
+                  : event.key === "ArrowLeft"
+                    ? Math.max(activePanel - 1, 0)
+                    : event.key === "Home"
+                      ? 0
+                      : event.key === "End"
+                        ? photos.length - 1
+                        : null;
+              if (next !== null) {
+                event.preventDefault();
+                goToPanel(next);
+              }
+            }}
+          >
+            {photos.map((photo, index) => (
+              <figure key={photo.id} className="hero-panel" aria-hidden={index !== activePanel}>
+                <img
+                  src={photo.src}
+                  srcSet={variantSrcSet(photo.src)}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                  decoding="async"
+                  alt={photo.alt}
+                  width={photo.width}
+                  height={photo.height}
+                  sizes="(min-width: 1440px) 680px, (min-width: 850px) 49vw, 94vw"
+                />
+                <figcaption
+                  className={cn(
+                    photo.id === "lives"
+                      ? "text-teal-600"
+                      : photo.id === "support"
+                        ? "text-orange-700"
+                        : "text-ink",
+                  )}
+                >
+                  {photo.caption}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          <div role="group" className="home-opening__controls" aria-label="Photograph controls">
+            <button
+              type="button"
+              aria-label="Previous photograph"
+              aria-controls="hero-photographs"
+              disabled={activePanel === 0}
+              onClick={() => goToPanel(activePanel - 1)}
+              className="grid size-11 place-items-center rounded-full border border-rule bg-page text-ink transition-colors hover:border-teal-600 hover:bg-secondary disabled:cursor-default disabled:opacity-40"
+            >
+              <ArrowLeft aria-hidden="true" className="size-4" />
+            </button>
+            {photos.map((photo, index) => (
+              <button
+                key={photo.id}
+                type="button"
+                aria-label={`Show ${photo.caption.toLowerCase()}`}
+                aria-controls="hero-photographs"
+                aria-pressed={activePanel === index}
+                onClick={() => goToPanel(index)}
+                className="home-opening__dot grid min-h-11 place-items-center rounded-full"
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "h-2 rounded-full transition-all motion-reduce:transition-none",
+                    activePanel === index ? "w-6 bg-teal-600" : "w-2 bg-ink-muted/40",
+                  )}
+                />
+              </button>
+            ))}
+            <button
+              type="button"
+              aria-label="Next photograph"
+              aria-controls="hero-photographs"
+              disabled={activePanel === photos.length - 1}
+              onClick={() => goToPanel(activePanel + 1)}
+              className="grid size-11 place-items-center rounded-full border border-rule bg-page text-ink transition-colors hover:border-teal-600 hover:bg-secondary disabled:cursor-default disabled:opacity-40"
+            >
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-        <ul aria-labelledby="register-as" className="hero-role-grid mt-5">
+export function HomeRoleDirectory() {
+  return (
+    <section aria-labelledby="register-as" className="home-role-directory">
+      <div className="home-content-width">
+        <h2 id="register-as">{registerAsDivider}</h2>
+        <ul aria-labelledby="register-as" className="hero-role-grid mt-6">
           {heroRoles.map((role) => (
             <li key={role.id}>
               <Link

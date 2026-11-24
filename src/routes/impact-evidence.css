@@ -1,0 +1,398 @@
+.impact-evidence,
+.impact-investor {
+  color: var(--color-ink);
+  background: var(--color-page);
+}
+
+.impact-evidence-wrap {
+  width: min(100% - 2.5rem, 72rem);
+  margin-inline: auto;
+}
+
+.impact-evidence h1,
+.impact-evidence h2,
+.impact-investor h2,
+.impact-evidence h3 {
+  color: var(--color-ink);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.07;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.impact-evidence h1 {
+  font-size: clamp(3rem, 6.2vw, 5.1rem);
+}
+.impact-evidence h2,
+.impact-investor h2 {
+  font-size: clamp(2.1rem, 4.25vw, 3.55rem);
+}
+.impact-evidence h3 {
+  font-size: clamp(1.5rem, 2.3vw, 2.1rem);
+}
+.impact-evidence p,
+.impact-investor p {
+  color: var(--color-ink-muted);
+  line-height: 1.65;
+}
+
+.impact-evidence .impact-kicker,
+.impact-investor .impact-kicker {
+  margin: 0 0 1rem;
+  color: var(--color-teal-600);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.impact-evidence .impact-intro,
+.impact-investor .impact-intro {
+  margin-top: 1.35rem;
+  max-width: 58ch;
+  font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+}
+
+.impact-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 2.9rem;
+  margin-top: 1.55rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: 2rem;
+  background: var(--color-teal-600);
+  color: var(--primary-foreground);
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.impact-action:hover {
+  background: var(--color-ink);
+}
+.impact-source {
+  color: var(--color-teal-600);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.19em;
+  text-decoration-thickness: 1px;
+}
+.impact-source:hover {
+  text-decoration-thickness: 2px;
+}
+:where(.impact-evidence, .impact-investor) :is(a, input, summary):focus-visible {
+  outline: 3px solid var(--color-teal-600);
+  outline-offset: 4px;
+}
+:where(.impact-evidence, .impact-investor)[id],
+.impact-evidence :is(section, h2)[id] {
+  scroll-margin-top: 7rem;
+}
+
+.impact-evidence-hero {
+  padding-block: clamp(2.75rem, 6.5vw, 6rem);
+  background: var(--secondary);
+}
+.impact-evidence-hero-grid,
+.impact-aside-layout {
+  display: grid;
+  align-items: center;
+  gap: clamp(2rem, 5.5vw, 5rem);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.impact-evidence-hero figure {
+  position: relative;
+  margin: 0;
+  padding: 0 0.65rem 0.65rem 0;
+}
+.impact-evidence-hero figure::before {
+  position: absolute;
+  inset: 0.8rem 0 0 0.8rem;
+  border-radius: 1.3rem 4.5rem 1.3rem 1.3rem;
+  background: var(--color-teal-600);
+  content: "";
+}
+.impact-evidence-hero img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 1.3rem 4.5rem 1.3rem 1.3rem;
+}
+.impact-spacing,
+.impact-figures-band,
+.impact-investor,
+.impact-history {
+  padding-block: clamp(3rem, 6vw, 5rem);
+}
+.impact-pair {
+  margin-block: 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+}
+.impact-fact {
+  position: relative;
+  padding: clamp(1.5rem, 3.6vw, 2.6rem);
+  background: var(--secondary);
+  border-radius: 1.4rem;
+}
+.impact-fact:nth-child(2) {
+  background: var(--color-tint-orange);
+}
+.impact-fact > svg {
+  position: absolute;
+  right: 1.5rem;
+  top: 1.4rem;
+  color: var(--color-teal-600);
+}
+.impact-fact:nth-child(2) > svg {
+  color: var(--color-orange-700);
+}
+.impact-fact strong,
+.impact-feature-number {
+  display: block;
+  color: var(--color-teal-600);
+  font-family: var(--font-heading);
+  font-size: clamp(2.95rem, 5.8vw, 4.8rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+.impact-fact:nth-child(2) strong {
+  color: var(--color-orange-700);
+}
+.impact-fact h3 {
+  margin-top: 1rem;
+}
+.impact-fact p,
+.impact-aside-layout p {
+  margin-block: 1rem;
+}
+.impact-evidence .impact-bridge {
+  max-width: 71ch;
+  margin-inline: auto;
+  font-size: 1.12rem;
+}
+.impact-figures-band,
+.impact-history {
+  background: var(--color-page-alt);
+}
+.impact-aside-layout {
+  align-items: start;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+}
+.impact-nations-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+.impact-nations-table th,
+.impact-nations-table td {
+  padding: 0.9rem 0.45rem;
+  border-bottom: 1px solid var(--color-rule);
+  text-align: right;
+  vertical-align: bottom;
+}
+.impact-nations-table thead th {
+  color: var(--color-ink-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.impact-nations-table th:first-child {
+  text-align: left;
+}
+.impact-nations-table tbody td {
+  font-family: var(--font-heading);
+  font-size: clamp(1.3rem, 2.5vw, 2rem);
+  font-weight: 650;
+}
+.impact-evidence .impact-note,
+.impact-investor .impact-note {
+  font-size: 0.9rem;
+}
+.impact-plan {
+  margin-top: 2rem;
+  border-top: 1px solid var(--color-rule);
+  padding-top: 2rem;
+}
+.impact-plan .impact-action {
+  display: flex;
+  width: fit-content;
+}
+.impact-archive-section {
+  padding-block: 2.2rem;
+  border-top: 1px solid var(--color-rule);
+}
+.impact-archive-section h2 {
+  font-size: clamp(1.8rem, 3.4vw, 2.5rem);
+}
+.impact-ledger > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: baseline;
+  border-bottom: 1px solid var(--color-rule);
+  padding: 0.8rem 0;
+}
+.impact-ledger > div:first-child {
+  padding-top: 0;
+}
+.impact-earlier summary {
+  display: list-item;
+  width: fit-content;
+  padding-block: 0.35rem;
+  color: var(--color-teal-600);
+  cursor: pointer;
+  font-weight: 650;
+}
+.impact-earlier p {
+  font-size: 0.95rem;
+}
+.impact-ledger dt a {
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+.impact-ledger dd {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.38rem;
+  font-weight: 700;
+  color: var(--color-teal-600);
+}
+
+.impact-investor {
+  background: var(--secondary);
+}
+.impact-calculator {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: clamp(1.3rem, 3.8vw, 3rem);
+  align-items: start;
+  margin: 1.75rem 0 1rem;
+  background: var(--color-page);
+  border: 1px solid var(--color-rule);
+  border-radius: 1.35rem;
+  padding: clamp(1.15rem, 3vw, 2.5rem);
+}
+.impact-inputs {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+.impact-input-wide {
+  grid-column: 1 / -1;
+}
+.impact-input {
+  min-width: 0;
+}
+.impact-input label {
+  display: block;
+  font-weight: 650;
+}
+.impact-input input {
+  width: 100%;
+  min-height: 2.9rem;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--color-ink-soft);
+  border-radius: 0.55rem;
+  color: var(--color-ink);
+  background: var(--color-page);
+  font-variant-numeric: tabular-nums;
+}
+.impact-input p {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+}
+.impact-input .impact-input-error {
+  color: var(--destructive);
+  font-weight: 600;
+}
+.impact-input input[aria-invalid="true"] {
+  border-color: var(--destructive);
+}
+.impact-result {
+  padding: 1.4rem;
+  border-radius: 1rem;
+  background: var(--secondary);
+}
+.impact-result strong {
+  display: block;
+  color: var(--color-ink);
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.impact-result p:not(:first-child) {
+  margin-top: 1rem;
+}
+.impact-rent {
+  margin-top: 1.55rem;
+  background: var(--color-page);
+  border: 1px solid var(--color-rule);
+  border-radius: 1rem;
+}
+.impact-rent summary {
+  padding: 1.15rem 1.4rem;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 650;
+}
+.impact-rent > div {
+  padding: 0 1.4rem 1.4rem;
+}
+.impact-rent .impact-inputs {
+  margin-block: 1rem;
+}
+.impact-cashflow strong {
+  display: block;
+  color: var(--color-teal-600);
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 759px) {
+  .impact-evidence-hero-grid,
+  .impact-aside-layout,
+  .impact-calculator {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .impact-evidence-hero figure {
+    max-width: 31rem;
+    width: 100%;
+  }
+  .impact-evidence-hero img {
+    aspect-ratio: 16 / 9;
+  }
+  .impact-pair {
+    grid-template-columns: 1fr;
+  }
+  .impact-nations-table thead th {
+    font-size: 0.75rem;
+  }
+  .impact-nations-table .impact-source {
+    font-size: 0.85rem;
+  }
+}
+@media (max-width: 425px) {
+  .impact-evidence-wrap {
+    width: calc(100% - 2rem);
+  }
+  .impact-inputs {
+    grid-template-columns: 1fr;
+  }
+  .impact-nations-table td,
+  .impact-nations-table th {
+    padding-inline: 0.2rem;
+  }
+}

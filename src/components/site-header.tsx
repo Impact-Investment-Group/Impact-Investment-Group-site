@@ -273,7 +273,7 @@ export function SiteHeader() {
           condensed && "shadow-[var(--shadow-card)]",
         )}
       >
-        <div className="mx-auto flex h-full w-full max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8">
+        <div className="site-header__inner mx-auto flex h-full w-full max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8">
           <Link
             to="/"
             className="site-header__logo shrink-0 rounded-md"
@@ -382,7 +382,7 @@ export function SiteHeader() {
                             </div>
 
                             <div className="grid grid-cols-2 content-start gap-0.5 p-3">
-                              {partnerSummaries.map((partner, index) => (
+                              {partnerSummaries.map((partner) => (
                                 <DropdownMenuItem
                                   key={partner.id}
                                   asChild
@@ -396,9 +396,6 @@ export function SiteHeader() {
                                         "bg-page-alt text-ink before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:bg-orange-500",
                                     )}
                                   >
-                                    <span className="w-5 shrink-0 font-mono text-xs text-orange-700">
-                                      {String(index + 1).padStart(2, "0")}
-                                    </span>
                                     <span>{partner.label}</span>
                                     <ArrowMark />
                                   </Link>
@@ -617,15 +614,12 @@ export function SiteHeader() {
                                 Explore the ecosystem
                               </Link>
                             </li>
-                            {partnerSummaries.map((partner, partnerIndex) => (
+                            {partnerSummaries.map((partner) => (
                               <li key={partner.id}>
                                 <Link
                                   to={partner.path}
                                   className="flex min-h-11 items-center gap-3 rounded-none px-2 text-[15px] font-semibold text-ink-muted hover:bg-page-alt hover:text-ink"
                                 >
-                                  <span className="font-mono text-[10px] max-lg:text-[12px] text-orange-700">
-                                    {String(partnerIndex + 1).padStart(2, "0")}
-                                  </span>
                                   {partner.label}
                                 </Link>
                               </li>

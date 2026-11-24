@@ -1,0 +1,59 @@
+/* The same reading width and navigation rhythm carry through the public site. */
+.site-header .site-header__inner {
+  max-width: 86rem;
+}
+.site-header .nav-link {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 650;
+}
+.partners-menu[data-side] {
+  border-radius: 0 0 1.5rem 1.5rem;
+  overflow: hidden;
+}
+.partners-menu a.group {
+  border-radius: 0.75rem;
+}
+footer .site-invitation {
+  margin: 0 auto 1.5rem;
+  width: min(86rem, calc(100% - 2rem));
+  border: 0;
+  border-radius: 1.5rem;
+  background: var(--secondary);
+}
+footer .site-invitation > div {
+  padding: clamp(1.75rem, 4vw, 3.5rem);
+}
+footer .site-invitation p:has(> span.heading-tight) {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+footer .site-invitation .heading-tight {
+  font-size: clamp(1.375rem, 2.35vw, 2.25rem);
+}
+footer nav[aria-label="Footer site links"] a,
+footer nav[aria-label="Enquiry routes"] a,
+footer nav[aria-label="Partner pages"] a {
+  font-size: 0.9375rem;
+}
+@media (min-width: 64rem) {
+  footer .site-invitation > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.45rem 2.5rem;
+    text-align: left;
+  }
+  footer .site-invitation > div > :not(.site-invitation__actions) {
+    grid-column: 1;
+    margin-inline: 0;
+    justify-content: flex-start;
+  }
+  footer .site-invitation__actions {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    justify-content: flex-start;
+    max-width: 18rem;
+    margin: 0;
+  }
+}

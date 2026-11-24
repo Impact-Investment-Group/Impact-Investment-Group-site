@@ -1,106 +1,7 @@
-.partner-craft-container,
-.partner-craft-hero__layout {
+.partner-craft-container {
   width: min(100%, 1200px);
   margin-inline: auto;
   padding-inline: 32px;
-}
-.partner-craft-hero {
-  position: relative;
-  isolation: isolate;
-  overflow: clip;
-  background:
-    radial-gradient(ellipse at 95% 12%, var(--secondary), transparent 60%), var(--color-page-alt);
-}
-.partner-craft-hero::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  width: 570px;
-  height: 570px;
-  right: -120px;
-  top: 18px;
-  border-radius: 50%;
-  border: 38px solid color-mix(in srgb, var(--color-teal-600) 5%, transparent);
-}
-.partner-craft-hero__layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: clamp(28px, 5vw, 72px);
-  row-gap: 22px;
-  padding-block: 72px;
-  align-items: start;
-}
-.partner-craft-hero__heading {
-  margin-top: 20px;
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: clamp(2.5rem, 4.9vw, 4.2rem);
-  line-height: 1.04;
-  letter-spacing: -0.025em;
-  text-wrap: balance;
-  color: var(--color-ink);
-}
-.partner-craft-hero__media {
-  position: relative;
-  isolation: isolate;
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  padding: 12px;
-  margin-block: 16px;
-  border-radius: 34px;
-  border: 1px solid var(--color-rule);
-  background: var(--color-white);
-  box-shadow: var(--shadow-card-hover);
-}
-.partner-craft-hero__media::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: -2px;
-  transform: rotate(-3deg);
-  border: 1px solid color-mix(in srgb, var(--color-teal-600) 18%, transparent);
-  border-radius: inherit;
-  background: var(--secondary);
-}
-.partner-craft-hero__photo {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 24px;
-  object-fit: cover;
-}
-.partner-craft-hero__seal {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  left: -14px;
-  top: -22px;
-  width: 68px;
-  height: 68px;
-  border: 6px solid var(--color-page);
-  border-radius: 50%;
-  background: var(--color-teal-600);
-  color: var(--color-white);
-  box-shadow: var(--shadow-card);
-}
-.partner-craft-hero__seal svg {
-  width: 29px;
-  height: 29px;
-}
-.partner-craft-hero__companion {
-  position: absolute;
-  width: 180px;
-  height: auto;
-  right: 2px;
-  bottom: -27px;
-  filter: drop-shadow(0 8px 9px color-mix(in srgb, var(--color-ink) 12%, transparent));
-}
-.partner-craft-hero__summary {
-  max-width: 52ch;
-  font-size: 18px;
-  line-height: 1.65;
-  color: var(--color-ink-muted);
 }
 .partner-craft-heading {
   font-family: var(--font-heading);
@@ -112,9 +13,8 @@
   color: var(--color-ink);
 }
 .partner-craft-directory {
-  padding-block: 76px;
-  background:
-    radial-gradient(ellipse at 0 0, var(--secondary), transparent 35%), var(--color-page-alt);
+  padding-block: clamp(3rem, 5vw, 5rem);
+  background: var(--color-page-alt);
 }
 .partner-craft-directory__intro {
   display: grid;
@@ -377,8 +277,7 @@
   color: var(--color-teal-600);
 }
 .partner-craft-journey-section {
-  background:
-    radial-gradient(ellipse at 75% 50%, var(--secondary), transparent 60%), var(--color-page-alt);
+  background: var(--secondary);
   border-block: 1px solid var(--color-rule);
 }
 .partner-craft-journey {
@@ -712,18 +611,6 @@
   }
 }
 @media (max-width: 899px) {
-  .partner-craft-hero__layout {
-    grid-template-columns: minmax(0, 1fr);
-    padding-block: 44px 56px;
-  }
-  .partner-craft-hero__media {
-    grid-column: auto;
-    grid-row: auto;
-    margin: 8px 4px 18px;
-  }
-  .partner-craft-hero__photo {
-    aspect-ratio: 16 / 10;
-  }
   .partner-craft-directory__intro,
   .partner-craft-ledger,
   .partner-craft-connections {
@@ -743,36 +630,13 @@
   }
 }
 @media (max-width: 639px) {
-  .partner-craft-container,
-  .partner-craft-hero__layout {
+  .partner-craft-container {
     padding-inline: 20px;
   }
   .partner-craft-directory,
   .partner-craft-ledger,
   .partner-craft-journey {
     padding-block: 48px;
-  }
-  .partner-craft-hero__media {
-    padding: 8px;
-    border-radius: 26px;
-  }
-  .partner-craft-hero__photo {
-    border-radius: 19px;
-  }
-  .partner-craft-hero__seal {
-    width: 54px;
-    height: 54px;
-    left: -10px;
-    top: -18px;
-  }
-  .partner-craft-hero__seal svg {
-    width: 23px;
-    height: 23px;
-  }
-  .partner-craft-hero__companion {
-    width: 145px;
-    right: -1px;
-    bottom: -23px;
   }
   .partner-craft-directory__controls {
     padding: 21px;
@@ -882,4 +746,66 @@
     outline: 2px solid Highlight;
     outline-offset: -2px;
   }
+}
+
+
+.partner-hub .partner-craft-directory__controls {
+  border-radius: 0.65rem;
+  box-shadow: none;
+}
+
+.partner-hub .partner-craft-directory__stage {
+  margin-top: 1.5rem;
+  padding: 1.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+  border-radius: 0;
+  background: transparent;
+}
+
+.partner-hub .partner-craft-directory__stage::after,
+.partner-page .partner-craft-ledger__points::before {
+  display: none;
+}
+
+.partner-hub .partner-craft-directory__role {
+  min-height: 8.5rem;
+  border-radius: 0.55rem;
+  box-shadow: none;
+}
+
+.partner-hub .partner-craft-directory__icon {
+  border-radius: 50%;
+}
+
+.partner-page .partner-craft-ledger {
+  align-items: start;
+}
+
+.partner-page .partner-craft-ledger__points {
+  gap: 0;
+  border-top: 2px solid var(--color-teal-600);
+}
+
+.partner-page .partner-craft-ledger__points > li {
+  border: 0;
+  border-bottom: 1px solid var(--color-rule);
+  border-radius: 0;
+  padding-inline: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.partner-page .partner-craft-journey__intro {
+  margin-inline: 0;
+  text-align: start;
+}
+
+.partner-page .partner-craft-journey__experience {
+  max-width: none;
+}
+
+.partner-page .partner-craft-journey__panel {
+  border-radius: 0.75rem;
+  box-shadow: none;
 }

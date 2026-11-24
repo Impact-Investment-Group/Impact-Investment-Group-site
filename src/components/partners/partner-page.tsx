@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Info, LifeBuoy, ZoomIn } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import type { BuddyForm } from "@/components/buddy/buddy-character";
 import { BuddySlot } from "@/components/buddy/buddy-slot";
 import { Reveal } from "@/components/ui/reveal";
@@ -10,6 +9,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import type { PartnerProfile } from "@/content/partners";
 import { crisisLines, crisisNote } from "@/content/site";
 import "./partner-editorial.css";
+import "@/components/editorial/story-lead.css";
 import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 
 /**
@@ -93,6 +93,19 @@ function CrisisSignpost({ signpost }: { signpost: NonNullable<PartnerProfile["cr
     </section>
   );
 }
+
+const partnerHeadings: Record<string, string> = {
+  investor: "Make a lasting impact through property.",
+  landlord: "Could your property become a supported home?",
+  developer: "Build homes around local housing needs.",
+  "housing-association": "Connect people with a home they can keep.",
+  "local-authority": "Find homes that meet your community’s needs.",
+  "care-provider": "Find the right setting for the care you deliver.",
+  "support-provider": "Help people feel settled in their own home.",
+  "social-worker": "Keep the person at the centre of their housing plan.",
+  broker: "Connect a property opportunity with a local need.",
+  resident: "Find a home that fits your needs.",
+};
 
 const stageVisuals: Record<PartnerProfile["stage"], { image: string; label: string }> = {
   need: { image: "/images/human-insight.jpg", label: "Need, assessment and direction" },
@@ -392,7 +405,7 @@ function PartnerRoleLedger({ profile }: { profile: PartnerProfile }) {
     <section id="role" aria-labelledby="role-heading" className="bg-page">
       <div className="partner-craft-container partner-craft-ledger">
         <div>
-          <p className="eyebrow text-teal-600">01 · {presentation.eyebrow}</p>
+          <p className="eyebrow text-teal-600">{presentation.eyebrow}</p>
           <h2 id="role-heading" className="partner-craft-heading mt-3">
             {presentation.lead} <span className="text-orange-700">{presentation.accent}</span>
           </h2>
@@ -438,7 +451,7 @@ function PartnerPlatformStack({ profile }: { profile: PartnerProfile }) {
     >
       <div className="partner-craft-container partner-craft-journey">
         <div className="partner-craft-journey__intro">
-          <p className="eyebrow text-teal-600">02 · Through the platform</p>
+          <p className="eyebrow text-teal-600">Through the platform</p>
           <h2 id="platform-heading" className="partner-craft-heading mt-3">
             {presentation.lead} <span className="text-orange-700">{presentation.accent}</span>
           </h2>
@@ -604,57 +617,36 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
   return (
     <div className="partner-page partner-craft" data-buddy-topic={partnerBuddyForm(profile)}>
       {profile.crisisSignpost ? <CrisisSignpost signpost={profile.crisisSignpost} /> : null}
-      <section aria-labelledby={headingId} className="partner-craft-hero section-light">
-        <div className="partner-craft-hero__layout">
-          <div className="partner-craft-hero__title">
-            <Link
-              to="/partners"
-              className="inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-teal-600 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600"
-            >
-              <span aria-hidden="true">←</span> The partner ecosystem
+      <section aria-labelledby={headingId} className="story-lead story-lead--partner">
+        <div className="story-shell">
+          <div className="story-copy">
+            <Link to="/partners" className="story-back">
+              <ArrowLeft aria-hidden="true" /> The partner ecosystem
             </Link>
-            <p className="eyebrow mt-5 text-teal-600">
-              {profile.id === "investor" ? "Investor pathway" : visual.label}
-            </p>
-            <h1 id={headingId} className="partner-craft-hero__heading">
-              {profile.id === "resident" ? (
-                <>
-                  The person at the <span className="text-orange-700">centre.</span>
-                </>
-              ) : (
-                <>
-                  Partner with <span className="text-orange-700">{profile.pluralLabel}.</span>
-                </>
-              )}
+            <p className="story-kicker">{profile.pluralLabel}</p>
+            <h1 id={headingId} className="story-title">
+              {partnerHeadings[profile.id] ?? profile.label}
             </h1>
-          </div>
-          <figure className="partner-craft-hero__media">
-            <img
-              className="partner-craft-hero__photo"
-              src={visual.image}
-              srcSet={variantSrcSet(visual.image)}
-              sizes={
-                profile.stage === "property"
-                  ? "(min-width: 1200px) 720px, (min-width: 900px) 62vw, 112vw"
-                  : "(min-width: 1200px) 610px, (min-width: 900px) 52vw, 100vw"
-              }
-              width={intrinsic(visual.image)?.width}
-              height={intrinsic(visual.image)?.height}
-              loading="eager"
-              alt=""
-            />
-          </figure>
-          <div className="partner-craft-hero__support">
-            <p className="partner-craft-hero__summary">{profile.summary}</p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Button variant="primary" asChild>
-                <a href="#role">Understand the role</a>
-              </Button>
-              <Button variant="secondary" asChild withArrow={false}>
-                <Link to="/partners">See all ten partners</Link>
-              </Button>
+            <p className="story-intro">{profile.summary}</p>
+            <div className="story-links">
+              <a href="#role">Understand the role <ArrowRight aria-hidden="true" /></a>
+              <a href={profile.id === "investor" ? "#your-impact" : "#connected-network"}>
+                Learn about your impact <ArrowRight aria-hidden="true" />
+              </a>
             </div>
           </div>
+          <figure className="story-partner-photo">
+            <img
+              className="story-photo"
+              src={visual.image}
+              srcSet={variantSrcSet(visual.image)}
+              sizes="(min-width: 1200px) 520px, (min-width: 800px) 44vw, 100vw"
+              width={intrinsic(visual.image)?.width}
+              height={intrinsic(visual.image)?.height}
+              alt=""
+            />
+            <figcaption>{visual.label}</figcaption>
+          </figure>
         </div>
       </section>
 
@@ -664,7 +656,7 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
       <section id="connected-network" aria-labelledby="network-heading" className="bg-page">
         <div className="partner-craft-container py-14 lg:py-16">
           <div className="max-w-[760px]">
-            <p className="eyebrow text-teal-600">03 · The connected network</p>
+            <p className="eyebrow text-teal-600">The connected network</p>
             <h2 id="network-heading" className="partner-craft-heading mt-3">
               {networkPresentation.lead}{" "}
               <span className="text-orange-700">{networkPresentation.accent}</span>
@@ -689,6 +681,9 @@ export function PartnerPage({ profile }: { profile: PartnerProfile }) {
               <p className="text-sm leading-relaxed text-ink-muted">{profile.importantNote}</p>
             </div>
           ) : null}
+          <div className="story-links">
+            <Link to="/partners">See all ten partners <ArrowRight aria-hidden="true" /></Link>
+          </div>
         </div>
       </section>
     </div>

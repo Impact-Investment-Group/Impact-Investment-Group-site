@@ -12,8 +12,9 @@ import {
   productPitch,
   solutionHero,
 } from "@/content/solutions";
-import { SIZES_FULL_BLEED, variantSrcSet } from "@/lib/responsive-image";
+import { intrinsic, variantSrcSet } from "@/lib/responsive-image";
 import "./editorial-friendly.css";
+import "@/components/editorial/story-lead.css";
 
 export const Route = createFileRoute("/solutions")({
   component: SolutionsPage,
@@ -193,35 +194,31 @@ function LayerExplorer() {
 function SolutionsPage() {
   return (
     <div className="friendly-editorial friendly-solutions" data-buddy-topic="property">
-      <section aria-labelledby="solution-heading" className="page-intro friendly-hero">
-        <div className="mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-2 lg:gap-12 lg:py-20">
-          <div>
-            <p className="text-sm font-semibold text-teal-600">{solutionHero.eyebrow}</p>
-            <h1
-              id="solution-heading"
-              className="mt-4 max-w-[18ch] font-heading text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.08] text-ink"
-            >
-              {solutionHero.headA} {solutionHero.headB}
-            </h1>
-            <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-ink-muted">
-              {solutionHero.lead}
+      <section aria-labelledby="solution-heading" className="story-lead story-lead--solution">
+        <div className="story-shell">
+          <div className="story-copy">
+            <p className="story-kicker">{solutionHero.eyebrow}</p>
+            <h1 id="solution-heading" className="story-title">It takes a partnership to make a home.</h1>
+            <p className="story-intro">
+              A council knows where a home is needed. A landlord may have the right property.
+              We bring them together with investors, housing associations and support providers.
             </p>
-            <a href="#layers-heading" className="friendly-explore-link">
-              See how it works <ArrowRight aria-hidden="true" className="size-5" />
-            </a>
+            <div className="story-links">
+              <a href="#layers-heading">See how it works <ArrowRight aria-hidden="true" /></a>
+              <Link to="/partners">Meet the partners <ArrowRight aria-hidden="true" /></Link>
+            </div>
           </div>
-          <div className="friendly-solution-photo">
+          <div className="story-solution-visual">
             <img
+              className="story-photo"
               src="/images/solution-street-blueprint.webp"
-              loading="eager"
-              alt=""
-              aria-hidden="true"
-              width={1600}
-              height={900}
               srcSet={variantSrcSet("/images/solution-street-blueprint.webp")}
-              sizes={SIZES_FULL_BLEED}
+              sizes="(min-width: 1200px) 540px, (min-width: 800px) 45vw, 100vw"
+              width={intrinsic("/images/solution-street-blueprint.webp")?.width}
+              height={intrinsic("/images/solution-street-blueprint.webp")?.height}
+              alt="An architectural drawing of a street blends into a photograph of its homes."
             />
-            <div className="friendly-solution-photo-guide" aria-hidden="true">
+            <div className="story-solution-buddy" aria-hidden="true">
               <BuddySlot form="property" action="wave" className="aspect-4/3" />
             </div>
           </div>

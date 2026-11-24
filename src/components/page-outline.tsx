@@ -5,6 +5,7 @@ import { ArrowDownRight, ChevronDown } from "lucide-react";
 type SectionLink = { id: string; label: string };
 const sections: Record<string, SectionLink[]> = {
   "/about": [
+    { id: "our-vision", label: "Our vision" },
     { id: "about-heading", label: "About us" },
     { id: "why-heading", label: "Why we exist" },
     { id: "charity-impact", label: "Giving back" },
@@ -17,8 +18,11 @@ const sections: Record<string, SectionLink[]> = {
     { id: "services-more-heading", label: "More about sourcing" },
   ],
   "/the-problem": [
-    { id: "scale-heading", label: "The scale" },
-    { id: "cost-heading", label: "The cost" },
+    { id: "uk-impact", label: "UK picture" },
+    { id: "four-nations", label: "Four nations" },
+    { id: "costed-plan", label: "Costed plan" },
+    { id: "scale-heading", label: "Housing registers" },
+    { id: "cost-heading", label: "Cost of waiting" },
     { id: "opportunity-heading", label: "The opportunity" },
   ],
   "/solutions": [
@@ -43,11 +47,18 @@ const partnerSections: SectionLink[] = [
   { id: "network-heading", label: "Your network" },
 ];
 
+const investorSections = [...partnerSections, { id: "your-impact", label: "Your impact" }];
+
 /** Real fragment links still work before hydration and with JavaScript off. */
 export function PageOutline() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const path = pathname.replace(/\/+$/, "") || "/";
-  const links = path.startsWith("/partner-with-") ? partnerSections : sections[path];
+  const links =
+    path === "/partner-with-investor"
+      ? investorSections
+      : path.startsWith("/partner-with-")
+        ? partnerSections
+        : sections[path];
   if (!links) return null;
   return <Outline key={pathname} links={links} />;
 }

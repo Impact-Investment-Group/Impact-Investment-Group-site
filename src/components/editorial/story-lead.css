@@ -1,0 +1,223 @@
+/* Shared opening layout for editorial articles and audience guides. */
+.story-lead {
+  color: var(--color-ink);
+  background: var(--color-page-alt);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.story-shell {
+  width: min(100%, 1200px);
+  margin-inline: auto;
+  padding: clamp(2rem, 5.5vw, 5rem) 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+  gap: clamp(2rem, 5vw, 4.75rem);
+  align-items: center;
+}
+
+.story-copy,
+.story-shell > figure,
+.story-shell > div {
+  min-width: 0;
+}
+
+.story-kicker {
+  color: var(--color-teal-600);
+  font: 700 0.87rem/1.4 var(--font-heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.story-title {
+  margin-top: 0.8rem;
+  max-width: 18ch;
+  color: var(--color-ink);
+  font: 700 clamp(2.5rem, 4.9vw, 4.35rem)/1.01 var(--font-heading);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.story-intro {
+  max-width: 50ch;
+  margin-top: 1.25rem;
+  color: var(--color-ink);
+  font-size: clamp(1.03rem, 1.35vw, 1.2rem);
+  line-height: 1.6;
+}
+
+.story-detail {
+  max-width: 57ch;
+  margin-top: 0.8rem;
+  color: var(--color-ink-muted);
+  line-height: 1.65;
+}
+
+.story-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 1.75rem;
+  row-gap: 0.3rem;
+  margin-top: 1.25rem;
+}
+
+.story-links a,
+.story-back {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  min-height: 44px;
+  line-height: 1.45;
+  color: var(--color-teal-600);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 0.27em;
+  text-decoration-thickness: 1px;
+}
+
+.story-links a:first-child {
+  color: var(--color-ink);
+}
+
+.story-links svg,
+.story-back svg {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.story-links a:hover,
+.story-back:hover {
+  text-decoration-thickness: 2px;
+}
+
+.story-links a:focus-visible,
+.story-back:focus-visible {
+  outline: 2px solid var(--color-teal-600);
+  outline-offset: 3px;
+}
+
+.story-back {
+  width: fit-content;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+}
+
+.story-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 3.7;
+  object-fit: cover;
+  border-radius: 0.65rem;
+}
+
+.story-section-title {
+  color: var(--color-ink);
+  font: 700 clamp(1.9rem, 3.5vw, 2.85rem)/1.1 var(--font-heading);
+  letter-spacing: -0.025em;
+}
+
+#our-vision,
+#team-heading,
+.story-lead + section[id] {
+  scroll-margin-top: 10rem;
+}
+
+.story-lead--vision .story-photo {
+  border-start-end-radius: clamp(2rem, 5vw, 5rem);
+}
+
+.story-lead--network {
+  background: var(--color-page);
+}
+
+.story-network-visual,
+.story-solution-visual {
+  position: relative;
+}
+
+.story-network-buddy,
+.story-solution-buddy {
+  position: absolute;
+  right: 0.6rem;
+  bottom: -0.75rem;
+  width: clamp(6rem, 10vw, 8.75rem);
+  aspect-ratio: 4 / 3;
+}
+
+.story-lead--solution .story-photo {
+  border-end-start-radius: clamp(2rem, 5vw, 5rem);
+}
+
+.story-lead--services {
+  background: var(--secondary);
+}
+
+.story-product {
+  min-width: 0;
+  padding: clamp(0.7rem, 1.5vw, 1.2rem);
+  border: 1px solid var(--color-rule);
+  border-radius: 0.75rem;
+  background: var(--color-page);
+}
+
+.story-product img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-rule);
+  border-radius: 0.3rem;
+}
+
+.story-product figcaption,
+.story-partner-photo figcaption {
+  padding: 0.7rem 0 0.1rem;
+  font-size: 0.82rem;
+  font-weight: 550;
+  line-height: 1.45;
+  color: var(--color-ink-muted);
+}
+
+.story-partner-photo figcaption {
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: 0.65rem;
+}
+
+.story-lead--partner .story-photo {
+  aspect-ratio: 3 / 2;
+}
+
+@media (min-width: 800px) {
+  .story-lead--network .story-copy {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .story-network-visual {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 799px) {
+  .story-shell {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.6rem;
+    padding-inline: clamp(1.25rem, 4vw, 2rem);
+  }
+
+  .story-copy {
+    max-width: 42rem;
+  }
+
+  .story-photo,
+  .story-lead--partner .story-photo {
+    aspect-ratio: 16 / 9;
+    max-height: 19rem;
+  }
+
+  .story-links {
+    column-gap: 1.25rem;
+    margin-top: 0.8rem;
+  }
+}

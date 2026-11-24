@@ -78,7 +78,7 @@ export function RegisterPage({ initialRoleId }: { initialRoleId?: string }) {
   };
 
   return (
-    <div className="registration-picker registration-directory">
+    <div className="registration-picker registration-directory" data-choosing-role={!role}>
       <section className="registration-directory__layout mx-auto w-full max-w-[1200px] px-5 py-10 sm:px-8 lg:py-16">
         <div className="registration-directory__intro">
           <PreReleaseBadge className="mb-6 w-fit" />
